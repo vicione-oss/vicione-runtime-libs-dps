@@ -1,0 +1,81 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net9.0": {
+      "AWSSDK.IoT": {
+        "type": "Direct",
+        "requested": "[4.0.0.13, )",
+        "resolved": "4.0.0.13",
+        "contentHash": "ngrCxZtopE/IkhAg1LSGrTRX/qPV7glJb5WKuFEI/vs5IljwVt9H8IPzVcq8uFnA/5ECOV+j0n7S2SMeUmWsWA==",
+        "dependencies": {
+          "AWSSDK.Core": "[4.0.0.15, 5.0.0)"
+        }
+      },
+      "AWSSDK.Core": {
+        "type": "Transitive",
+        "resolved": "4.0.0.15",
+        "contentHash": "nt0pgf20/wt8NEH/Kw97CS9mlIivg3lROW1E2piFJZPmwZIDVKVEGSvCztGWedMByQYMVpxGbVmn7oC0p1vmkw=="
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "9.0.10",
+        "contentHash": "r9waLiOPe9ZF1PvzUT+RDoHvpMmY8MW+lb4lqjYGObwKpnyPMLI3odVvlmshwuZcdoHynsGWOrCPA0hxZ63lIA=="
+      },
+      "MQTTnet": {
+        "type": "Transitive",
+        "resolved": "4.3.7.1207",
+        "contentHash": "ah7aHXoedWp5m5a4zy2u4phOEVj0QFYzOb5tFKQeV8RRBrxp+1QREF4ymZuG8D+hzB2dhtrrG81WxTFv0PzOeQ=="
+      },
+      "ViciOne.ManagedEngine.Serialization": {
+        "type": "Transitive",
+        "resolved": "0.62.0",
+        "contentHash": "Becr8T3e9gRnxqYZNnV8jjnPcsk49SmKvGypkKyQDbWp430vH5mYMy51Fdl+Ebtzyx+kDA1QP8UTaftGFLBjzQ=="
+      },
+      "ViciOne.Suite.DataPort": {
+        "type": "Project",
+        "dependencies": {
+          "ViciOne.ManagedEngine.Contracts": "[0.62.0, )"
+        }
+      },
+      "ViciOne.Suite.DataPort.Mqtt": {
+        "type": "Project",
+        "dependencies": {
+          "MQTTnet.Extensions": "[0.21.0, )",
+          "ViciOne.Suite.DataPort": "[0.29.0, )"
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[9.0.10, )",
+        "resolved": "9.0.10",
+        "contentHash": "MFUPv/nN1rAQ19w43smm6bbf0JDYN/1HEPHoiMYY50pvDMFpglzWAuoTavByDmZq7UuhjaxwrET3joU69ZHoHQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.10"
+        }
+      },
+      "MQTTnet.Extensions": {
+        "type": "CentralTransitive",
+        "requested": "[0.21.0, )",
+        "resolved": "0.21.0",
+        "contentHash": "XpuIVR0sTqtndsgwhFNJAIalViJRqGXpgu/bABPTgy2+OAAYi/WLMjAG29m/PhLXwCAlZ/GP2KyvReUt1mX5/A==",
+        "dependencies": {
+          "MQTTnet": "4.3.7.1207",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.3"
+        }
+      },
+      "ViciOne.ManagedEngine.Contracts": {
+        "type": "CentralTransitive",
+        "requested": "[0.62.0, )",
+        "resolved": "0.62.0",
+        "contentHash": "gQchAPV1gMu1AOsAdvmU2MRTYGjscDspRob2M3TDjC5B3+B6TtK3vZqQsllFvFzZUy+j9gLEpRa1jOd775SWTw==",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.10",
+          "ViciOne.ManagedEngine.Serialization": "0.62.0"
+        }
+      }
+    },
+    "net9.0/linux-arm64": {},
+    "net9.0/linux-x64": {},
+    "net9.0/win-x64": {}
+  }
+}

@@ -1,0 +1,181 @@
+﻿Common:
+  Target       : DataPort
+  ContentType  : Rules
+  Version      : 1.0
+  Date         : 2024-12-04
+  Description  : "Azure EventGrid Topic DataPort"
+  Author       : "ifm software gmbh"  
+  MetadataType : YAML
+
+Root:
+  Id                       : "AzureEventGridTopicDataPort"
+  Name                     : "Azure EventGrid Topic"
+  Description              : "DataPort for Azure EventGrid Topic"
+  Icons                    : ['azure-iot-hub']
+  ChildNodes               :
+    - Id                   : AzureEventGridTopicInstance
+      MaxInstances         : 16
+                        
+Nodes:                  
+  - Id                     : AzureEventGridTopicInstance
+    Type                   : DataPortNode
+    Name                   : "Instance"
+    Description            : "Azure EventGrid Topic instance"
+    MetadataLength         : 0
+    Icons                  : ['folder']
+    TransferDirections     : [ Outbound ]
+    ChildNodes             :
+      - Id                 : EventGridEvent
+        MaxInstances       : 1
+    PropertyCategories     :
+      - Id                 : Connection
+        Properties         :
+          - Id             : TopicEndpoint
+            Required       : true
+          - Id             : AccessKey
+            Required       : true
+          - Id             : MaxPendingMessages
+          - Id             : BulkSize
+
+  - Id                     : EventGridEvent
+    MappingId              : EventGridEvent
+    Type                   : DataPortTreeNode
+    Name                   : "EventGridEvent"
+    Description            : "EventGridEvent"
+    Icons                  : ['folder']
+    TransferModes          : [ OnChange, Periodic, None ]
+    ChildNodes             :
+      - Id                 : JsonStructure
+      - Id                 : DataPointBool
+      - Id                 : DataPointInteger
+      - Id                 : DataPointFloat
+      - Id                 : DataPointDateTime
+      - Id                 : DataPointString
+      - Id                 : DataPointBinary
+    PropertyCategories     :
+      - Id                 : Event
+        Properties         :
+          - Id             : DataVersion
+            Required       : true
+          - Id             : EventType
+            Required       : true
+
+  - Id                     : JsonStructure
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "JSON structure"
+    Description            : "JSON structure node in the tree"
+    Icons                  : ['folder']
+    TransferModes          : [ None ]
+    ChildNodes             :
+      - Id                 : JsonStructure
+      - Id                 : DataPointBool
+      - Id                 : DataPointInteger
+      - Id                 : DataPointFloat
+      - Id                 : DataPointDateTime
+      - Id                 : DataPointString
+      - Id                 : DataPointBinary
+
+  - Id                     : DataPointBool
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Bool"
+    Description            : "Boolean data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ Bool ]
+
+  - Id                     : DataPointInteger
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Integer"
+    Description            : "Integer data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ Int32, Int64, Int16, Int8, UInt32, UInt64, UInt16, UInt8 ]
+
+  - Id                     : DataPointFloat
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Float"
+    Description            : "Float data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ Float64, Float32 ]
+
+  - Id                     : DataPointDateTime
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint DateTime"
+    Description            : "DateTime data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ DateTime ]
+
+  - Id                     : DataPointString
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint String"
+    Description            : "String data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ String ]
+
+  - Id                     : DataPointBinary
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Binary"
+    Description            : "Binary data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ Binary ]
+
+PropertyCategories:
+  - Id          : Connection
+    Name        : "Connection"
+    Description : "Connection properties"
+
+  - Id          : Event
+    Name        : "Event"
+    Description : "Event properties"
+
+Properties:
+  - Id          : TopicEndpoint
+    Name        : "Topic Endpoint"
+    Description : "Endpoint of the Topic"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : AccessKey
+    Name        : "Topic Access Key"
+    Description : "Access Key of the Topic"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : EventType
+    Name        : "EventType"
+    Description : "EventType of the Topic Subject"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : DataVersion
+    Name        : "DataVersion"
+    Description : "DataVersion of the Topic Subject"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : MaxPendingMessages
+    Name        : "MaxPendingMessages"
+    Description : "Maximum of pending messages"
+    DataType    : Int32
+    DefaultValue: 100000
+    UiControl   : NumericUpDown
+    MinValue    : 1
+
+  - Id          : BulkSize
+    Name        : "BulkSize"
+    Description : "BulkSize"
+    DataType    : Int32
+    DefaultValue: 5000
+    UiControl   : NumericUpDown
+    MinValue    : 1

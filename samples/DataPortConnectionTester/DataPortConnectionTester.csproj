@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Aws.Iot\Aws.Iot.csproj" />
+    <ProjectReference Include="..\..\src\Azure.IotHub\Azure.IotHub.csproj" />
+    <ProjectReference Include="..\..\src\Http.Client\Http.Client.csproj" />
+    <ProjectReference Include="..\..\src\InfluxDb\InfluxDb.csproj" />
+    <ProjectReference Include="..\..\src\MySql\MySql.csproj" />
+    <ProjectReference Include="..\..\src\Mqtt\Mqtt.csproj" />
+    <ProjectReference Include="..\..\src\OpcUa.Client\OpcUa.Client.csproj" />
+    <ProjectReference Include="..\..\src\OpcUa.Server\OpcUa.Server.csproj" />
+    <ProjectReference Include="..\..\src\PostgreSql\PostgreSql.csproj" />
+    <ProjectReference Include="..\..\src\Sqlite\Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\SqlServer\SqlServer.csproj" />
+  </ItemGroup>
+
+</Project>

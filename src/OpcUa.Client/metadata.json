@@ -1,0 +1,5 @@
+{
+    "Name": "OpcUa.Client",
+    "Version": "__VERSION__",
+    "MinCoreVersion": "__MIN_CORE_VERSION__"
+}

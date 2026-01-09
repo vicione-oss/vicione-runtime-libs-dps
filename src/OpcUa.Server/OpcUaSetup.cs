@@ -1,0 +1,75 @@
+﻿using System;
+using System.Globalization;
+using Opc.Ua;
+
+namespace ViciOne.Suite.DataPort;
+
+internal static class OpcUaSetup
+{
+    internal static ApplicationConfiguration CreateConfiguration(OpcUaServerDataPortProperties properties)
+    {
+        ServerConfiguration serverConfiguration = new();
+        serverConfiguration.BaseAddresses.Add($"opc.tcp://{properties.Server}:{properties.Port.ToString(CultureInfo.InvariantCulture)}/{properties.Endpoint}");
+        serverConfiguration.ServerProfileArray =
+        [
+            "http://opcfoundation.org/UA-Profile/Server/StandardUAProfile",
+            "http://opcfoundation.org/UA-Profile/Server/DataAccess",
+            "http://opcfoundation.org/UA-Profile/Server/ClientRedundancy",
+        ];
+        serverConfiguration.SecurityPolicies =
+        [
+            new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, SecurityPolicyUri = SecurityPolicies.Basic256Sha256 },
+            new() { SecurityMode = MessageSecurityMode.None, SecurityPolicyUri = SecurityPolicies.None},
+            new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, },
+            new() { SecurityMode = MessageSecurityMode.Sign, },
+        ];
+        serverConfiguration.MaxRegistrationInterval = 0; // do not register itself
+
+        serverConfiguration.UserTokenPolicies =
+        [
+            properties.UserAuthenticationType switch
+            {
+                UserAuthenticationType.Anonymous => new UserTokenPolicy(UserTokenType.Anonymous) { SecurityPolicyUri = SecurityPolicies.None },
+                UserAuthenticationType.Basic => new UserTokenPolicy(UserTokenType.UserName) { SecurityPolicyUri = SecurityPolicies.Basic256Sha256 },
+                _ => throw new InvalidOperationException("Invalid user authentication type.")
+            },
+        ];
+
+        ApplicationConfiguration configuration = new()
+        {
+            ApplicationName = properties.ApplicationName,
+            ApplicationUri = properties.ApplicationUri,
+            ApplicationType = ApplicationType.Server,
+            TransportQuotas = new TransportQuotas(),
+            ServerConfiguration = serverConfiguration,
+        };
+
+        configuration.SecurityConfiguration.ApplicationCertificate = new()
+        {
+            StoreType = properties.ApplicationCertificatesStoreType,
+            StorePath = properties.ApplicationCertificatesStorePath,
+            SubjectName = properties.ApplicationCertificateSubject,
+        };
+        configuration.SecurityConfiguration.AddAppCertToTrustedStore = false;
+        configuration.SecurityConfiguration.AutoAcceptUntrustedCertificates = properties.AutoAcceptUntrustedCertificates;
+
+        if (properties.TrustedCertificatesStoreType is not null)
+        {
+            configuration.SecurityConfiguration.TrustedIssuerCertificates = new()
+            {
+                StoreType = properties.TrustedCertificatesStoreType,
+                StorePath = properties.TrustedCertificatesStorePath,
+            };
+        }
+        if (properties.TrustedIssuerCertificatesStoreType is not null)
+        {
+            configuration.SecurityConfiguration.TrustedIssuerCertificates = new()
+            {
+                StoreType = properties.TrustedIssuerCertificatesStoreType,
+                StorePath = properties.TrustedIssuerCertificatesStorePath,
+            };
+        }
+
+        return configuration;
+    }
+}
