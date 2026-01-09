@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ViciOne.Suite.DataPort</RootNamespace>
+    <AssemblyName>ViciOne.Suite.DataPort.InfluxDb</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="InfluxDB.Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataPort\DataPort.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="InfluxDb.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

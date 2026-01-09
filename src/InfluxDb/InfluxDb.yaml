@@ -1,0 +1,224 @@
+Common:
+  Target       : DataPort                                                                          # required: Id String to identify the target of the file
+  ContentType  : Rules                                                                             # required: Id String to identify the content of the file
+  Version      : 1.0                                                                               # required: Version of the file
+  Date         : 2024-12-02                                                                        # required: Date of the file
+  Description  : "InfluxDB DataPort"                                                               # required: Description of the file
+  Author       : "ifm software gmbh"                                                               # required: Author of the file
+  MetadataType : YAML                                                                              # required: Metadata type of the file (YAML, JSON, XML, Text, Binary, ...)
+
+Root:
+  Id                       : "influxdbdataport"                                                    # required: Id String to identify the root of the DataPort
+  Name                     : "InfluxDB"                                                            # required: display name of the DataPort
+  Description              : "DataPort for InfluxDB"                                               # required: display description of the DataPort
+  Icons                    : ['influxdb']                                                          # required: just one Icon for the DataPort
+  ChildNodes               :
+    - Id                   : InfluxDB-Connection
+      MaxDepth             : 64
+      MaxInstances         : 8
+
+Nodes:
+
+  # -------------------- Organization ------------------------------------
+
+  - Id                     : InfluxDB-Connection
+    Type                   : DataPortNode
+    Name                   : "Connection"
+    Description            : "Connection"
+    MetadataLength         : 0
+    Icons                  : ['folder']
+    TransferDirections     : [ Outbound ]
+    ChildNodes             :
+      - Id                 : Bucket
+    PropertyCategories     :
+      - Id                 : Connection
+        Properties             :
+          - Id                 : Url
+            Required           : true
+          - Id                 : Token
+            Required           : true
+          - Id                 : Organization
+            Required           : true
+
+  # -------------------- Bucket ------------------------------------------
+
+  - Id                     : Bucket
+    MappingId              : Bucket
+    Type                   : DataPortTreeNode
+    Name                   : "Bucket"
+    Description            : "Bucket"
+    Icons                  : [ 'folder' ]
+    TransferModes          : [ None ]
+    ChildNodes             :
+      - Id                 : Measurement
+
+  # -------------------- Measurement -------------------------------------
+
+  - Id                     : Measurement
+    MappingId              : Measurement
+    Type                   : DataPortTreeNode
+    Name                   : "Measurement"
+    Description            : "Measurement in the database"
+    Icons                  : ['table']
+    TransferModes          : [ OnChange, Periodic, None ]
+    ChildNodes             :
+      - Id                 : FieldBool
+      - Id                 : FieldInteger
+      - Id                 : FieldFloat
+      - Id                 : FieldDateTime
+      - Id                 : FieldString
+      - Id                 : FieldBinary
+      - Id                 : FieldJSON
+      - Id                 : Tag
+
+  # -------------------- Tag ----------------------------------------
+
+  - Id                     : Tag
+    MappingId              : Tag
+    Type                   : DataPortTreeNode
+    Name                   : "Tag"
+    Description            : "Tag in the database Measurement"
+    Icons                  : ['datapoint']
+    DataTypes              : [ String ]
+
+  # -------------------- Field --------------------------------------
+
+  - Id                     : FieldBool
+    MappingId              : Field
+    Type                   : DataPortTreeNode
+    Name                   : "Bool Field"
+    Description            : "Boolean Field in the database Measurement"
+    Icons                  : ['datapoint']
+    DataTypes              : [ Bool ]
+
+  - Id                     : FieldInteger
+    MappingId              : Field
+    Type                   : DataPortTreeNode
+    Name                   : "Integer Field"
+    Description            : "Integer field in the database Measurement"
+    Icons                  : ['datapoint']
+    DataTypes              : [ Int32, Int64, Int16, Int8, UInt32, UInt64, UInt16, UInt8 ]
+
+  - Id                     : FieldFloat
+    MappingId              : Field
+    Type                   : DataPortTreeNode
+    Name                   : "Float Field"
+    Description            : "Float field in the database Measurement"
+    Icons                  : ['datapoint']
+    DataTypes              : [ Float64, Float32 ]
+
+  - Id                     : FieldDateTime
+    MappingId              : Field
+    Type                   : DataPortTreeNode
+    Name                   : "DateTime Field"
+    Description            : "DateTime field in the database Measurement"
+    Icons                  : ['datapoint']
+    DataTypes              : [ DateTime ]
+
+  - Id                     : FieldString
+    MappingId              : Field
+    Type                   : DataPortTreeNode
+    Name                   : "String Field"
+    Description            : "String field in the database Measurement"
+    Icons                  : ['datapoint']
+    DataTypes              : [ String ]
+
+  - Id                     : FieldBinary
+    MappingId              : Field
+    Type                   : DataPortTreeNode
+    Name                   : "Binary Field"
+    Description            : "Binary field in the database Measurement"
+    Icons                  : ['datapoint']
+    DataTypes              : [ Binary ]
+
+  - Id                     : FieldJSON
+    MappingId              : Field
+    Type                   : DataPortTreeNode
+    Name                   : "JSON Field"
+    Description            : "JSON field in the database Measurement"
+    Icons                  : ['datapoint']
+    ChildNodes             :
+      - Id                 : JsonObject
+      - Id                 : JsonBool
+      - Id                 : JsonInteger
+      - Id                 : JsonFloat
+      - Id                 : JsonDateTime
+      - Id                 : JsonString
+
+  - Id: JsonBool
+    MappingId: JsonStruct
+    Type: DataPortTreeNode
+    Name: "Bool Property"
+    Description: "Boolean value in the json structure"
+    Icons: [ 'datapoint' ]
+    DataTypes: [ Bool ]
+
+  - Id: JsonInteger
+    MappingId: JsonStruct
+    Type: DataPortTreeNode
+    Name: "Integer Property"
+    Description: "Integer value in the json structure"
+    Icons: [ 'datapoint' ]
+    DataTypes: [ Int32, Int64, Int16, Int8, UInt32, UInt64, UInt16, UInt8 ]
+
+  - Id: JsonFloat
+    MappingId: JsonStruct
+    Type: DataPortTreeNode
+    Name: "Float Property"
+    Description: "Float value in the json structure"
+    Icons: [ 'datapoint' ]
+    DataTypes: [ Float64, Float32 ]
+
+  - Id: JsonDateTime
+    MappingId: JsonStruct
+    Type: DataPortTreeNode
+    Name: "DateTime Property"
+    Description: "DateTime value in the json structure"
+    Icons: [ 'datapoint' ]
+    DataTypes: [ DateTime ]
+
+  - Id: JsonString
+    MappingId: JsonStruct
+    Type: DataPortTreeNode
+    Name: "String Property"
+    Description: "String value in the json structure"
+    Icons: [ 'datapoint' ]
+    DataTypes: [ String ]
+
+  - Id: JsonObject
+    MappingId: JsonStruct
+    Type: DataPortTreeNode
+    Name: "Json Object"
+    Description: "Json object in the json structure"
+    Icons: [ 'datapoint' ]
+    ChildNodes:
+      - Id                 : JsonObject
+      - Id                 : JsonBool
+      - Id                 : JsonInteger
+      - Id                 : JsonFloat
+      - Id                 : JsonDateTime
+      - Id                 : JsonString
+
+PropertyCategories:
+  - Id          : Connection
+    Name        : "Connection"
+    Description : "Connection properties"
+
+Properties:
+  - Id          : Organization
+    Name        : "Organization"
+    Description : "The name of the organization"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : Token
+    Name        : "Token"
+    Description : "The Token to access the database"
+    DataType    : String
+    UiControl   : PasswordBox
+
+  - Id          : Url
+    Name        : "Url"
+    Description : "The Url to access the database"
+    DataType    : String
+    UiControl   : TextBox

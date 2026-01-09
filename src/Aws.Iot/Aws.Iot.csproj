@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ViciOne.Suite.DataPort</RootNamespace>
+    <AssemblyName>ViciOne.Suite.DataPort.Aws.Iot</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.IoT" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Mqtt\Mqtt.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Aws.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="RemoveMqttYamlFromBuild" AfterTargets="Build">
+    <Delete Files="$(OutputPath)Mqtt.yaml" />
+  </Target>
+
+  <Target Name="RemoveMqttYamlFromPublish" AfterTargets="Publish">
+    <Delete Files="$(PublishDir)Mqtt.yaml" />
+  </Target>
+
+</Project>

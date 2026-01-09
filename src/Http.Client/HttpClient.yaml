@@ -1,0 +1,222 @@
+Common:
+  Target       : DataPort                                                                          # required: Id String to identify the target of the file
+  ContentType  : Rules                                                                             # required: Id String to identify the content of the file
+  Version      : 1.0                                                                               # required: Version of the file
+  Date         : 2025-08-27                                                                        # required: Date of the file
+  Description  : "HTTP Client DataPort"                                                            # required: Description of the file
+  Author       : "ifm software gmbh"                                                               # required: Author of the file
+  MetadataType : YAML                                                                              # required: Metadata type of the file (YAML, JSON, XML, Text, Binary, ...)
+
+Root:
+  Id                       : "HttpClientDataPort"                                                  # required: Id String to identify the root of the DataPort
+  Name                     : "HTTP Client"                                                         # required: display name of the DataPort
+  Description              : "DataPort for HTTP Client"                                            # required: display description of the DataPort
+  Icons                    : ['http']                                                              # required: just one Icon for the DataPort
+  ChildNodes               :
+    - Id                   : HttpClient-Connection
+      MaxDepth             : 64
+      MaxInstances         : 8
+
+Nodes:
+
+  - Id                     : HttpClient-Connection
+    Type                   : DataPortNode
+    Name                   : "Connection"
+    Description            : "Connection"
+    MetadataLength         : 0
+    Icons                  : ['folder']
+    TransferDirections     : [ Outbound, Inbound ]
+    ChildNodes             :
+      - Id                 : Part
+      - Id                 : DataPointBool
+      - Id                 : DataPointInteger
+      - Id                 : DataPointFloat
+      - Id                 : DataPointDateTime
+      - Id                 : DataPointString
+      - Id                 : DataPointBinary
+    PropertyCategories:
+      - Id                 : Connection
+        Properties         :
+          - Id             : BaseAddress
+            Required       : true
+          - Id             : AuthenticationType
+          - Id             : BearerToken
+          - Id             : Username
+          - Id             : Password
+          - Id             : PollInterval
+
+  # -------------------- Path --------------------------------------------
+
+  - Id                     : Part
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "Path part"
+    Description            : "Part of the path"
+    Icons                  : ['folder']
+    TransferModes          : [ None, OnChange, Periodic ]
+    ChildNodes             :
+      - Id                 : Part
+      - Id                 : DataPointBool
+      - Id                 : DataPointInteger
+      - Id                 : DataPointFloat
+      - Id                 : DataPointDateTime
+      - Id                 : DataPointString
+      - Id                 : DataPointBinary
+
+  # -------------------- DataPoints --------------------------------------
+
+  - Id                     : DataPointBool
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Bool"
+    Description            : "Boolean data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ Bool ]
+    PropertyCategories     :
+      - Id                 : HTTP
+        Properties         :
+          - Id             : HttpMethod
+            Required       : true
+
+  - Id                     : DataPointInteger
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Integer"
+    Description            : "Integer data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ Int32, Int64, Int16, Int8, UInt32, UInt64, UInt16, UInt8 ]
+    PropertyCategories     :
+      - Id                 : HTTP
+        Properties         :
+          - Id             : HttpMethod
+            Required       : true
+
+  - Id                     : DataPointFloat
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Float"
+    Description            : "Float data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ Float64, Float32 ]
+    PropertyCategories     :
+      - Id                 : HTTP
+        Properties         :
+          - Id             : HttpMethod
+            Required       : true
+
+  - Id                     : DataPointDateTime
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint DateTime"
+    Description            : "DateTime data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ DateTime ]
+    PropertyCategories     :
+      - Id                 : HTTP
+        Properties         :
+          - Id             : HttpMethod
+            Required       : true
+
+  - Id                     : DataPointString
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint String"
+    Description            : "String data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ String ]
+    PropertyCategories     :
+      - Id                 : HTTP
+        Properties         :
+          - Id             : HttpMethod
+            Required       : true
+
+  - Id                     : DataPointBinary
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Binary"
+    Description            : "Binary data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ Binary ]
+    PropertyCategories     :
+      - Id                 : HTTP
+        Properties         :
+          - Id             : HttpMethod
+            Required       : true
+
+PropertyCategories:
+  - Id          : Connection
+    Name        : "Connection"
+    Description : "Connection properties"
+
+  - Id          : HTTP
+    Name        : "HTTP"
+    Description : "HTTP properties"
+
+Properties:
+  - Id          : BaseAddress
+    Name        : "Address"
+    Description : "The base address of the server"
+    DataType    : String
+    DefaultValue: "http://localhost"
+    UiControl   : TextBox
+
+  - Id           : PollInterval
+    Name         : "Poll Interval"
+    Description  : "The interval in milliseconds to poll the server"
+    DataType     : Int32
+    MinValue     : 1000
+    DefaultValue : 1000
+    UiControl    : NumericUpDown
+
+  - Id          : HttpMethod
+    Name        : "HTTP method"
+    Description : "The HTTP method to use for the request"
+    DataType    : Int8
+    DefaultValue: 0
+    UiControl   : NumericListBox
+    MinValue    : 0
+    MaxValue    : 4
+    Elements    : { 0: 'GET',
+                    1: 'POST',
+                    2: 'PATCH',
+                    3: 'PUT',
+                    4: 'DELETE' }
+
+  - Id          : AuthenticationType
+    Name        : "Authentication Type"
+    Description : "The Type of Authentication"
+    DataType    : UInt8
+    DefaultValue: 0
+    UiControl   : NumericListBox
+    MinValue    : 0
+    MaxValue    : 1
+    Elements    : { 0: 'None',
+                    1: 'Basic',
+                    2: 'Bearer' }
+    DependentProperties: { 'Username': [1],
+                           'Password': [1],
+                           'BearerToken' : [2] }
+
+  - Id          : BearerToken
+    Name        : "Bearer Token"
+    Description : "The Token for Authentication"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : Username
+    Name        : "Username"
+    Description : "Username for Authentication"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : Password
+    Name        : "Password"
+    Description : "Password for Authentication"
+    DataType    : String
+    UiControl   : PasswordBox

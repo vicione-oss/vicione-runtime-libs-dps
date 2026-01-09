@@ -1,0 +1,530 @@
+Common:
+  Target       : DataPort                                                                          # required: Id String to identify the target of the file
+  ContentType  : Rules                                                                             # required: Id String to identify the content of the file
+  Version      : 1.0                                                                               # required: Version of the file
+  Date         : 2024-12-02                                                                        # required: Date of the file
+  Description  : "AWS IoT DataPort"                                                                # required: Description of the file
+  Author       : "ifm software gmbh"                                                               # required: Author of the file
+  MetadataType : YAML                                                                              # required: Metadata type of the file (YAML, JSON, XML, Text, Binary, ...)
+
+Root:
+  Id                       : "AwsIotDataPort"                                                      # required: Id String to identify the root of the DataPort
+  Name                     : "AWS IoT"                                                             # required: display name of the DataPort
+  Description              : "DataPort for Amazon Web Services IoT"                                # required: display description of the DataPort
+  Icons                    : ['aws-iot']                                                           # required: just one Icon for the DataPort
+  ChildNodes               :
+    - Id                   : AwsIotInstance
+      MaxInstances         : 16
+
+Nodes:
+  - Id                     : AwsIotInstance
+    Type                   : DataPortNode
+    Name                   : "Instance"
+    Description            : "AWS instance"
+    MetadataLength         : 0
+    Icons                  : ['folder']
+    TransferDirections     : [ Outbound, Inbound ]
+    ChildNodes             :
+      - Id                 : Broker
+        MaxInstances       : 1
+      - Id                 : Things
+        MaxInstances       : 1
+    PropertyCategories     :
+      - Id                 : Connection
+        Properties         :
+          - Id             : Region
+            Required       : true
+          - Id             : AccessKey
+            Required       : true
+          - Id             : SecretAccessKey
+            Required       : true
+          - Id             : CertificateId
+            Required       : true
+          - Id             : CertificateFile
+            Required       : true
+          - Id             : PrivateKeyFile
+            Required       : true
+          - Id             : EndpointPort
+            Required       : true
+          - Id             : SslProtocol
+            Required       : true
+      - Id                 : MQTT
+        Properties         :
+          - Id             : ProtocolVersion
+            Required       : true
+          - Id             : QualityOfService
+            Required       : true
+          - Id             : EndpointAddress
+          - Id             : ClientId
+          - Id             : CleanSession
+          - Id             : SessionExpiryInterval
+          - Id             : WillTopic
+          - Id             : WillMessage
+          - Id             : WillRetain
+          - Id             : MaxPendingMessages
+          - Id             : DisableCertificateValidation
+
+  - Id                     : Broker
+    MappingId              : Broker
+    Type                   : DataPortTreeNode
+    Name                   : "Broker"
+    NameIsReadOnly         : true
+    Description            : "You can use the broker to publish and subscribe to topics"
+    Icons                  : ['broker']
+    ChildNodes             :
+      - Id                 : BrokerFolder
+      - Id                 : BrokerDataPointBool
+      - Id                 : BrokerDataPointInteger
+      - Id                 : BrokerDataPointFloat
+      - Id                 : BrokerDataPointDateTime
+      - Id                 : BrokerDataPointString
+      - Id                 : BrokerDataPointBinary
+
+  - Id                     : BrokerFolder
+    MappingId              : Topic
+    Type                   : DataPortTreeNode
+    Name                   : "Folder"
+    Description            : "Folder in the tree"
+    Icons                  : ['folder']
+    TransferModes          : [ None, OnChange, Periodic ]
+    ChildNodes             :
+      - Id                 : BrokerFolder
+      - Id                 : BrokerDataPointBool
+      - Id                 : BrokerDataPointInteger
+      - Id                 : BrokerDataPointFloat
+      - Id                 : BrokerDataPointDateTime
+      - Id                 : BrokerDataPointString
+      - Id                 : BrokerDataPointBinary
+    PropertyCategories     :
+      - Id                 : MQTT
+        Properties         :
+          - Id             : Retain
+
+  - Id                     : Things
+    MappingId              : Things
+    Type                   : DataPortTreeNode
+    Name                   : "Things"
+    NameIsReadOnly         : true
+    Description            : "Amzon Web Services IoT things"
+    Icons                  : ['folder']
+    ChildNodes             :
+      - Id                 : Thing
+
+  - Id                     : Thing
+    MappingId              : Thing
+    Type                   : DataPortTreeNode
+    Name                   : "Thing"
+    Description            : "Amzon Web Services IoT thing"
+    Icons                  : ['broker']
+    ChildNodes             :
+      - Id                 : ClassicShadow
+        MaxInstances       : 1
+      - Id                 : NamedShadow
+
+  - Id                     : ClassicShadow
+    MappingId              : ClassicDeviceShadow
+    Type                   : DataPortTreeNode
+    Name                   : "Classic (unnamed) Shadow"
+    NameIsReadOnly         : true
+    Description            : "A thing can have only one Classic (unnamed) Shadow"
+    Icons                  : ['folder']
+    TransferModes          : [ OnChange, Periodic, None ]
+    ChildNodes             :
+      - Id                 : Reported
+        MaxInstances       : 1
+      - Id                 : Desired
+        MaxInstances       : 1
+
+  - Id                     : NamedShadow
+    MappingId              : NamedDeviceShadow
+    Type                   : DataPortTreeNode
+    Name                   : "Named Shadow"
+    Description            : "Create multiple Device Shadows with different names to manage access to properties, and logically group your device properties"
+    Icons                  : [ 'folder' ]
+    TransferModes          : [ OnChange, Periodic, None ]
+    ChildNodes             :
+      - Id                 : Reported
+        MaxInstances       : 1
+      - Id                 : Desired
+        MaxInstances       : 1
+
+  - Id                     : Reported
+    MappingId              : Reported
+    Type                   : DataPortTreeNode
+    Name                   : "reported"
+    NameIsReadOnly         : true
+    Description            : "The state properties and values reported by the device. This is a fix node in the device shadow."
+    Icons                  : ['folder']
+    ChildNodes             :
+      - Id                 : ShadowFolder
+      - Id                 : ShadowDataPointBool
+      - Id                 : ShadowDataPointInteger
+      - Id                 : ShadowDataPointFloat
+      - Id                 : ShadowDataPointDateTime
+      - Id                 : ShadowDataPointString
+      - Id                 : ShadowDataPointBinary
+
+  - Id                     : Desired
+    MappingId              : Desired
+    Type                   : DataPortTreeNode
+    Name                   : "desired"
+    NameIsReadOnly         : true
+    Description            : "The state properties and values requested to be updated in the device. This is a fix node in the device shadow."
+    Icons                  : ['folder']
+    ChildNodes             :
+      - Id                 : ShadowFolder
+      - Id                 : ShadowDataPointBool
+      - Id                 : ShadowDataPointInteger
+      - Id                 : ShadowDataPointFloat
+      - Id                 : ShadowDataPointDateTime
+      - Id                 : ShadowDataPointString
+      - Id                 : ShadowDataPointBinary
+
+  - Id                     : ShadowFolder
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "Folder"
+    Description            : "Folder in the tree"
+    Icons                  : ['folder']
+    ChildNodes             :
+      - Id                 : ShadowFolder
+      - Id                 : ShadowDataPointBool
+      - Id                 : ShadowDataPointInteger
+      - Id                 : ShadowDataPointFloat
+      - Id                 : ShadowDataPointDateTime
+      - Id                 : ShadowDataPointString
+      - Id                 : ShadowDataPointBinary
+
+  # Broker DataPoints
+  - Id                     : BrokerDataPointBool
+    MappingId              : Topic
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Bool"
+    Description            : "Boolean data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ Bool ]
+    PropertyCategories     :
+      - Id                 : MQTT
+        Properties         :
+          - Id             : Retain
+          - Id             : Serializer
+
+  - Id                     : BrokerDataPointInteger
+    MappingId              : Topic
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Integer"
+    Description            : "Integer data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ Int32, Int64, Int16, Int8, UInt32, UInt64, UInt16, UInt8 ]
+    PropertyCategories     :
+      - Id                 : MQTT
+        Properties         :
+          - Id             : Retain
+          - Id             : Serializer
+
+  - Id                     : BrokerDataPointFloat
+    MappingId              : Topic
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Float"
+    Description            : "Float data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ Float64, Float32 ]
+    PropertyCategories     :
+      - Id                 : MQTT
+        Properties         :
+          - Id             : Retain
+          - Id             : Serializer
+
+  - Id                     : BrokerDataPointDateTime
+    MappingId              : Topic
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint DateTime"
+    Description            : "DateTime data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ DateTime ]
+    PropertyCategories     :
+      - Id                 : MQTT
+        Properties         :
+          - Id             : Retain
+          - Id             : Serializer
+
+  - Id                     : BrokerDataPointString
+    MappingId              : Topic
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint String"
+    Description            : "String data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ String ]
+    PropertyCategories     :
+      - Id                 : MQTT
+        Properties         :
+          - Id             : Retain
+          - Id             : Serializer
+
+  - Id                     : BrokerDataPointBinary
+    MappingId              : Topic
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Binary"
+    Description            : "Binary data point in the tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ OnChange, Periodic, None ]
+    DataTypes              : [ Binary ]
+    PropertyCategories     :
+      - Id                 : MQTT
+        Properties         :
+          - Id             : Retain
+          - Id             : Serializer
+
+  # Shadow DataPoints
+  - Id                     : ShadowDataPointBool
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Bool"
+    Description            : "Boolean data point in the tree"
+    Icons                  : ['datapoint']
+    DataTypes              : [ Bool ]
+
+  - Id                     : ShadowDataPointInteger
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Integer"
+    Description            : "Integer data point in the tree"
+    Icons                  : ['datapoint']
+    DataTypes              : [ Int32, Int64, Int16, Int8, UInt32, UInt64, UInt16, UInt8 ]
+
+  - Id                     : ShadowDataPointFloat
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Float"
+    Description            : "Float data point in the tree"
+    Icons                  : ['datapoint']
+    DataTypes              : [ Float64, Float32 ]
+
+  - Id                     : ShadowDataPointDateTime
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint DateTime"
+    Description            : "DateTime data point in the tree"
+    Icons                  : ['datapoint']
+    DataTypes              : [ DateTime ]
+
+  - Id                     : ShadowDataPointString
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint String"
+    Description            : "String data point in the tree"
+    Icons                  : ['datapoint']
+    DataTypes              : [ String ]
+
+  - Id                     : ShadowDataPointBinary
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Binary"
+    Description            : "Binary data point in the tree"
+    Icons                  : ['datapoint']
+    DataTypes              : [ Binary ]
+
+PropertyCategories:
+  - Id          : MQTT
+    Name        : "MQTT"
+    Description : "MQTT specific properties"
+
+  - Id          : Connection
+    Name        : "Connection"
+    Description : "Connection properties"
+
+Properties:
+  - Id          : AccessKey
+    Name        : "Access key"
+    Description : "The access key used to connect to the instance"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : SecretAccessKey
+    Name        : "Secret access key"
+    Description : "The secret access key used to connect to the instance"
+    DataType    : String
+    UiControl   : PasswordBox
+
+  - Id          : Region
+    Name        : "Region"
+    Description : "The region of the instance. Find out more about the correct region here https://docs.aws.amazon.com/en_us/general/latest/gr/iot_device_management.html#iot_device_management_region_data."
+    DataType    : String
+    UiControl   : TextListBox
+    DefaultValue: "eu-central-1"
+    Elements    : { 'us-east-2'      : 'US East (Ohio)',
+                    'us-east-1'      : 'US East (N. Virginia)',
+                    'us-west-1'      : 'US West (N. California)',
+                    'us-west-2'      : 'US West (Oregon)',
+                    'af-south-1'     : 'Africa (Cape Town)',
+                    'ap-east-1'      : 'Asia Pacific (Hong Kong)',
+                    'ap-south-2'     : 'Asia Pacific (Hyderabad)',
+                    'ap-southeast-3' : 'Asia Pacific (Jakarta)',
+                    'ap-southeast-5' : 'Asia Pacific (Malaysia)',
+                    'ap-southeast-4' : 'Asia Pacific (Melbourne)',
+                    'ap-south-1'     : 'Asia Pacific (Mumbai)',
+                    'ap-northeast-3' : 'Asia Pacific (Osaka)',
+                    'ap-northeast-2' : 'Asia Pacific (Seoul)',
+                    'ap-southeast-1' : 'Asia Pacific (Singapore)',
+                    'ap-southeast-2' : 'Asia Pacific (Sydney)',
+                    'ap-northeast-1' : 'Asia Pacific (Tokyo)',
+                    'ca-central-1'   : 'Canada (Central)',
+                    'ca-west-1'      : 'Canada West (Calgary)',
+                    'eu-central-1'   : 'Europe (Frankfurt)',
+                    'eu-west-1'      : 'Europe (Ireland)',
+                    'eu-west-2'      : 'Europe (London)',
+                    'eu-south-1'     : 'Europe (Milan)',
+                    'eu-west-3'      : 'Europe (Paris)',
+                    'eu-south-2'     : 'Europe (Spain)',
+                    'eu-north-1'     : 'Europe (Stockholm)',
+                    'eu-central-2'   : 'Europe (Zurich)',
+                    'il-central-1'   : 'Israel (Tel Aviv)',
+                    'me-south-1'     : 'Middle East (Bahrain)',
+                    'me-central-1'   : 'Middle East (UAE)',
+                    'sa-east-1'      : 'South America (São Paulo)',
+                    'us-gov-east-1'  : 'AWS GovCloud (US-East)',
+                    'us-gov-west-1'  : 'AWS GovCloud (US-West)'}
+
+  - Id          : EndpointAddress
+    Name        : "Endpoint Address"
+    Description : "The endpoint address to connect to data-ats endpoint through MQTT"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : EndpointPort
+    Name        : "Endpoint port"
+    Description : "The endpoint port to connect to data-ats endpoint through MQTT"
+    DataType    : UInt16
+    DefaultValue: 8883
+    UiControl   : NumericUpDown
+    MinValue    : 0
+    MaxValue    : 65535
+
+  - Id          : CertificateId
+    Name        : "Certificate ID"
+    Description : "The certificate ID used to connect to the instance. The certificate must have sufficient permissions."
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : CertificateFile
+    Name        : "Certificate file"
+    Description : "The certificate file used to connect to the instance"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : PrivateKeyFile
+    Name        : "Private key file"
+    Description : "The private key file used to connect to the instance"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : ClientId
+    Name        : "Client ID"
+    Description : "The client id. Leave empty to generate a random client id."
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : WillTopic
+    Name        : "Will topic"
+    Description : "The will topic"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : WillMessage
+    Name        : "Will message"
+    Description : "The will message"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : WillRetain
+    Name        : "Will retain"
+    Description : "The will retain"
+    DataType    : Bool
+    DefaultValue: false
+    UiControl   : CheckBox
+
+  - Id          : QualityOfService
+    Name        : "Quality of service"
+    Description : "Quality of service"
+    DataType    : UInt8
+    UiControl   : NumericListBox
+    DefaultValue: 0
+    MinValue    : 0
+    MaxValue    : 1
+    Elements    : { 0: 'At most once (0)',
+                    1: 'At least once (1)' }
+
+  - Id          : ProtocolVersion
+    Name        : "Protocol version"
+    Description : "Protocol version"
+    DataType    : UInt8
+    DefaultValue: 1
+    UiControl   : NumericListBox
+    MinValue    : 0
+    MaxValue    : 1
+    Elements    : { 0: 'v3.1.1',
+                    1: 'v5.0' }
+
+  - Id          : SslProtocol
+    Name        : "SSL protocol"
+    Description : "The SSL protocol"
+    DataType    : UInt8
+    DefaultValue: 1
+    UiControl   : NumericListBox
+    MinValue    : 1
+    MaxValue    : 2
+    Elements    : { 1: 'TLSv1.2',
+                    2: 'TLSv1.3' }
+
+  - Id          : DisableCertificateValidation
+    Name        : "Disable certificate validation"
+    Description : "Disable certificate validation"
+    DataType    : Bool
+    DefaultValue: false
+    UiControl   : CheckBox
+
+  - Id          : CleanSession
+    Name        : "Clean session"
+    Description : "Clean session"
+    DataType    : Bool
+    DefaultValue: true
+    UiControl   : CheckBox
+
+  - Id          : SessionExpiryInterval
+    Name        : "Session expiry interval"
+    Description : "Session expiry interval"
+    DataType    : UInt32
+    DefaultValue: 0
+    UiControl   : NumericUpDown
+    MinValue    : 0
+
+  - Id          : Retain
+    Name        : "Retain"
+    Description : "Retain"
+    DataType    : Bool
+    DefaultValue: false
+    UiControl   : CheckBox
+
+  - Id          : Serializer
+    Name        : "Serializer"
+    Description : "Serializer"
+    DataType    : UInt8
+    UiControl   : NumericListBox
+    MinValue    : 1
+    MaxValue    : 2
+    DefaultValue: 1
+    Elements    : { 1: 'JSON',
+                    2: 'PlainText', }
+
+  - Id          : MaxPendingMessages
+    Name        : "MaxPendingMessages"
+    Description : "Maximum of pending messages"
+    DataType    : Int32
+    DefaultValue: 100000
+    UiControl   : NumericUpDown
+    MinValue    : 1

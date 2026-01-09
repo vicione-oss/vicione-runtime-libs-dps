@@ -1,0 +1,322 @@
+﻿# ---
+# This is a YAML file for defining a DataPort for an HTTP server.
+# The DataPort allows for the exchange of data between the HTTP server and other components.
+# The data port hosts the endpoints.
+# The code should be extendable to accommodate new requirements and features.
+# Under a endpoint I want to create a JSON object which is send.
+# ---
+
+Common:
+  Target       : DataPort                                                                          # required: Id String to identify the target of the file
+  ContentType  : Rules                                                                             # required: Id String to identify the content of the file
+  Version      : 1.0                                                                               # required: Version of the file
+  Date         : 2025-08-27                                                                        # required: Date of the file
+  Description  : "HTTP Server DataPort"                                                            # required: Description of the file
+  Author       : "ifm software gmbh"                                                               # required: Author of the file
+  MetadataType : YAML                                                                              # required: Metadata type of the file (YAML, JSON, XML, Text, Binary, ...)
+
+Root:
+  Id                       : "HttpServerDataPort"                                                  # required: Id String to identify the root of the DataPort
+  Name                     : "HTTP Server"                                                         # required: display name of the DataPort
+  Description              : "DataPort for HTTP Server"                                            # required: display description of the DataPort
+  Icons                    : ['http']                                                              # required: just one Icon for the DataPort
+  ChildNodes               :
+    - Id                   : HttpServer
+
+Nodes:
+
+  - Id                     : HttpServer
+    Type                   : DataPortNode
+    Name                   : "Server"
+    Description            : "Server"
+    MetadataLength         : 0
+    Icons                  : ['folder']
+    TransferDirections     : [ Inbound, Outbound ]
+    ChildNodes             :
+      - Id                 : Paths
+    PropertyCategories:
+      - Id                 : Connection
+        Properties         :
+          - Id             : BaseAddress
+            Required       : true
+          - Id             : AuthenticationType
+          - Id             : BearerToken
+          - Id             : Username
+          - Id             : Password
+      - Id                 : Certificate
+        Properties         :
+         - Id              : CertificateFile
+         - Id              : CertificateFilePassword
+         - Id              : CertificatePrivateKeyFile
+      # - Id                 : Users
+
+  # --- Sections ---
+
+  # Users should not be implemented in the first version
+  # - Id                     : Users
+  #   MappingId              : Users
+  #   Type                   : DataPortTreeNode
+  #   Name                   : "Users"
+  #   Description            : "Users"
+  #   Icons                  : ['folder']
+  #   TransferModes          : [ None ]
+
+  # Starting point to build a tree
+  - Id                     : Paths
+    MappingId              : Paths
+    Type                   : DataPortTreeNode
+    NameIsReadOnly         : true
+    Name                   : "Paths"
+    Description            : "Paths"
+    Icons                  : ['folder']
+    TransferModes          : [ None ]
+    ChildNodes             :
+      - Id                 : PathPart
+
+  # --- Path ---
+
+  # It is a part of route to the endpoint
+  - Id                     : PathPart
+    MappingId              : PathPart
+    Type                   : DataPortTreeNode
+    Name                   : "Path part"
+    Description            : "Part of the path"
+    Icons                  : ['folder']
+    TransferModes          : [ None ]
+    ChildNodes             :
+      - Id                 : PathPart
+      - Id                 : HttpGetEndpoint
+      - Id                 : HttpPostEndpoint
+      # - Id                 : ServerSentEventEndpoint
+      # - Id                 : WebSocketEndpoint
+
+  # --- Endpoints ---
+  # An endpoint is the last physical node which is part of the route. All child nodes represent the data structure that can be sent or received.
+
+  # The data that is send from the inernal system should be cached, so that it can be retrieved when someone calls the endpoint.
+  - Id                     : HttpGetEndpoint
+    MappingId              : HttpGetEndpoint
+    Type                   : DataPortTreeNode
+    Name                   : "HTTP GET Endpoint"
+    Description            : "GET"
+    Icons                  : ['folder']
+    TransferModes          : [ OnChange, Periodic ]
+    TransferDirections     : [ Outbound ]
+    ChildNodes             :
+      - Id                 : JsonStructure
+    PropertyCategories     :
+      - Id                 : Other
+        Properties         :
+          - Id             : QueueSize
+          - Id             : SendLastValue
+
+  # The data from the incoming call on the endpoint should be forwarded to the internal system.
+  - Id                     : HttpPostEndpoint
+    MappingId              : HttpPostEndpoint
+    Type                   : DataPortTreeNode
+    Name                   : "HTTP POST Endpoint"
+    Description            : "POST"
+    Icons                  : ['folder']
+    TransferModes          : [ OnChange, Periodic ]
+    TransferDirections     : [ Inbound ]
+    ChildNodes             :
+      - Id                 : JsonStructure
+
+  # In the future there will be more like the other HTTP methods.
+
+  # ServerSentEvent and WebSocket should not be implemented in the first version
+  # - Id                     : ServerSentEventEndpoint
+  #   MappingId              : ServerSentEvent
+  #   Type                   : DataPortTreeNode
+  #   Name                   : "Server-Sent Event"
+  #   Description            : "Represents a server-sent event"
+  #   Icons                  : ['folder']
+  #   TransferModes          : [ OnChange, Periodic ]
+  #   ChildNodes             :
+  #     - Id                 : JsonStructure
+  #     - Id                 : DataPointBool
+  #     - Id                 : DataPointInteger
+  #     - Id                 : DataPointFloat
+  #     - Id                 : DataPointDateTime
+  #     - Id                 : DataPointString
+  #     - Id                 : DataPointBinary
+
+  # - Id                     : WebSocketEndpoint
+  #   MappingId              : WebSocketEndpoint
+  #   Type                   : DataPortTreeNode
+  #   Name                   : "WebSocket Endpoint"
+  #   Description            : "Represents a WebSocket endpoint"
+  #   Icons                  : ['folder']
+  #   TransferModes          : [ OnChange, Periodic ]
+  #   ChildNodes             :
+  #     - Id                 : JsonStructure
+  #     - Id                 : DataPointBool
+  #     - Id                 : DataPointInteger
+  #     - Id                 : DataPointFloat
+  #     - Id                 : DataPointDateTime
+  #     - Id                 : DataPointString
+  #     - Id                 : DataPointBinary
+
+  # --- DataPoints ---
+
+  - Id                     : JsonStructure
+    MappingId              : JsonStructure
+    Type                   : DataPortTreeNode
+    Name                   : "JSON Structure"
+    Description            : "Represents a JSON structure"
+    Icons                  : ['folder']
+    TransferModes          : [ None ]
+    ChildNodes             :
+      - Id                 : JsonStructure
+      - Id                 : DataPointBool
+      - Id                 : DataPointInteger
+      - Id                 : DataPointFloat
+      - Id                 : DataPointDateTime
+      - Id                 : DataPointString
+      - Id                 : DataPointBinary
+
+  - Id                     : DataPointBool
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Bool"
+    Description            : "Boolean data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ Bool ]
+
+  - Id                     : DataPointInteger
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Integer"
+    Description            : "Integer data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ Int32, Int64, Int16, Int8, UInt32, UInt64, UInt16, UInt8 ]
+
+  - Id                     : DataPointFloat
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Float"
+    Description            : "Float data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ Float64, Float32 ]
+
+  - Id                     : DataPointDateTime
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint DateTime"
+    Description            : "DateTime data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ DateTime ]
+
+  - Id                     : DataPointString
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint String"
+    Description            : "String data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ String ]
+
+  - Id                     : DataPointBinary
+    MappingId              : Path
+    Type                   : DataPortTreeNode
+    Name                   : "DataPoint Binary"
+    Description            : "Binary data point in the HTTP tree"
+    Icons                  : ['datapoint']
+    TransferModes          : [ None ]
+    DataTypes              : [ Binary ]
+
+PropertyCategories:
+  - Id          : Connection
+    Name        : "Connection"
+    Description : "Connection properties"
+
+  - Id          : HTTP
+    Name        : "HTTP"
+    Description : "HTTP properties"
+
+  - Id          : Other
+    Name        : "Other"
+    Description : "Other properties"
+
+  - Id          : Certificate
+    Name        : "Certificate"
+    Description : "Certificate properties"
+
+Properties:
+  - Id          : BaseAddress
+    Name        : "Address"
+    Description : "The base address of the server"
+    DataType    : String
+    DefaultValue: "http://localhost:8080"
+    UiControl   : TextBox
+
+  - Id                 : AuthenticationType
+    Name               : "Authentication Type"
+    Description        : "The Type of Authentication"
+    DataType           : UInt8
+    DefaultValue       : 0
+    UiControl          : NumericListBox
+    MinValue           : 0
+    MaxValue           : 2
+    Elements           : { 0: 'None',
+                           1: 'Basic',
+                           2: 'Bearer' }
+    DependentProperties: { 'Username'   : [1],
+                           'Password'   : [1],
+                           'BearerToken': [2] }
+
+  - Id          : BearerToken
+    Name        : "Bearer Token"
+    Description : "The Token for Authentication"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : Username
+    Name        : "Username"
+    Description : "Username for Authentication"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : Password
+    Name        : "Password"
+    Description : "Password for Authentication"
+    DataType    : String
+    UiControl   : PasswordBox
+
+  - Id          : CertificateFile
+    Name        : "CertificateFile"
+    Description : "CertificateFile for Authentication"
+    DataType    : String
+    UiControl   : TextBox
+
+  - Id          : CertificateFilePassword
+    Name        : "CertificateFilePassword"
+    Description : "CertificateFilePassword"
+    DataType    : String
+    UiControl   : PasswordBox
+
+  - Id          : CertificatePrivateKeyFile
+    Name        : "CertificatePrivateKeyFile"
+    Description : "CertificatePrivateKeyFile"
+    DataType    : String
+    UiControl   : PasswordBox
+
+  - Id          : QueueSize
+    Name        : "Queue Size"
+    Description : "Size of the Datapoint Queue"
+    DataType    : Int32
+    DefaultValue: 1
+    UiControl   : NumericUpDown
+    MinValue    : 1
+    MaxValue    : 1000
+
+  - Id          : SendLastValue
+    Name        : "Send Last Value"
+    Description : "Endpoint Sends Last Value or a number of values depnding on the QueueSize"
+    DataType    : Bool
+    UiControl   : ToggleButton
+    DefaultValue: true

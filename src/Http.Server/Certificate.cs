@@ -1,0 +1,40 @@
+﻿using System;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+
+namespace ViciOne.Suite.DataPort;
+
+/// <summary>
+/// This class is from MQTTnet.Extensions https://gitlab.i40.ifm-datalink.net/acx/vo-suite/mqttnet-extensions
+/// </summary>
+internal static class Certificate
+{
+    internal static X509Certificate2 FromPFX(string certificateFile, string certificateFilePassword)
+    {
+        if (File.Exists(certificateFile))
+            return X509CertificateLoader.LoadPkcs12FromFile(certificateFile, certificateFilePassword);
+        else
+            return X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(certificateFile), certificateFilePassword);
+    }
+
+    internal static X509Certificate2 FromPEM(string certificateFile, string certificatePrivateKeyFile)
+    {
+        X509Certificate2 intermediateCertificate;
+
+        if (File.Exists(certificateFile) && File.Exists(certificatePrivateKeyFile))
+            intermediateCertificate = X509Certificate2.CreateFromPemFile(certificateFile, certificatePrivateKeyFile);
+        else
+            intermediateCertificate = X509Certificate2.CreateFromPem(FromBase64String(certificateFile), FromBase64String(certificatePrivateKeyFile));
+
+        // https://github.com/dotnet/runtime/issues/45680#issuecomment-739912495
+        var certificate = X509CertificateLoader.LoadPkcs12(intermediateCertificate.Export(X509ContentType.Pkcs12), default);
+
+        intermediateCertificate.Dispose();
+
+        return certificate;
+    }
+
+    internal static string FromBase64String(string base64String)
+        => Encoding.UTF8.GetString(Convert.FromBase64String(base64String));
+}
