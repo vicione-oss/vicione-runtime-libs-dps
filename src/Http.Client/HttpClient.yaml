@@ -195,7 +195,7 @@ Properties:
     DefaultValue: 0
     UiControl   : NumericListBox
     MinValue    : 0
-    MaxValue    : 1
+    MaxValue    : 2
     Elements    : { 0: 'None',
                     1: 'Basic',
                     2: 'Bearer' }
