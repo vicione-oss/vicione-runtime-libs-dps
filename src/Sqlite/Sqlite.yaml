@@ -261,7 +261,7 @@ Properties:
 
   - Id          : NotNull
     Name        : "Not null"
-    Description : "States if the column is allowed to be null"
+    Description : "States if the column is not allowed to be null"
     DataType    : Bool
     UiControl   : ToggleButton
     DefaultValue: false
