@@ -1,4 +1,4 @@
-﻿# ---
+# ---
 # This is a YAML file for defining a DataPort for an HTTP server.
 # The DataPort allows for the exchange of data between the HTTP server and other components.
 # The data port hosts the endpoints.
