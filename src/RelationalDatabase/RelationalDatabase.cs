@@ -15,7 +15,7 @@ public abstract class RelationalDatabase : IDisposable
 {
     private const int QueueSize = 100_000;
 
-    private static readonly SearchValues<char> s_forbiddenChars = SearchValues.Create(['\0', '\'', '"', '\b', '\n', '\r', '\t', '\\', '%', '$', '_', ';', ',', ' ', '@',]);
+    private static readonly SearchValues<char> s_forbiddenChars = SearchValues.Create(['\0', '\'', '"', '\b', '\n', '\r', '\t', '\\', '%', '$', '_', ';', ',', ' ', '@', '`',]);
 
     private readonly RelationalDatabaseCommunication _dataPortCommunication;
     private readonly ILogger _logger;
