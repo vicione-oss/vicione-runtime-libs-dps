@@ -10,6 +10,7 @@
 ### Changed
 
 - Change MetaData names to full names
+- Make OPC UA certificate optional
 
 ### Fixed
 

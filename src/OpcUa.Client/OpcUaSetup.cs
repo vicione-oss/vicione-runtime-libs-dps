@@ -22,12 +22,16 @@ internal static class OpcUaSetup
             },
         };
 
-        configuration.SecurityConfiguration.ApplicationCertificate = new()
+        if (properties.ApplicationCertificatesStoreType is not null)
         {
-            StoreType = properties.ApplicationCertificatesStoreType,
-            StorePath = properties.ApplicationCertificatesStorePath,
-            SubjectName = properties.ApplicationCertificateSubject,
-        };
+            configuration.SecurityConfiguration.ApplicationCertificate = new()
+            {
+                StoreType = properties.ApplicationCertificatesStoreType,
+                StorePath = properties.ApplicationCertificatesStorePath,
+                SubjectName = properties.ApplicationCertificateSubject,
+            };
+        }
+
         configuration.SecurityConfiguration.AddAppCertToTrustedStore = false;
         configuration.SecurityConfiguration.AutoAcceptUntrustedCertificates = properties.AutoAcceptUntrustedCertificates;
 
