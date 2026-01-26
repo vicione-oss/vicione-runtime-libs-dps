@@ -17,6 +17,7 @@
 - Fix `NotNull` property description in database rulesets (MySql, MariaDb, PostgreSql, SqlServer, Sqlite)
 - Add missing symbol to forbidden chars for sql queries
 - Improve bearer token evaluation in http data port
+- Fix exception exposure in http server data port
 
 ## 0.29.0 - 2025-10-21
 
