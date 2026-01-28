@@ -229,7 +229,8 @@ Properties:
     DefaultValue: 1
     MinValue    : 1
     MaxValue    : 2
-    Elements    : { 1: 'X509 Store',
+    Elements    : { 0: 'None',
+                    1: 'X509 Store',
                     2: 'Directory' }
 
   - Id          : ApplicationCertificatesStorePath

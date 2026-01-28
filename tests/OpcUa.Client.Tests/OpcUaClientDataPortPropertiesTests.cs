@@ -327,7 +327,7 @@ public class OpcUaClientDataPortProperties_ApplicationCertificatesStoreType
 {
     [Theory]
     [MemberData(nameof(Conversion))]
-    public void Getter_returns_value(byte applicationCertificatesStoreType, string storeType)
+    public void Getter_returns_value(byte applicationCertificatesStoreType, string? storeType)
     {
         OpcUaClientDataPortCommunication communication = new() { ApplicationCertificatesStoreType = applicationCertificatesStoreType, };
 
@@ -338,7 +338,7 @@ public class OpcUaClientDataPortProperties_ApplicationCertificatesStoreType
 
     [Theory]
     [MemberData(nameof(Conversion))]
-    public void Setter_sets_value(byte applicationCertificatesStoreType, string storeType)
+    public void Setter_sets_value(byte applicationCertificatesStoreType, string? storeType)
     {
         OpcUaClientDataPortCommunication communication = new();
 
@@ -365,7 +365,7 @@ public class OpcUaClientDataPortProperties_ApplicationCertificatesStoreType
     [Fact]
     public void Getter_throws_for_invalid_value()
     {
-        OpcUaClientDataPortCommunication communication = new() { ApplicationCertificatesStoreType = 0, };
+        OpcUaClientDataPortCommunication communication = new() { ApplicationCertificatesStoreType = 9, };
 
         OpcUaClientDataPortProperties properties = new(communication);
 
@@ -374,8 +374,9 @@ public class OpcUaClientDataPortProperties_ApplicationCertificatesStoreType
             .WithMessage("Invalid application store type.");
     }
 
-    public static TheoryData<byte, string> Conversion() => new()
+    public static TheoryData<byte, string?> Conversion() => new()
     {
+        { 0, null },
         { 1, CertificateStoreType.X509Store },
         { 2, CertificateStoreType.Directory },
     };

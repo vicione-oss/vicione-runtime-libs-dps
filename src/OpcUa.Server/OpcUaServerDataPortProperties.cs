@@ -75,16 +75,18 @@ internal sealed class OpcUaServerDataPortProperties(OpcUaServerDataPortCommunica
         set => communication.ApplicationCertificateSubject = value;
     }
 
-    internal string ApplicationCertificatesStoreType
+    internal string? ApplicationCertificatesStoreType
     {
         get => communication.ApplicationCertificatesStoreType switch
         {
+            0 => null,
             1 => CertificateStoreType.X509Store,
             2 => CertificateStoreType.Directory,
             _ => throw new InvalidOperationException("Invalid application store type.")
         };
         set => communication.ApplicationCertificatesStoreType = value switch
         {
+            null => 0,
             CertificateStoreType.X509Store => 1,
             CertificateStoreType.Directory => 2,
             _ => throw new InvalidOperationException("Invalid application store type.")
