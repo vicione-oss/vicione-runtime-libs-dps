@@ -32,13 +32,17 @@ Nodes:
       - Id                 : Bucket
     PropertyCategories     :
       - Id                 : Connection
-        Properties             :
-          - Id                 : Url
-            Required           : true
-          - Id                 : Token
-            Required           : true
-          - Id                 : Organization
-            Required           : true
+        Properties         :
+          - Id             : Url
+            Required       : true
+          - Id             : Token
+            Required       : true
+          - Id             : Organization
+            Required       : true
+      - Id                 : Other
+        Properties         :
+          - Id             : BulkSize
+          - Id             : MinimumPublishIntervalInMs
 
   # -------------------- Bucket ------------------------------------------
 
@@ -204,6 +208,10 @@ PropertyCategories:
     Name        : "Connection"
     Description : "Connection properties"
 
+  - Id          : Other
+    Name        : "Other"
+    Description : "Other properties"
+
 Properties:
   - Id          : Organization
     Name        : "Organization"
@@ -222,3 +230,19 @@ Properties:
     Description : "The Url to access the database"
     DataType    : String
     UiControl   : TextBox
+
+  - Id          : BulkSize
+    Name        : "Bulk size"
+    Description : "The number of rows to be transferred in one bulk."
+    DataType    : Int32
+    UiControl   : NumericUpDown
+    MinValue    : 1
+    DefaultValue: 10000
+
+  - Id          : MinimumPublishIntervalInMs
+    Name        : "Minimum publish interval"
+    Description : "The minimum time interval between two data transfers in milliseconds."
+    DataType    : UInt32
+    UiControl   : NumericUpDown
+    MinValue    : 100
+    DefaultValue: 1000

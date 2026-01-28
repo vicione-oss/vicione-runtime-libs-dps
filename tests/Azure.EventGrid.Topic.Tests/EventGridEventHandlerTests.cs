@@ -20,7 +20,7 @@ public class EventGridEventHandler_
         {
             Name = "Test",
             Id = eventId,
-            DesignId = AzureEventGridTopicDataPortDesingId.EventGridEvent,
+            DesignId = AzureEventGridTopicDataPortDesignId.EventGridEvent,
             TransferredChannels = [channel,],
             Properties = new()
             {
@@ -30,7 +30,7 @@ public class EventGridEventHandler_
         };
         Node jsonStructure = new()
         {
-            DesignId = AzureEventGridTopicDataPortDesingId.JsonStructure,
+            DesignId = AzureEventGridTopicDataPortDesignId.JsonStructure,
             ParentId = eventId,
             Id = Guid.Empty,
             AffectedChannels = [channel],
