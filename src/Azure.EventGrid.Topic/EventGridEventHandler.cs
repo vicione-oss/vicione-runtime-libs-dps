@@ -20,7 +20,7 @@ internal sealed class EventGridEventHandler
         Func<IEnumerable<EventGridEvent>, CancellationToken, Task> sendGridEvents)
     {
         var linkedNodes = LinkedNodeFactory.Create(communication.Nodes);
-        var eventSubjectNodes = linkedNodes.Where(n => n.DesignId == AzureEventGridTopicDataPortDesingId.EventGridEvent).SelectMany(n => n.GetAllChildren()).ToArray();
+        var eventSubjectNodes = linkedNodes.Where(n => n.DesignId == AzureEventGridTopicDataPortDesignId.EventGridEvent).SelectMany(n => n.GetAllChildren()).ToArray();
         (_channelJsonNodeRoutes, _channelTransferredNodes, _) = InitializeUnspecificTree.InitializeOutgoing(eventSubjectNodes);
         _sendGridEvents = sendGridEvents;
     }
