@@ -135,7 +135,7 @@ internal sealed class WebServerManager : IDisposable, IHttpListenerManager
         server.HandleHttpException(async (ctx, ex) =>
         {
             ctx.Response.StatusCode = ex.StatusCode;
-            await ctx.SendStringAsync(ex.Message ?? "Exception", "text/plain", Encoding.UTF8);
+            await ctx.SendStringAsync("An unexpected error occurred.", "text/plain", Encoding.UTF8);
         });
     }
 

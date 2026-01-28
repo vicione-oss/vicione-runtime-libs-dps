@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using EmbedIO;
@@ -30,12 +31,19 @@ internal sealed class BearerAuthenticationModule(string token, IEnumerable<strin
         {
             var token = authHeader["Bearer ".Length..].Trim();
 
-            if (token == _token)
+            if (FixedTimeEquals(token, _token))
                 return Task.CompletedTask;
         }
 
         context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
         context.Response.Headers["WWW-Authenticate"] = "Bearer";
         return context.SendStringAsync("Unauthorized", "text/plain", Encoding.UTF8);
+    }
+
+    internal static bool FixedTimeEquals(string a, string b)
+    {
+        var aBytes = Encoding.UTF8.GetBytes(a);
+        var bBytes = Encoding.UTF8.GetBytes(b);
+        return aBytes.Length == bBytes.Length && CryptographicOperations.FixedTimeEquals(aBytes, bBytes);
     }
 }
