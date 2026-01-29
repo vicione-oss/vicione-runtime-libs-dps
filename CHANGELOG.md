@@ -19,6 +19,9 @@
 - Add missing symbol to forbidden chars for sql queries
 - Improve bearer token evaluation in http data port
 - Fix exception exposure in http server data port
+- Fix OPC UA server exception on sending the same status code multiple times
+- Fix OPC UA server crash on receiving a number while max and min properties are set
+- Fix OPC UA server exception on connect when incoming and outgoing have the same nodes
 
 ## 0.29.0 - 2025-10-21
 
