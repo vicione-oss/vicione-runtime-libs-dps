@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -43,8 +44,8 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
         {
             if (_nodes.TryGetValue(node.Id, out var existingNode))
             {
-                existingNode.TransferredChannels.AddRange(node.TransferredChannels);
-                existingNode.AffectedChannels.AddRange(node.AffectedChannels);
+                existingNode.TransferredChannels.AddRange(node.TransferredChannels.Except(existingNode.TransferredChannels));
+                existingNode.AffectedChannels.AddRange(node.AffectedChannels.Except(existingNode.AffectedChannels));
                 continue;
             }
             _nodes.Add(node.Id, node);
@@ -91,8 +92,7 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
 
         var node = _nodeManager.GetNodeState(channel);
 
-        if (!await _nodeManager.UpdateVariableStateAsync(node, OpcUaStatusCodes.ConvertToStatusCode(value, logger)))
-            throw new InvalidOperationException($"Failed to set status '{value}' to node with id '{node.NodeId.Identifier}'.");
+        await _nodeManager.UpdateVariableStateAsync(node, OpcUaStatusCodes.ConvertToStatusCode(value, logger));
     }
 
     protected override SessionManager CreateSessionManager(IServerInternal server, ApplicationConfiguration configuration)

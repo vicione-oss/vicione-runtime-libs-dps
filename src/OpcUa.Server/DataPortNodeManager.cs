@@ -19,7 +19,7 @@ internal sealed class DataPortNodeManager : NodeManager
         { typeof(double), DataTypeIds.Double },
     };
 
-    private readonly Dictionary<string, (BaseDataVariableState Node, List<string> Channels, object? Min, object? Max)> _nodesConfiguration = [];
+    private readonly Dictionary<string, (BaseDataVariableState Node, List<string> Channels, Property? MinProperty, Property? MaxProperty)> _nodesConfiguration = [];
     private readonly Dictionary<string, BaseDataVariableState> _channelNodes = [];
     private readonly List<NodeState> _nodes = [];
     private readonly IReadOnlyCollection<IReadOnlyCollection<DataPortNode>> _routes;
@@ -147,7 +147,7 @@ internal sealed class DataPortNodeManager : NodeManager
         if (!_nodesConfiguration.TryGetValue(identifier, out var config))
             throw new InvalidOperationException($"Failed to find configuration for {identifier}.");
 
-        if (!IsInRange(config.Min, config.Max, value))
+        if (!IsInRange(config.MinProperty, config.MaxProperty, value))
             return StatusCodes.BadOutOfRange;
 
         if (timestamp == DateTime.MinValue)
@@ -159,16 +159,16 @@ internal sealed class DataPortNodeManager : NodeManager
         return StatusCodes.Good;
     }
 
-    internal static bool IsInRange(object? min, object? max, object value)
+    internal static bool IsInRange(Property? min, Property? max, object value)
     {
         if (value is string)
             return true;
 
         if (value is IComparable comparable)
         {
-            if (min is not null && comparable.CompareTo(min) < 0)
+            if (min?.Value is not null && comparable.CompareTo(min.Value) < 0)
                 return false;
-            if (max is not null && comparable.CompareTo(max) > 0)
+            if (max?.Value is not null && comparable.CompareTo(max.Value) > 0)
                 return false;
         }
 

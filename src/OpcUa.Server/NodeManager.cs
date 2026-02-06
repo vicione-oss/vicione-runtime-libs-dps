@@ -87,11 +87,8 @@ internal class NodeManager(IServerInternal server, ApplicationConfiguration conf
     protected static bool IsNaN(object value)
         => (value is double dvalue && double.IsNaN(dvalue)) || (value is float fvalue && float.IsNaN(fvalue));
 
-    public async Task<bool> UpdateVariableStateAsync(BaseDataVariableState variable, StatusCode statusCode)
+    public async Task UpdateVariableStateAsync(BaseDataVariableState variable, StatusCode statusCode)
     {
-        if (variable.StatusCode == statusCode)
-            return false;
-
         await _publishSemaphore.WaitAsync();
 
         try
@@ -107,8 +104,6 @@ internal class NodeManager(IServerInternal server, ApplicationConfiguration conf
         {
             _publishSemaphore.Release();
         }
-
-        return true;
     }
 
     public async Task<bool> WriteVariableValueAsync(BaseDataVariableState variable, object? value, DateTime timeStamp, bool writeOnlyChanged)
