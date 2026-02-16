@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using ViciOne.Suite.DataPort.Extensions.ValueValidation;
+using ViciOne.Suite.DataPort.Extensions.Outgoing.ValueValidation;
 
 namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 

@@ -14,7 +14,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="JunitXml.TestLogger" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -22,6 +21,7 @@
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="ViciOne.TreeBuilder" />
     <PackageReference Include="xunit.v3" />
+    <PackageReference Include="JunitXml.TestLogger" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,8 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
     <Using Include="AwesomeAssertions" />
+    <Using Include="Xunit" />
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
 

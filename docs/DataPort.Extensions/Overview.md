@@ -1,212 +1,87 @@
-# DataPort Extensions Component Architecture
+# DataPort Extensions — Core Concepts
 
-This document describes the reusable architectural components in the DataPort Extensions package. These components provide generic patterns for periodic job execution and configuration mapping that are independent of protocol-specific logic.
-
-## Documentation Index
-
-The Common components are organized into several focused documentation files:
-
-| Document | Components | Description |
-|----------|-----------|-------------|
-| **[Overview.md](Overview.md)** | All components | This document - high-level overview of all common components |
-| **[Queue.md](Queue.md)** | ChannelQueue, QueueStrategy | Thread-safe bounded queue with configurable overflow strategies |
-| **[Resilience.md](Resilience.md)** | RetryBackoffCalculator, IDelayProvider | Retry and backoff calculation utilities |
-| **[Exceptions.md](Exceptions.md)** | ConnectionFailureException, DataRetrievalException, InvalidConfigurationException, QueueBackpressureException | Standard exception types for DataPort operations |
-| **[Logging.md](Logging.md)** | FormattedExternalValues | Efficient lazy formatting for structured logging |
-| **[Model.md](Model.md)** | IDataPoint, IPollingDataPoint, IDataPointPollingGroup, Channels, PollFrequency, QueueConfiguration | Core abstractions and value types |
-
-For detailed information about a specific component, see the corresponding documentation file.
+This document explains the design patterns the Extensions package is built around. Reading it first makes the more detailed reference docs easier to follow.
 
 ---
 
-## PeriodicJob
+## From YAML to Typed Objects
 
-**Namespace**: `ViciOne.Suite.DataPort.Extensions.PeriodicJob`
+DataPort configuration starts life as a YAML file and is deserialized into a `DataPortCommunication` subclass — at that point it is a weakly-typed bag of strings and nested maps. The library's first job is to transform this into a validated, strongly-typed C# object hierarchy before any protocol logic runs.
 
-Provides infrastructure for executing tasks at regular intervals with built-in resilience and lifecycle management.
-
-### PeriodicJob<TJobInput, TJobOutput>
-
-- **Location**: `src/Extension/PeriodicJob/PeriodicJob.cs`
-- **Purpose**: Abstract base class for periodic task execution
-- **Reusability**: Generic abstraction that can be used for any periodic task, not just S7 polling
-- **Key Features**:
-  - Type-safe jobs with defined input and output types
-  - Integrated resilience via Polly (circuit breaker, timeout)
-  - Overlapping execution support (non-blocking iterations)
-  - Structured logging with event IDs
-  - Testability through dependency injection
-
-### Job Lifecycle
-
-Jobs follow a standard lifecycle:
-
-1. **Creation** - Job is instantiated with configuration and dependencies
-2. **Start** - `StartPeriodicExecution()` begins background timer loop
-3. **Execution** - Timer triggers iterations; jobs can overlap if previous iteration is still running
-4. **Stop** - `StopPeriodicExecution()` cancels timer and waits for completion
-5. **Disposal** - Resources cleaned up via `IAsyncDisposable`
-
-```mermaid
-stateDiagram-v2
-    [*] --> Created: new PeriodicJob()
-    Created --> PeriodExecutionLoop: StartPeriodicExecution()
-    
-    state PeriodExecutionLoop {
-        [*] --> WaitingForTimerTick
-        WaitingForTimerTick --> Iteration: Timer tick
-        WaitingForTimerTick --> WaitingForTimerTick: Timer tick
-        
-        state "Job Iteration (async)" as Iteration {
-            [*] --> PollyPipeline: ExecuteJobIteration()
-            PollyPipeline --> IterationExecution: PerformJob()
-            IterationExecution --> InvokeCallbackFunction: on result
-            InvokeCallbackFunction --> [*]: complete iteration
-
-            IterationExecution --> LogError: on Exception
-            LogError --> [*]: complete iteration
-        }
-        
-        note right of WaitingForTimerTick: Timer ticks independently\nIterations can overlap
-    }
-    
-    PeriodExecutionLoop --> Stopping: StopPeriodicExecution()
-    Stopping --> Disposed: DisposeAsync()
-    Disposed --> [*]
+```
+YAML file
+    └─▶ DataPortCommunication          (deserialized, weakly typed)
+            └─▶ TypedNodeMapper        (validates + maps)
+                    └─▶ IRootConfigurationNode   (strongly typed tree)
+                            └─▶ IDataPointsMapper / IDataPointGroupsMapper
+                                    └─▶ List<TDataPoint>   (runtime data points)
 ```
 
-### DefaultResiliencePipeline
+Shape mismatches and missing fields fail at startup during the mapper step, not during polling at runtime.
 
-- **Location**: `src/Extension/PeriodicJob/DefaultResiliencePipeline.cs`
-- **Purpose**: Provides sensible default resilience strategies
-- **Reusability**: Can be used with any periodic job requiring timeout and circuit breaker protection
-- **Default Strategies**:
-  - **Timeout**: 110% of execution interval (max 30 seconds)
-  - **Circuit Breaker**: Opens after 50% failure rate over 10 calls
-  - **Sampling window**: 10× execution interval (max 5 minutes)
-  - **Break duration**: 2× execution interval (500ms-2 minutes) + 50ms delay
+---
 
-### PeriodicJobLogMessages
+## Two Mapper Layers
 
-- **Location**: `src/Extension/PeriodicJob/PeriodicJobLogMessages.cs`
-- **Purpose**: Structured logging messages with event IDs
-- **Reusability**: Provides consistent logging patterns for any periodic job
-- **Event ID Ranges**:
-  - **1000-1099**: Job lifecycle events (starting, stopping, stopped, cancelled, errors)
-  - **1100-1199**: Iteration events (starting, finished, exceptions)
-  - **1200-1299**: Resilience events (circuit breaker state, timeouts)
+**`TypedNodeMapper<TCommunication, TRootNode>`** (in `Model.TypedNodes.Mapping`)
 
-**Log Message Patterns**:
-- Lifecycle: `"Periodic job '{JobName}' ..."`
-- Iterations: `"Iteration of job '{JobName}' ..."`
+Converts `DataPortCommunication` → `IRootConfigurationNode`. This is where FluentValidation runs and the node hierarchy is assembled with parent-child links. The mapper is provided once at construction time and is shared across the lifetime of the data port.
 
-### Related Documentation
+**`IDataPointsMapper` / `IDataPointGroupsMapper`** (in `Model.Mapping`)
 
-- **[Resilience.md](Resilience.md)**: Covers RetryBackoffCalculator used alongside PeriodicJob
-- **[Model.md](Model.md)**: Documents IDataPointPollingGroup used as job input
+Traverse the typed node tree to produce a flat `List<TDataPoint>`. The grouping variant (`IDataPointGroupsMapper`) additionally groups data points by `PollFrequency` for incoming data ports — one polling job runs per group.
 
-## Typed Nodes System
+Each layer has a single responsibility and can be tested in isolation.
 
-**Namespace**: `ViciOne.Suite.DataPort.Extensions.TypedNodes`
+---
 
-Provides a framework for transforming weakly-typed configuration into strongly-typed object hierarchies.
+## Typed Node Interfaces
 
-### TypedNodeMapper<TSource, TTarget>
+The typed node tree is built from three interface layers:
 
-- **Location**: `src/Extension/TypedNodes/Mapping/TypedNodeMapper.cs`
-- **Purpose**: Generic mapper for transforming configuration into typed nodes
-- **Reusability**: Can be used for any configuration mapping scenario requiring validation and type safety
-- **Features**:
-  - FluentValidation integration
-  - Recursive node mapping
-  - Parent-child relationship linking
-  - Extensible through custom mappers
+| Interface | Role |
+|-----------|------|
+| `IRootConfigurationNode<TCommunication>` | Root of the tree; holds the device identity |
+| `IBranchConfigurationNode` | Interior node; groups child nodes and data points |
+| `IDataPointNode` | Leaf node; maps directly to a `TDataPoint` |
 
-### Mapping Process
+Protocol implementations define concrete types for each layer and register node mappers (`IBranchConfigurationNodeMapper`, `IDataPointNodeMapper`) that know how to translate a raw YAML node into the typed equivalent.
 
-1. Validates configuration using FluentValidation
-2. Creates root typed node
-3. Converts nodes to LinkedNodes (establishes parent-child relationships)
-4. Maps each LinkedNode to a typed node recursively
-5. Adds typed nodes to the root configuration
+---
 
-```mermaid
-graph TD
-    A[Configuration Object] --> B[TypedNodeMapper.MapToTypedNodes]
-    B --> C[RootMapper.Validate]
-    
-    C -->|Invalid| D[Throw ValidationException]
-    C -->|Valid| E[RootMapper.CreateRootNode]
-    
-    E --> F[LinkedNodeFactory.Create]
-    F --> G[LinkedNodes with Parent-Child Links]
-    
-    G --> H{For Each LinkedNode}
-    H --> I{Node Type?}
-    
-    I -->|Configuration Node| J[FindConfigurationNodeMapper]
-    J --> K[ConfigurationNodeMapper.Map]
-    K --> L[Create Configuration Node]
-    
-    I -->|Data Point Node| M[FindDataPointNodeMapper]
-    M --> N[DataPointNodeMapper.Map]
-    N --> O[Create DataPoint Node]
-    
-    L --> P{Has Children?}
-    P -->|Yes| Q[Recursively Map Children]
-    Q --> R[Link Children to Parent]
-    R --> S{CanBeAdded?}
-    S -->|Yes| T[Add to Parent ConfigurationNode]
-    S -->|No| U[Throw InvalidOperationException]
-    
-    P -->|No| V[Return ConfigurationNode]
-    O --> V
-    
-    T --> V
-    V --> W{More LinkedNodes?}
-    
-    W -->|Yes| H
-    W -->|No| X[Add All Typed Nodes to Root]
-    X --> Y{Root.CanBeAdded?}
-    Y -->|Yes| Z[Add to Root]
-    Y -->|No| U
-    Z --> AA[Return Root Node Hierarchy]
-```
+## YAML Consistency Tests
 
-### Related Documentation
+The `DataPort.Extensions.Testing` package provides `YamlConsistencyBaseTest<TCommunication, TYamlConfig, TRootNode>`, a base test class that automatically verifies the YAML schema and the C# mapper code stay in sync.
 
-- **[Model.md](Model.md)**: Documents the model interfaces that TypedNodeMapper maps to
-- **[Exceptions.md](Exceptions.md)**: Documents InvalidConfigurationException thrown during mapping
-
-## Usage Examples
-
-### Periodic Job Usage in S7
-
-The S7 implementation uses the Periodic Job Framework:
+Implement `IYamlTestingConfig` to wire up the test:
 
 ```csharp
-public class DataPointGroupPollingJob : PeriodicJob<DataPointGroup, List<DataPointValue>>
+public class MyYamlConfig : IYamlTestingConfig<MyCommunication, MyRootNode>
 {
-    protected override ValueTask<List<DataPointValue>> PerformJob(DataPointGroup input, CancellationToken token) =>
-        s7Client.ReadAsync(input, token);
-
-    protected override string GetJobName(DataPointGroup input) =>
-        $"DataPointGroupPolling at [{input.PollFrequency.Value.TotalMilliseconds}ms] with [{input.DataPoints.Count} DataPoints])";
+    public static string YamlFileName => "my-protocol.yaml";
+    public static TypedNodeMapper<MyCommunication, MyRootNode> Mapper => MyTypedNodeMappers.Create();
+    public static HashSet<string> ExcludedCommunicationProperties => [];
 }
+
+public class MyYamlConsistencyTests : YamlConsistencyBaseTest<MyCommunication, MyYamlConfig, MyRootNode> { }
 ```
 
-### TypedNodeMapper Usage in S7
+The base class generates individual `[Theory]` test cases that verify:
 
-The S7 implementation uses TypedNodeMapper:
+- The YAML file itself is structurally valid
+- The `[Communication]` attribute ID matches the YAML root ID
+- Every YAML property has a corresponding C# property on the communication class (and vice versa)
+- Every registered mapper targets a node that exists in the YAML
+- Every YAML node has a registered mapper
+- Every property referenced in a mapper exists in the corresponding YAML node (and vice versa)
 
-```csharp
-var mapper = TypedNodeMappers.S7TypedNodeMapper();
-var deviceNode = mapper.MapToTypedNodes(s7Configuration);
-```
+Each check is a separate test, so failures pinpoint exactly which property or node is out of sync.
 
-## Extension Points
+---
 
-Both frameworks provide extension points for customization:
+## Further Reading
 
-- **PeriodicJob**: Override `OnJobIterationExecutionException()` for custom error handling
-- **TypedNodeMapper**: Implement custom mappers for specific node types
+- [IncomingDataPort.md](Incoming/IncomingDataPort.md) — base class for read data ports; includes polling infrastructure details
+- [OutgoingDataPort.md](Outgoing/OutgoingDataPort.md) — base class for write data ports
+- [Interfaces.md](Interfaces.md) — all interface contracts
+- [Model.md](Model.md) — typed node interfaces and model types

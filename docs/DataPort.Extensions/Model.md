@@ -2,255 +2,142 @@
 
 **Namespace**: `ViciOne.Suite.DataPort.Extensions.Model`
 
+**Location**: `src/DataPort.Extensions/Model/`
+
 Defines core abstractions and value types for DataPort operations.
-
-## Overview
-
-The Model components provide interfaces and records that both Absolute and Symbolic DataPort implementations must implement.
 
 ## Data Point Abstractions
 
 ### IDataPoint
 
-**Location**: `src/Extension/Model/DataPoints/IDataPoint.cs`
+**Location**: `Model/DataPoints/IDataPoint.cs`
 
-**Purpose**: Base interface for all data point types
+Base interface for all data point types.
 
-**Properties**:
-- `Channels`: Channel configuration for this data point
+**Members**:
+- `Channels Channels { get; init; }` — channel routing (transferred and affected channels)
+- `DataPointIdentifier Identifier { get; }` — strongly-typed address wrapper (used for logging/diagnostics; format is protocol-specific)
+- `DataTypeName DataTypeName { get; }` — strongly-typed data type name wrapper (used for logging/diagnostics; format is protocol-specific)
+- `ContainsTransferredChannel(string channel)` — default implementation; checks `Channels.TransferredChannels`
 
-**Methods**:
-- `ContainsTransferredChannel(string channel)`: Checks if a channel is configured for transfer
-
-**Usage**:
-```csharp
-public interface IDataPoint
-{
-    Channels Channels { get; init; }
-    bool ContainsTransferredChannel(string channel);
-}
-
-// Implementations
-public record IntegerDataPoint : IDataPoint { ... }
-public record SymbolicDataPoint : IDataPoint { ... }
-```
+`DataPointIdentifier` and `DataTypeName` are record types with a single `string Value` property, defined in the same file.
 
 ### IPollingDataPoint
 
-**Location**: `src/Extension/Model/DataPoints/IPollingDataPoint.cs`
+**Location**: `Model/DataPoints/IPollingDataPoint.cs`
 
-**Purpose**: Interface for data points that support periodic polling
-
-**Properties**:
-- `PollFrequency`: How often to read this data point from the PLC
-
-**Usage**:
-```csharp
-public interface IPollingDataPoint : IDataPoint
-{
-    PollFrequency PollFrequency { get; init; }
-}
-```
+Extends `IDataPoint` with `PollFrequency PollFrequency { get; init; }`. Required for data points used with `IncomingDataPortBase`.
 
 ### IDataPointPollingGroup
 
-**Location**: `src/Extension/Model/DataPoints/IDataPointPollingGroup.cs`
+**Location**: `Model/DataPoints/IDataPointPollingGroup.cs`
 
-**Purpose**: Interface for groups of data points polled together at the same frequency
-
-**Properties**:
-- `DataPoints`: Collection of data points in this group
-- `PollFrequency`: Shared polling frequency for all data points in group
-
-**Usage**:
-```csharp
-public interface IDataPointPollingGroup
-{
-    IReadOnlyList<IPollingDataPoint> DataPoints { get; init; }
-    PollFrequency PollFrequency { get; init; }
-}
-
-// Example: Group data points by poll frequency for efficient batching
-var groups = dataPoints
-    .GroupBy(dp => dp.PollFrequency)
-    .Select(g => new DataPointGroup
-    {
-        DataPoints = g.ToList(),
-        PollFrequency = g.Key
-    });
-```
+Generic interface (`IDataPointPollingGroup<TDataPoint>`) grouping data points that share the same poll frequency. One polling job runs per group. Holds `PollFrequency` and `ImmutableList<TDataPoint>`.
 
 ### IDataPointValue
 
-**Location**: `src/Extension/Model/DataPoints/IDataPointValue.cs`
+**Location**: `Model/DataPoints/IDataPointValue.cs`
 
-**Purpose**: Interface for data point values read from or written to PLC
-
-**Properties**:
-- `Channels`: Channel configuration
-- `Value`: The actual value (object type for flexibility)
-
-**Usage**:
-```csharp
-public interface IDataPointValue
-{
-    Channels Channels { get; init; }
-    object? Value { get; init; }
-}
-
-// Implementations
-public record DataPointValue : IDataPointValue { ... }
-public record SymbolicDataPointValue : IDataPointValue { ... }
-```
+Value to be written, with type and range validation. See [ValueValidation.md](Outgoing/ValueValidation.md).
 
 ## Value Types
 
 ### Channels
 
-**Location**: `src/Extension/Model/DataPoints/Channels.cs`
+**Location**: `Model/DataPoints/Channels.cs`
 
-**Purpose**: Defines channel routing for data point values
-
-**Properties**:
-- `TransferredChannels`: List of channel names where values should be published
-
-**Usage**:
 ```csharp
-public record Channels(List<TransferredChannel> TransferredChannels);
-
-public record TransferredChannel(string Value);
-
-// Example
-var channels = new Channels(
-    TransferredChannels: new List<TransferredChannel>
-    {
-        new TransferredChannel("Temperature_Sensor_1"),
-        new TransferredChannel("Temperature_Alarm")
-    }
-);
+public record Channels(
+    ImmutableList<AffectedChannel> AffectedChannels,
+    ImmutableList<TransferredChannel> TransferredChannels);
 ```
+
+- `TransferredChannels`: channels actively publishing/receiving data values
+- `AffectedChannels`: channels associated with the data point but not directly transferring data
+
+Both `AffectedChannel` and `TransferredChannel` are records wrapping a single `string Value`.
 
 ### PollFrequency
 
-**Location**: `src/Extension/Model/DataPoints/PollFrequency.cs`
+**Location**: `Model/DataPoints/PollFrequency.cs`
 
-**Purpose**: Strongly-typed polling interval
+Strongly-typed polling interval wrapping a `TimeSpan`. Has implicit conversions to/from `TimeSpan`.
 
-**Properties**:
-- `Value`: TimeSpan representing the polling interval
-
-**Usage**:
 ```csharp
-public record PollFrequency(TimeSpan Value);
-
-// Example
-var pollFrequency = new PollFrequency(TimeSpan.FromMilliseconds(100));
-
-// Common intervals
-var fast = new PollFrequency(TimeSpan.FromMilliseconds(100));    // 10 Hz
+var fast   = new PollFrequency(TimeSpan.FromMilliseconds(100));  // 10 Hz
 var medium = new PollFrequency(TimeSpan.FromMilliseconds(500));  // 2 Hz
-var slow = new PollFrequency(TimeSpan.FromSeconds(1));           // 1 Hz
+var slow   = new PollFrequency(TimeSpan.FromSeconds(1));         // 1 Hz
 ```
 
 ## Configuration Records
 
 ### QueueConfiguration
 
-**Location**: `src/Extension/Model/QueueConfiguration.cs`
-
-**Purpose**: Configuration for write queue behavior
-
-**Properties**:
-- `MaxPendingMessages`: Queue capacity
-- `Strategy`: Overflow strategy (DropOldest or DropNewest)
-
-**Usage**:
-```csharp
-public sealed record QueueConfiguration(int MaxPendingMessages, QueueStrategy Strategy);
-
-// Example
-var queueConfig = new QueueConfiguration(
-    MaxPendingMessages: 1000,
-    Strategy: QueueStrategy.DropNewest
-);
-```
-
-## Design Patterns
-
-### Interface Segregation
-
-The model uses interface segregation to provide flexibility:
-- `IDataPoint`: Minimal contract (just channels)
-- `IPollingDataPoint`: Extends with polling capability
-- `IDataPointPollingGroup`: Groups for batch operations
-- `IDataPointValue`: Read/write values
-
-This allows:
-- Different data point types (Absolute vs Symbolic)
-- Optional polling support
-- Flexible grouping strategies
-
-### Record Types
-
-All model types are records for:
-- **Immutability**: Values can't be modified after creation
-- **Value equality**: Two records with same data are equal
-- **Copy semantics**: `with` expressions for modifications
-- **Deconstruction**: Pattern matching support
+**Location**: `Outgoing/QueueProcessing/QueueConfiguration.cs`
 
 ```csharp
-// Immutability
-var channels = new Channels(...);
-// channels.TransferredChannels = ...; // Compiler error
-
-// Value equality
-var freq1 = new PollFrequency(TimeSpan.FromMilliseconds(100));
-var freq2 = new PollFrequency(TimeSpan.FromMilliseconds(100));
-Assert.Equal(freq1, freq2); // True
-
-// Copy with modification
-var newFreq = freq1 with { Value = TimeSpan.FromMilliseconds(200) };
-
-// Pattern matching
-var result = pollFrequency switch
-{
-    { Value: var v } when v < TimeSpan.FromMilliseconds(100) => "Very fast",
-    { Value: var v } when v < TimeSpan.FromSeconds(1) => "Fast",
-    _ => "Slow"
-};
+public record QueueConfiguration(QueueStrategy Strategy, QueueSize QueueSize);
+public record QueueSize(int Value);
 ```
 
-## Extension Points
+`QueueStrategy` is an enum: `DropOldest` or `DropNewest`. See [Queue.md](Outgoing/Queue.md) for selection guidance.
 
-Implement these interfaces to add new data point types:
+## Mapping
 
-```csharp
-// Custom data point type
-public record CustomDataPoint : IPollingDataPoint
-{
-    public Channels Channels { get; init; }
-    public PollFrequency PollFrequency { get; init; }
-    public string CustomProperty { get; init; }
+**Location**: `Model/Mapping/`
 
-    public bool ContainsTransferredChannel(string channel)
-        => Channels.TransferredChannels.Exists(c => c.Value == channel);
-}
+`IDataPointsMapper` and `IDataPointGroupsMapper` — see [Interfaces.md](Interfaces.md#mapping-interfaces).
 
-// Custom polling group
-public record CustomPollingGroup : IDataPointPollingGroup
-{
-    public IReadOnlyList<IPollingDataPoint> DataPoints { get; init; }
-    public PollFrequency PollFrequency { get; init; }
-    public string GroupName { get; init; }
-}
+## TypedNodes
+
+**Location**: `Model/TypedNodes/`
+
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Model.TypedNodes`
+
+`TypedNodeMapper<TCommunication, TRootNode>` transforms a `DataPortCommunication` object into a validated typed node hierarchy. See [Overview.md](Overview.md) for the conceptual overview.
+
+### Mapping Process
+
+1. Validates configuration using FluentValidation
+2. Creates the root typed node via `RootMapper.CreateRootNode`
+3. Converts raw nodes to `LinkedNode`s (establishes parent-child relationships)
+4. For each `LinkedNode`, finds the registered `IBranchConfigurationNodeMapper` or `IDataPointNodeMapper` and maps it to a typed node
+5. Assembles the full hierarchy and returns the root
+
+```mermaid
+graph TD
+    A[DataPortCommunication] --> B[TypedNodeMapper.MapToTypedNodes]
+    B --> C[RootMapper.Validate]
+    C -->|Invalid| D[Throw ValidationException]
+    C -->|Valid| E[RootMapper.CreateRootNode]
+    E --> F[LinkedNodeFactory.Create]
+    F --> G[LinkedNodes with Parent-Child Links]
+    G --> H{For Each LinkedNode}
+    H --> I{Node Type?}
+    I -->|Branch| J[IBranchConfigurationNodeMapper.Map]
+    J --> K[IBranchConfigurationNode]
+    I -->|Leaf| L[IDataPointNodeMapper.Map]
+    L --> M[IDataPointNode]
+    K --> N{Has Children?}
+    N -->|Yes| O[Recursively Map Children]
+    O --> P[Add to Parent]
+    N -->|No| Q[Return Node]
+    M --> Q
+    P --> Q
+    Q --> R{More Nodes?}
+    R -->|Yes| H
+    R -->|No| S[Add All to Root]
+    S --> T[Return IRootConfigurationNode]
 ```
 
-## Related Components
+### Node Interfaces
 
-- **[TypedNodes](Overview.md#typed-nodes-system)**: Configuration-to-model mapping system
-- **[IncomingDataPort](IncomingDataPort.md)**: Uses IDataPoint for polling configuration
-- **[OutgoingDataPort](OutgoingDataPort.md)**: Uses IDataPointValue for write operations
+| Interface | Location | Role |
+|-----------|----------|------|
+| `IRootConfigurationNode<TCommunication>` | `TypedNodes/IRootConfigurationNode.cs` | Root of the tree |
+| `IBranchConfigurationNode` | `TypedNodes/IBranchConfigurationNode.cs` | Interior grouping node |
+| `IDataPointNode` | `TypedNodes/IDataPointNode.cs` | Leaf node; becomes a `TDataPoint` |
 
 ---
 
-**Last Updated**: 2026-01-30
+**Last Updated**: 2026-02-23

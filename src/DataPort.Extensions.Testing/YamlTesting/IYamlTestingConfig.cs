@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes.Mapping;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
 
 namespace ViciOne.Suite.DataPort.Extensions.Testing.YamlTesting;
 

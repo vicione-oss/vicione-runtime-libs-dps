@@ -1,4 +1,6 @@
-﻿using ViciOne.Suite.DataPort.Extensions.TypedNodes.Mapping;
+﻿using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping.Properties;
+
+#pragma warning disable CA1515 // Make types internal - test class must be public for xunit test discovery
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.TypedNodes.Mapping;
 
@@ -6,11 +8,8 @@ public class PropertyValueConverterTests
 {
     /// <summary>
     /// Custom enum for testing PropertyValueConverter without depending on external types.
-    /// this is just for testing purpose and needs to be public since it is used as test args
     /// </summary>
-#pragma warning disable CA1515
     public enum TestAreaType
-#pragma warning restore CA1515
     {
         DB = 0,
         I = 1,

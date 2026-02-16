@@ -30,7 +30,7 @@ public interface IDataPoint
     /// <remarks>
     /// The format of this string is protocol-specific and is primarily used for logging and diagnostics.
     /// </remarks>
-    string AddressString { get; }
+    DataPointIdentifier Identifier { get; }
 
     /// <summary>
     /// Gets a human-readable string representation of this data point's data type.
@@ -38,5 +38,17 @@ public interface IDataPoint
     /// <remarks>
     /// The format of this string is protocol-specific and is primarily used for logging and diagnostics.
     /// </remarks>
-    string DataTypeString { get; }
+    DataTypeName DataTypeName { get; }
 }
+
+/// <summary>
+/// A strongly-typed identifier for a data point.
+/// </summary>
+/// <param name="Value">The raw string value of the identifier.</param>
+public record DataPointIdentifier(string Value);
+
+/// <summary>
+/// A strongly-typed name for a data point's data type.
+/// </summary>
+/// <param name="Value">The raw string representation of the data type name.</param>
+public record DataTypeName(string Value);

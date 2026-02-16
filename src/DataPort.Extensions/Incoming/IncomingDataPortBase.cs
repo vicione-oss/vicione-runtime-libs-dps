@@ -1,13 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ViciOne.ManagedEngine.ExternalCommunication;
+using ViciOne.Suite.DataPort.Extensions.Client;
 using ViciOne.Suite.DataPort.Extensions.Exceptions;
-using ViciOne.Suite.DataPort.Extensions.Logging;
+using ViciOne.Suite.DataPort.Extensions.Incoming.Client;
+using ViciOne.Suite.DataPort.Extensions.Incoming.Polling;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes;
+using ViciOne.Suite.DataPort.Extensions.Model.Mapping;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
+using ViciOne.Suite.DataPort.Extensions.Verification;
+using IClientInformation = ViciOne.Suite.DataPort.Extensions.Client.IClientInformation;
 
 namespace ViciOne.Suite.DataPort.Extensions.Incoming;
 
@@ -17,15 +25,17 @@ namespace ViciOne.Suite.DataPort.Extensions.Incoming;
 /// </summary>
 /// <typeparam name="TCommunication">Communication configuration type</typeparam>
 /// <typeparam name="TDeviceNode">Device node configuration type</typeparam>
+/// <typeparam name="TDataPoint">Polling data point type</typeparam>
 /// <typeparam name="TDataPointGroup">Data point group type</typeparam>
 /// <typeparam name="TDataPointValue">Read result type with value</typeparam>
-/// <typeparam name="TClient">Client type for read operations</typeparam>
+/// <typeparam name="TReadClient">Client type for read operations</typeparam>
+/// <typeparam name="TClientInformation">The information required to uniquely identify and create a client.</typeparam>
 /// <remarks>
 /// <para><b>Design Patterns:</b></para>
 /// <list type="bullet">
-/// <item><b>Template Method:</b> ConnectAsync, StartPollingAndPublishingDataPoints, ToExternalValues orchestrate common flow</item>
-/// <item><b>Strategy:</b> IConnectionManager abstracts connection patterns</item>
-/// <item><b>Hook Method:</b> ValidateConnectionAsync is virtual (no-op default)</item>
+/// <item><b>Template Method:</b> ConnectAsync, DisconnectAsync orchestrate common flow</item>
+/// <item><b>Strategy:</b> IClientLifecycleManager abstracts connection patterns</item>
+/// <item><b>Hook Method:</b> ValidateAsync is virtual (no-op default)</item>
 /// </list>
 /// <para><b>Lifecycle:</b></para>
 /// <list type="number">
@@ -37,24 +47,98 @@ namespace ViciOne.Suite.DataPort.Extensions.Incoming;
 /// </list>
 /// <para><b>Thread Safety:</b> Lifecycle methods are not thread-safe and should be called from a single thread.</para>
 /// </remarks>
-public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPointGroup, TDataPointValue, TClient>
+public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoint, TDataPointGroup, TDataPointValue,
+    TReadClient, TClientInformation>
     : IExternalIncomingCommunication<TCommunication>, IAsyncDisposable
     where TCommunication : DataPortCommunication
     where TDeviceNode : IRootConfigurationNode<TCommunication>
-    where TDataPointGroup : class
-    where TClient : class
+    where TDataPoint : IPollingDataPoint
+    where TDataPointGroup : IDataPointPollingGroup<TDataPoint>
+    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TReadClient : IReadClient<TDataPointGroup, TDataPointValue>
+    where TClientInformation : IClientInformation
 {
-    private readonly TimeProvider _timeProvider;
-    private readonly TDeviceNode _deviceNode;
-    private readonly IReadOnlyList<TDataPointGroup> _dataPointGroups;
-    private readonly IConnectionManager<TClient> _connectionManager;
-    private readonly IDataPointValidator<IDataPoint>? _validator;
     private readonly ILogger _logger;
-    private readonly ILoggerFactory _loggerFactory;
 
-    private TClient? _client;
-    private List<DataPointGroupPollingJob<TDataPointGroup, TDataPointValue, TClient>> _pollingJobs = [];
-    private CancellationTokenSource _cancellationSource;
+    private readonly PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>
+        _pollingOrchestrator;
+
+    private readonly TimeProvider _timeProvider;
+
+    private bool _disposed;
+
+    /// <summary>
+    /// Initializes a new instance of the IncomingDataPortBase class.
+    /// </summary>
+    /// <param name="communication">The communication configuration to build the device node from.</param>
+    /// <param name="loggerFactory">Factory for creating loggers.</param>
+    /// <param name="typedNodeMapper">The mapper that converts the communication configuration to a typed device node.</param>
+    /// <param name="dataPointGroupsMapper">The mapper that converts the device node to grouped data points.</param>
+    /// <param name="timeProvider">Optional time provider for testing purposes.</param>
+    protected IncomingDataPortBase(
+        TCommunication communication,
+        ILoggerFactory loggerFactory,
+        TypedNodeMapper<TCommunication, TDeviceNode> typedNodeMapper,
+        IDataPointGroupsMapper<TDataPoint, TDataPointGroup, TDeviceNode, TCommunication> dataPointGroupsMapper,
+        TimeProvider? timeProvider = null)
+    {
+        _logger = loggerFactory.CreateLogger(GetType());
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        DeviceNode = typedNodeMapper.MapToTypedNodes(communication);
+        DataPoints = dataPointGroupsMapper.ToDataPoints(DeviceNode);
+        DataPointGroups = dataPointGroupsMapper.Group(DataPoints);
+        _pollingOrchestrator = new PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>(
+            loggerFactory, _timeProvider);
+    }
+
+    /// <summary>The typed device node built from the communication configuration.</summary>
+    public TDeviceNode DeviceNode { get; }
+
+    /// <summary>The flat list of data points extracted from the device node.</summary>
+    public List<TDataPoint> DataPoints { get; }
+
+    /// <summary>The data points grouped for polling, derived from <see cref="DataPoints"/>.</summary>
+    public List<TDataPointGroup> DataPointGroups { get; }
+
+    /// <summary>
+    /// The information required to uniquely identify and create a client.
+    /// </summary>
+    public abstract TClientInformation ClientInformation { get; }
+
+    /// <summary>
+    /// The client used for retrieving dataPoints. Will be set after initial connect.
+    /// </summary>
+    protected TReadClient? Client { get; private set; }
+
+    /// <summary>
+    /// Optional verifier that checks data points for configuration mismatches before queue processing starts
+    /// </summary>
+    protected abstract IDataPointConfigurationVerifier<TDataPoint>? ConfigurationVerifier { get; }
+
+    /// <summary>
+    /// Manager for acquiring and releasing client connections.
+    /// </summary>
+    protected abstract IClientLifecycleManager<TReadClient, TClientInformation> ClientLifecycleManager { get; }
+
+    /// <summary>
+    /// Performs application-defined tasks associated with freeing, releasing, or resetting resources asynchronously.
+    /// Stops all polling jobs and releases the client connection.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        await DisposeAdditionalResourcesAsync().ConfigureAwait(false);
+        await _pollingOrchestrator.DisposeAsync().ConfigureAwait(false);
+        await ReleaseClientAsync(CancellationToken.None).ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Override to dispose resources owned by the subclass. Called before the base class releases its own resources.
+    /// No need to call <c>base.DisposeAdditionalResourcesAsync()</c>.
+    /// </summary>
+    protected virtual ValueTask DisposeAdditionalResourcesAsync() => ValueTask.CompletedTask;
 
     /// <summary>
     /// Event raised when new data values are received from the device and converted to external values.
@@ -62,115 +146,24 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
     public event Action<IReadOnlyCollection<ExternalValue>>? Received;
 
     /// <summary>
-    /// Initializes a new instance of the IncomingDataPortBase class.
-    /// </summary>
-    /// <param name="deviceNode">The device configuration node containing connection details.</param>
-    /// <param name="dataPointGroups">The groups of data points to poll.</param>
-    /// <param name="logger">Logger for data port operations.</param>
-    /// <param name="loggerFactory">Factory for creating loggers for sub-components.</param>
-    /// <param name="connectionManager">Manager for acquiring and releasing client connections.</param>
-    /// <param name="validator">Optional validator for data points.</param>
-    /// <param name="timeProvider">Optional time provider for testing purposes.</param>
-    protected IncomingDataPortBase(
-        TDeviceNode deviceNode,
-        IReadOnlyList<TDataPointGroup> dataPointGroups,
-        ILogger logger,
-        ILoggerFactory loggerFactory,
-        IConnectionManager<TClient> connectionManager,
-        IDataPointValidator<IDataPoint>? validator = null,
-        TimeProvider? timeProvider = null)
-    {
-        _timeProvider = timeProvider ?? TimeProvider.System;
-        _deviceNode = deviceNode;
-        _dataPointGroups = dataPointGroups;
-        _logger = logger;
-        _loggerFactory = loggerFactory;
-        _connectionManager = connectionManager;
-        _validator = validator;
-        _cancellationSource = new CancellationTokenSource();
-    }
-
-    /// <summary>
-    /// Creates read client adapter from connected TClient instance.
-    /// </summary>
-    protected abstract IReadClient<TDataPointGroup, TDataPointValue> CreateReadClient(TClient client);
-
-    /// <summary>
-    /// Extracts device address for logging from device node.
-    /// </summary>
-    protected abstract string GetDeviceAddress(TDeviceNode deviceNode);
-
-    /// <summary>
-    /// Gets list of all data points from all groups for validation.
-    /// </summary>
-    protected abstract IReadOnlyList<IDataPoint> GetAllDataPoints(IReadOnlyList<TDataPointGroup> dataPointGroups);
-
-    /// <summary>
-    /// Gets transferred channels count from data point value (implementation-specific).
-    /// </summary>
-    protected abstract int GetTransferredChannelsCount(TDataPointValue dataPointValue);
-
-    /// <summary>
-    /// Adds external values for a single data point (implementation-specific).
-    /// </summary>
-    protected abstract void AddExternalValuesForDataPoint(
-        List<ExternalValue> result,
-        TDataPointValue dataPointValue,
-        DateTime timestamp);
-
-    /// <summary>
-    /// Extracts poll frequency from data point group (implementation-specific).
-    /// </summary>
-    protected abstract TimeSpan GetPollFrequency(TDataPointGroup group);
-
-    /// <summary>
     /// Template method: Connect to external system and start polling.
     /// Orchestrates connection, validation, and polling job creation.
     /// </summary>
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
-        var deviceAddress = GetDeviceAddress(_deviceNode);
-        _logger.ConnectingToDevice(deviceAddress);
+        _logger.ConnectingToDevice(DeviceNode.DeviceIdentifier);
+        Client = await ClientLifecycleManager.AcquireConnectedAsync(ClientInformation, cancellationToken)
+            .ConfigureAwait(false);
 
-        // Strategy hook: Acquire connected client (pool or direct)
-        _client = await _connectionManager.AcquireConnectedAsync(cancellationToken).ConfigureAwait(false);
-
-        // Optional hook: Validate data points
-        await ValidateAsync(cancellationToken).ConfigureAwait(false);
-
-        // Reset cancellation if needed (reconnection scenario)
-        if (_cancellationSource.IsCancellationRequested)
-        {
-            _cancellationSource.Dispose();
-            _cancellationSource = new CancellationTokenSource();
-        }
-
-        // Template method: Start polling jobs
-        StartPollingAndPublishingDataPoints(_cancellationSource.Token);
-    }
-
-    /// <summary>
-    /// Optional hook for runtime validation (default: no-op).
-    /// Symbolic overrides to validate against TIA Portal symbols.
-    /// </summary>
-    protected virtual async ValueTask ValidateAsync(CancellationToken cancellationToken)
-    {
-        if (_client == null)
-            throw new InvalidOperationException("Client not acquired");
-
-        if (_validator is null)
-            return;
-
-        try
-        {
-            var allDataPoints = GetAllDataPoints(_dataPointGroups);
-            _validator.Validate(_client, allDataPoints, _logger);
-        }
-        catch (ConnectionFailureException)
+        var misConfiguredDataPoints = await VerifyDataPoints(cancellationToken).ConfigureAwait(false);
+        if (misConfiguredDataPoints.Count > 0)
         {
             await DisconnectAsync(cancellationToken).ConfigureAwait(false);
-            throw;
+            throw new InvalidConfigurationException(
+                $"Failed to connect as {misConfiguredDataPoints.Count} data point(s) are misconfigured.");
         }
+
+        _pollingOrchestrator.StartAll(DataPointGroups, Client, PublishDataPointValues);
     }
 
     /// <summary>
@@ -178,149 +171,75 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
     /// </summary>
     public async Task DisconnectAsync(CancellationToken cancellationToken)
     {
-        var deviceAddress = GetDeviceAddress(_deviceNode);
-        _logger.DisconnectingFromDevice(deviceAddress);
-
-        await _cancellationSource.CancelAsync().ConfigureAwait(false);
-        await StopAllPeriodicJobs().ConfigureAwait(false);
-
-        // Strategy hook: Release connection (pool or direct)
-        if (_client != null)
-        {
-            await _connectionManager.ReleaseAsync(_client, cancellationToken).ConfigureAwait(false);
-            _client = null;
-        }
+        _logger.DisconnectingFromDevice(DeviceNode.DeviceIdentifier);
+        await _pollingOrchestrator.StopAllAsync().ConfigureAwait(false);
+        await ReleaseClientAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Creates polling jobs for each data point group.
-    /// </summary>
-    private void StartPollingAndPublishingDataPoints(CancellationToken cancellation)
-    {
-        _logger.CreatingPollingJobs(_dataPointGroups.Count);
-
-        ArgumentNullException.ThrowIfNull(_client);
-        var readClient = CreateReadClient(_client);
-
-        var jobs = new List<DataPointGroupPollingJob<TDataPointGroup, TDataPointValue, TClient>>(_dataPointGroups.Count);
-        for (var i = 0; i < _dataPointGroups.Count; i++)
-        {
-            jobs.Add(CreatePollingJob(_dataPointGroups[i], readClient, cancellation));
-        }
-
-        _pollingJobs = jobs;
-        for (var i = 0; i < _pollingJobs.Count; i++)
-        {
-            _pollingJobs[i].StartPeriodicExecution();
-        }
-
-        _logger.PollingJobsCreatedAndStarted(_pollingJobs.Count);
-    }
-
-    /// <summary>
-    /// Creates a single polling job for a data point group.
-    /// </summary>
-    private DataPointGroupPollingJob<TDataPointGroup, TDataPointValue, TClient> CreatePollingJob(
-        TDataPointGroup group,
-        IReadClient<TDataPointGroup, TDataPointValue> readClient,
+    private async ValueTask<List<MisConfiguredDataPoint<TDataPoint>>> VerifyDataPoints(
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(group);
+        if (ConfigurationVerifier == null) return [];
+        var misconfiguredDataPoints = await ConfigurationVerifier
+            .Verify(DataPoints, cancellationToken)
+            .ConfigureAwait(false);
+        foreach (var misconfigured in misconfiguredDataPoints)
+        {
+            var misconfigurations = string.Join(", ", misconfigured.MisMatchingConfigurations.Select(m => m.Value));
+            _logger.MisConfiguredDataPoint(misconfigured.DataPoint.Identifier.Value, misconfigurations);
+        }
 
-        return new DataPointGroupPollingJob<TDataPointGroup, TDataPointValue, TClient>(
-            GetPollFrequency(group),
-            group,
-            readClient,
-            PublishDataPointValues,
-            timeProvider: _timeProvider,
-            logger: _loggerFactory.CreateLogger<DataPointGroupPollingJob<TDataPointGroup, TDataPointValue, TClient>>(),
-            externalCancellation: cancellationToken);
+        return misconfiguredDataPoints;
     }
+
 
     /// <summary>
     /// Publishes data point values as external values via Received event.
     /// </summary>
     private void PublishDataPointValues(IReadOnlyList<TDataPointValue> dataPointValues)
     {
-        var externalValues = ToExternalValues(dataPointValues);
+        var publicationTime = _timeProvider.GetUtcNow().DateTime;
+        var externalValues = ToExternalValues(dataPointValues, publicationTime);
         _logger.PublishingExternalValues(externalValues.Count, new FormattedExternalValues(externalValues));
         Received?.Invoke(externalValues);
     }
 
     /// <summary>
-    /// Transforms data point values to external values with timestamp.
-    /// Performance-optimized with pre-allocated capacity and indexed loops.
+    /// Converts a batch of data point values to external values.
+    /// Override to provide custom conversion logic.
     /// </summary>
-    private IReadOnlyList<ExternalValue> ToExternalValues(IReadOnlyList<TDataPointValue> dataPointValues)
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+    [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
+    protected virtual IReadOnlyList<ExternalValue> ToExternalValues(
+        IReadOnlyList<TDataPointValue> values,
+        DateTime timestamp)
     {
-        var timestamp = _timeProvider.GetUtcNow().DateTime;
+        var totalCount = 0;
+        foreach (var dpv in values)
+            totalCount += dpv.DataPoint.Channels.TransferredChannels.Count;
 
-        // Pre-calculate capacity to avoid List resizing
-        var capacity = 0;
-        for (var i = 0; i < dataPointValues.Count; i++)
-            capacity += GetTransferredChannelsCount(dataPointValues[i]);
-
-        var result = new List<ExternalValue>(capacity);
-
-        for (var i = 0; i < dataPointValues.Count; i++)
+        var result = new List<ExternalValue>(totalCount);
+        foreach (var dataPointValue in values)
         {
-            var dataPointValue = dataPointValues[i];
-            AddExternalValuesForDataPoint(result, dataPointValue, timestamp);
+            foreach (var channel in dataPointValue.DataPoint.Channels.TransferredChannels)
+            {
+                result.Add(new ExternalValue
+                {
+                    Channel = channel.Value,
+                    Value = dataPointValue.Value,
+                    Timestamp = timestamp,
+                    Validity = 1
+                });
+            }
         }
 
         return result;
     }
 
-    /// <summary>
-    /// Stops all polling jobs.
-    /// </summary>
-    private async Task StopAllPeriodicJobs()
+    private async ValueTask ReleaseClientAsync(CancellationToken cancellationToken)
     {
-        _logger.StoppingPollingJobs(_pollingJobs.Count);
-
-        var tasks = new Task[_pollingJobs.Count];
-        for (var i = 0; i < _pollingJobs.Count; i++)
-        {
-            tasks[i] = _pollingJobs[i].StopPeriodicExecution();
-        }
-
-        await Task.WhenAll(tasks).ConfigureAwait(false);
-        _logger.PollingJobsStopped();
-    }
-
-    /// <summary>
-    /// Disposes all polling jobs.
-    /// </summary>
-    private async Task DisposeAllPeriodicJobs()
-    {
-        var tasks = new Task[_pollingJobs.Count];
-        for (var i = 0; i < _pollingJobs.Count; i++)
-        {
-            tasks[i] = _pollingJobs[i].DisposeAsync().AsTask();
-        }
-
-        await Task.WhenAll(tasks).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting resources asynchronously.
-    /// Stops all polling jobs, releases the client connection, and disposes of the connection manager.
-    /// </summary>
-    public async ValueTask DisposeAsync()
-    {
-        await _cancellationSource.CancelAsync().ConfigureAwait(false);
-        await StopAllPeriodicJobs().ConfigureAwait(false);
-        await DisposeAllPeriodicJobs().ConfigureAwait(false);
-        _pollingJobs.Clear();
-
-        if (_client != null)
-        {
-            await _connectionManager.ReleaseAsync(_client, CancellationToken.None).ConfigureAwait(false);
-            _client = null;
-        }
-
-        await _connectionManager.DisposeAsync().ConfigureAwait(false);
-        _cancellationSource.Dispose();
-        GC.SuppressFinalize(this);
+        if (Client is null) return;
+        await ClientLifecycleManager.ReleaseAsync(ClientInformation, cancellationToken).ConfigureAwait(false);
+        Client = default;
     }
 }

@@ -8,13 +8,7 @@
     <PropertyGroup>
         <!-- XML Documentation (generates .xml file included in package for IntelliSense) -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-
-        <!-- Separate symbol package (.snupkg) - Currently commented out as it's redundant
-             since we're already embedding sources in the PDB included in the main package.
-             TODO: Discuss with team if separate symbol packages are needed for symbol server publishing. -->
-        <!--<IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>-->
-
+      
         <!-- Include symbols and sources in main package -->
         <DebugType>portable</DebugType>
         <EmbedAllSources>true</EmbedAllSources>
@@ -25,9 +19,11 @@
         <Description>Extension library for ViciOne DataPort providing base classes, resilience, validation, queuing, and logging utilities for building incoming and outgoing data port providers.</Description>
     </PropertyGroup>
 
-    <!-- Include all documentation files in the package at root (flat structure) -->
+    <!-- Include documentation files in the package, preserving folder structure -->
     <ItemGroup>
         <None Include="..\..\docs\DataPort.Extensions\*.md" Pack="true" PackagePath="\" Visible="false"/>
+        <None Include="..\..\docs\DataPort.Extensions\Incoming\*.md" Pack="true" PackagePath="Incoming\" Visible="false"/>
+        <None Include="..\..\docs\DataPort.Extensions\Outgoing\*.md" Pack="true" PackagePath="Outgoing\" Visible="false"/>
     </ItemGroup>
 
   <ItemGroup>

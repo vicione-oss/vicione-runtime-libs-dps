@@ -1,55 +1,125 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ViciOne.ManagedEngine.ExternalCommunication;
+using ViciOne.Suite.DataPort.Extensions.Client;
 using ViciOne.Suite.DataPort.Extensions.Exceptions;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
-using ViciOne.Suite.DataPort.Extensions.Outgoing.Utilities;
-using ViciOne.Suite.DataPort.Extensions.Queue;
-using ViciOne.Suite.DataPort.Extensions.Resilience;
-using ViciOne.Suite.DataPort.Extensions.ValueValidation;
+using ViciOne.Suite.DataPort.Extensions.Model.Mapping;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
+using ViciOne.Suite.DataPort.Extensions.Outgoing.ChannelResolution;
+using ViciOne.Suite.DataPort.Extensions.Outgoing.Client;
+using ViciOne.Suite.DataPort.Extensions.Outgoing.QueueProcessing;
+using ViciOne.Suite.DataPort.Extensions.Outgoing.QueueProcessing.Retry;
+using ViciOne.Suite.DataPort.Extensions.Outgoing.ValueValidation;
+using ViciOne.Suite.DataPort.Extensions.Verification;
 
 namespace ViciOne.Suite.DataPort.Extensions.Outgoing;
 
 /// <summary>
 /// Base class for OutgoingDataPort implementations.
-/// Implements Template Method pattern with strategy hooks for retry policies, write clients, and value factories.
+/// Implements Template Method pattern with strategy hooks for retry policies and value conversion.
 /// </summary>
 /// <typeparam name="TDataPoint">Configuration type for data points</typeparam>
 /// <typeparam name="TDataPointValue">Write value type</typeparam>
-/// <typeparam name="TClient">Connection client type for lifecycle management</typeparam>
+/// <typeparam name="TWriteClient">Connection client type; must also implement <see cref="IWriteClient{TDataPointValue}"/></typeparam>
+/// <typeparam name="TRootNode">Root configuration node type</typeparam>
+/// <typeparam name="TCommunication">Communication configuration type</typeparam>
+/// <typeparam name="TClientInformation">The information required to uniquely identify and create a client.</typeparam>
 /// <remarks>
 /// <para><b>Design Patterns:</b></para>
 /// <list type="bullet">
-/// <item><b>Template Method:</b> ConnectAsync, DisconnectAsync, ProcessQueueAsync orchestrate common flow</item>
-/// <item><b>Strategy:</b> IRetryPolicy, IWriteClient, IDataPointValueFactory abstract implementation-specific behavior</item>
-/// <item><b>Factory:</b> IDataPointValueFactory creates validated data point values</item>
+/// <item><b>Template Method:</b> ConnectAsync, DisconnectAsync orchestrate common flow</item>
+/// <item><b>Strategy:</b> IRetryPolicy, IClientLifecycleManager, ValueConverter abstract implementation-specific behavior</item>
 /// </list>
 /// <para><b>Performance Optimizations:</b></para>
 /// <list type="bullet">
-/// <item>Pre-allocated List capacity in GetDataPointValues (avoids resizing)</item>
+/// <item>Pre-allocated List capacity in ValueConverter (avoids resizing)</item>
 /// <item>Indexed for loops (no LINQ) in hot paths</item>
 /// <item>O(1) channel lookup via Dictionary</item>
 /// <item>All-or-nothing validation semantics (fails fast)</item>
 /// </list>
 /// </remarks>
-public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TClient> : IAsyncDisposable
-    where TDataPoint : class, IDataPoint
-    where TClient : class
+public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteClient, TRootNode, TCommunication,
+    TClientInformation>
+    : IExternalOutgoingCommunication<TCommunication>, IAsyncDisposable
+    where TDataPoint : IDataPoint
     where TDataPointValue : IDataPointValue<TDataPoint>
+    where TWriteClient : IWriteClient<TDataPointValue>
+    where TRootNode : IRootConfigurationNode<TCommunication>
+    where TCommunication : DataPortCommunication
+    where TClientInformation : IClientInformation
 {
-    // Queue and dependencies
-    private readonly ChannelQueue<IReadOnlyList<TDataPointValue>> _queue;
+    private readonly ChannelResolver<TDataPoint> _channelResolver;
     private readonly ILogger _logger;
-    private readonly IDelayProvider _delayProvider;
-    private readonly IReadOnlyDictionary<string, TDataPoint> _channelToDataPointMap;
-    private readonly DataPointValueValidator<TDataPoint, TDataPointValue> _dataPointValuesValidator;
 
-    // Lifecycle state
-    private Task? _queueTask;
-    private CancellationTokenSource? _cancellationTokenSource;
+    private readonly QueueProcessor<TDataPointValue> _queueProcessor;
+    private readonly DataPointValueValidator<TDataPoint, TDataPointValue> _validator;
+
+    private bool _isConnected;
+    private bool _disposed;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OutgoingDataPortBase{TDataPoint, TDataPointValue, TWriteClient, TRootNode, TCommunication, TClientInformation}"/> class.
+    /// </summary>
+    /// <param name="communication">The communication configuration used to establish the connection</param>
+    /// <param name="loggerFactory">Logger factory for creating typed loggers</param>
+    /// <param name="typedNodeMapper">The mapper that converts the communication object to a typed root node</param>
+    /// <param name="mapper">The mapper that converts the root node to data points</param>
+    /// <param name="queueConfiguration">Queue capacity and overflow strategy configuration</param>
+    /// <param name="delayProvider">Delay provider for retry backoff (defaults to Task.Delay)</param>
+    protected internal OutgoingDataPortBase(
+        TCommunication communication,
+        ILoggerFactory loggerFactory,
+        TypedNodeMapper<TCommunication, TRootNode> typedNodeMapper,
+        IDataPointsMapper<TRootNode, TCommunication, TDataPoint> mapper,
+        QueueConfiguration queueConfiguration,
+        IDelayProvider delayProvider)
+    {
+        _logger = loggerFactory.CreateLogger(GetType());
+        DevicNode = typedNodeMapper.MapToTypedNodes(communication);
+        DataPoints = mapper.ToDataPoints(DevicNode);
+        _channelResolver = new ChannelResolver<TDataPoint>(DataPoints);
+        _validator = new DataPointValueValidator<TDataPoint, TDataPointValue>(
+            loggerFactory.CreateLogger<DataPointValueValidator<TDataPoint, TDataPointValue>>());
+
+        _queueProcessor = new QueueProcessor<TDataPointValue>(
+            queueConfiguration,
+            delayProvider,
+            loggerFactory.CreateLogger<QueueProcessor<TDataPointValue>>(),
+            $"{GetType().Name}Queue");
+    }
+
+    /// <summary>
+    /// Optional verifier that checks data points for configuration mismatches before queue processing starts
+    /// </summary>
+    protected abstract IDataPointConfigurationVerifier<TDataPoint>? ConfigurationVerifier { get; }
+
+    /// <summary>
+    /// Manager for acquiring and releasing client connections.
+    /// </summary>
+    protected abstract IClientLifecycleManager<TWriteClient, TClientInformation> ClientLifecycleManager { get; }
+
+    /// <summary>Gets the root configuration node derived from the communication object.</summary>
+    public TRootNode DevicNode { get; }
+
+    /// <summary>Gets the data points mapped from the root configuration node.</summary>
+    public List<TDataPoint> DataPoints { get; }
+
+    /// <summary>
+    /// The information required to uniquely identify and create a client.
+    /// </summary>
+    public abstract TClientInformation ClientInformation { get; }
+
+    /// <summary>
+    /// The client used for writing datapoints. Will be set after intial connect.
+    /// </summary>
+    protected TWriteClient? Client { get; private set; }
 
     /// <summary>
     /// Gets the retry policy for write operations (implementation-specific).
@@ -57,91 +127,65 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TClient>
     protected abstract IRetryPolicy RetryPolicy { get; }
 
     /// <summary>
-    /// Gets the write client for external system write operations (implementation-specific).
+    /// Disposes the data port and releases all resources.
     /// </summary>
-    protected abstract IWriteClient<TDataPointValue> WriteClient { get; }
-
-    /// <summary>
-    /// Gets the value factory for creating validated data point values (implementation-specific).
-    /// </summary>
-    protected abstract IDataPointValueFactory<TDataPoint, TDataPointValue> ValueFactory { get; }
-
-    /// <summary>
-    /// Acquires a connected client instance.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Connected client instance</returns>
-    protected abstract Task<TClient> AcquireConnectionAsync(CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Releases the connection and performs cleanup.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Async task</returns>
-    protected abstract Task ReleaseConnectionAsync(CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Validates the connection after acquisition.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Async task</returns>
-    protected abstract Task ValidateConnectionAsync(CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OutgoingDataPortBase{TDataPoint, TDataPointValue, TClient}"/> class.
-    /// </summary>
-    /// <param name="dataPoints">Collection of data point configurations</param>
-    /// <param name="channelSelector">Function to extract channels from a data point</param>
-    /// <param name="queueCapacity">Maximum queue capacity</param>
-    /// <param name="overflowStrategy">Strategy for handling queue overflow (DropOldest or DropNewest)</param>
-    /// <param name="logger">Logger instance</param>
-    /// <param name="delayProvider">Delay provider for retry backoff (defaults to Task.Delay)</param>
-    /// <param name="timeProvider">Time provider for testing (not used by base class, available for derived classes)</param>
-#pragma warning disable IDE0060 // Remove unused parameter - kept for derived class usage
-    protected OutgoingDataPortBase(
-        IReadOnlyList<TDataPoint> dataPoints,
-        Func<TDataPoint, IReadOnlyList<string>> channelSelector,
-        int queueCapacity,
-        QueueStrategy overflowStrategy,
-        ILogger logger,
-        IDelayProvider? delayProvider = null,
-        TimeProvider? timeProvider = null)
-#pragma warning restore IDE0060
+    public async ValueTask DisposeAsync()
     {
-        ArgumentNullException.ThrowIfNull(dataPoints);
-        ArgumentNullException.ThrowIfNull(channelSelector);
-        ArgumentNullException.ThrowIfNull(logger);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(queueCapacity);
+        if (_disposed) return;
+        _disposed = true;
+        await DisposeAdditionalResourcesAsync().ConfigureAwait(false);
+        if (_isConnected)
+        {
+            await DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
+        }
 
-        _logger = logger;
-        _delayProvider = delayProvider ?? new DefaultDelayProvider();
-
-        // Build O(1) channel lookup
-        _channelToDataPointMap = ChannelLookupBuilder.BuildLookup(dataPoints, channelSelector);
-
-        // Initialize queue
-        _queue = new ChannelQueue<IReadOnlyList<TDataPointValue>>(
-            capacity: queueCapacity,
-            boundedChannelFullMode: overflowStrategy,
-            logger: logger,
-            name: $"{GetType().Name}Queue");
-
-        _dataPointValuesValidator = new DataPointValueValidator<TDataPoint, TDataPointValue>(logger);
+        await _queueProcessor.DisposeAsync().ConfigureAwait(false);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
+    /// Override to dispose resources owned by the subclass. Called before the base class releases its own resources.
+    /// No need to call <c>base.DisposeAdditionalResourcesAsync()</c>.
+    /// </summary>
+    protected virtual ValueTask DisposeAdditionalResourcesAsync() => ValueTask.CompletedTask;
+
+
+    /// <summary>
     /// Template method: Connect to external system and start queue processing.
-    /// Orchestrates connection, validation, and background task creation.
+    /// Orchestrates connection, verification, and background task creation.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Async task</returns>
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
-        await AcquireConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await ValidateConnectionAsync(cancellationToken).ConfigureAwait(false);
+        Client = await ClientLifecycleManager.AcquireConnectedAsync(ClientInformation, cancellationToken)
+            .ConfigureAwait(false);
 
-        _cancellationTokenSource = new CancellationTokenSource();
-        _queueTask ??= ProcessQueueAsync();
+        await VerifyDataPoints(cancellationToken).ConfigureAwait(false);
+        _queueProcessor.Start(Client, RetryPolicy);
+        _isConnected = true;
+    }
+
+
+    /// <summary>
+    /// Matches, converts, validates, and enqueues a batch of external values for writing.
+    /// Drops the entire batch if any value fails validation.
+    /// </summary>
+    /// <param name="engineCycle">The engine cycle number for this batch</param>
+    /// <param name="values">External values to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Async task</returns>
+    public virtual Task SendAsync(ulong engineCycle, IReadOnlyCollection<ExternalValue> values,
+        CancellationToken cancellationToken)
+    {
+        var resolvedChannels = ResolveChannels(values);
+        var dataPointValues = ToDataPointValues(resolvedChannels);
+        var validationResult = _validator.ValidateAll(dataPointValues);
+        if (validationResult.IsValid) return EnqueueAsync(validationResult.ValidValues);
+        // TODO: Discuss inconsistent behaviour
+        // Unmatched channels will just be logged and we write the rest, when there are some invalid-values we drop the whole batch
+        _logger.DataPointValuesInvalid(validationResult.Failures.Count, dataPointValues.Count);
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -151,243 +195,78 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TClient>
     /// <returns>Async task</returns>
     public async Task DisconnectAsync(CancellationToken cancellationToken)
     {
-        if (_cancellationTokenSource is not null)
-        {
-            // Signal that no more items will be added to the queue
-            _queue.CompleteAdding();
-
-            // Capture reference and clear field immediately to prevent re-entry from DisposeAsync
-            var cts = _cancellationTokenSource;
-            _cancellationTokenSource = null;
-
-            // Cancel background processing
-            await cts.CancelAsync();
-            cts.Dispose();
-        }
-
-        // Wait for queue processing to stop
-        if (_queueTask is not null)
-        {
-            try
-            {
-                await _queueTask.ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected
-            }
-
-            _queueTask = null;
-        }
-
-        // Release connection (implementation-specific)
-        await ReleaseConnectionAsync(cancellationToken).ConfigureAwait(false);
+        _isConnected = false;
+        await _queueProcessor.StopAsync().ConfigureAwait(false);
+        await ReleaseClientAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Disposes the data port and releases all resources.
+    /// Converts an external value matched to a specific data point into a typed data point value.
     /// </summary>
-    /// <returns>Async task</returns>
-    public async ValueTask DisposeAsync()
+    protected abstract TDataPointValue ConvertValue(ExternalValue externalValue, TDataPoint dataPoint);
+
+    private async ValueTask<List<MisConfiguredDataPoint<TDataPoint>>> VerifyDataPoints(
+        CancellationToken cancellationToken)
     {
-        if (_cancellationTokenSource is not null)
+        if (ConfigurationVerifier == null) return [];
+        var misconfiguredDataPoints = await ConfigurationVerifier
+            .Verify(DataPoints, cancellationToken)
+            .ConfigureAwait(false);
+        foreach (var misconfigured in misconfiguredDataPoints)
         {
-            await DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
+            var misconfigurations =
+                string.Join(", ", misconfigured.MisMatchingConfigurations.Select(static m => m.Value));
+            _logger.MisConfiguredDataPoint(misconfigured.DataPoint.Identifier.Value, misconfigurations);
         }
 
-        _queue.Dispose();
-        DisposeClient();
+        if (misconfiguredDataPoints.Count <= 0) return misconfiguredDataPoints;
 
-        GC.SuppressFinalize(this);
+        await DisconnectAsync(cancellationToken).ConfigureAwait(false);
+        var exceptionMessage = $"Failed to connect as {misconfiguredDataPoints.Count} data point(s) are misconfigured.";
+        throw new InvalidConfigurationException(exceptionMessage);
     }
 
     /// <summary>
-    /// Provides an optional hook for derived classes to dispose of client-specific resources.
+    /// Enqueues external values for writing to the external system.
     /// </summary>
-    /// <remarks>
-    /// This method is called during disposal but is currently not invoked by the base class.
-    /// Derived classes can override this method to perform cleanup of their client instances
-    /// if needed. Consider whether this logic should be moved to <see cref="ReleaseConnectionAsync"/>
-    /// or called from <see cref="DisposeAsync"/>.
-    /// </remarks>
-    protected virtual void DisposeClient() { }
-
-    /// <summary>
-    /// Sends external values to the external system via the queue.
-    /// </summary>
-    /// <param name="values">External values to send</param>
+    /// <param name="dataPointValues">DataPoint-values to enqueue</param>
     /// <returns>Async task</returns>
-    public Task SendAsync(IReadOnlyCollection<ExternalValue> values)
+    private Task EnqueueAsync(IReadOnlyList<TDataPointValue> dataPointValues)
     {
-        if (values.Count == 0) return Task.CompletedTask;
-
-        var dataPointValues = GetDataPointValues(values);
-        if (dataPointValues.Count == 0)
-            return Task.CompletedTask;
-
-        _queue.Append(dataPointValues);
+        if (dataPointValues.Count == 0) return Task.CompletedTask;
+        _queueProcessor.Enqueue(dataPointValues);
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Transforms external values to data point values with batch validation.
-    /// Uses two-phase approach: mapping then validation for complete error diagnostics.
-    /// </summary>
-    /// <param name="values">External values from DataPort</param>
-    /// <returns>List of validated data point values, or empty list on validation failure</returns>
-    /// <remarks>
-    /// Uses all-or-nothing semantics: If any value fails validation, the entire batch is rejected.
-    /// This prevents partial writes that could leave the target system in an inconsistent state.
-    /// Phase 1: Map channels to data points, collecting unmapped channels
-    /// Phase 2: Create and validate all values, collecting all validation failures
-    /// </remarks>
-    protected IReadOnlyList<TDataPointValue> GetDataPointValues(IReadOnlyCollection<ExternalValue> values)
+    private async ValueTask ReleaseClientAsync(CancellationToken cancellationToken)
     {
-        if (values.Count == 0) return [];
-
-        var mappingResult = MapExternalValuesToDataPointValues(values);
-        if (mappingResult.UnmappedChannels.Count > 0)
-        {
-            _logger.UnmappedChannelsBatch(mappingResult.UnmappedChannels.Count,
-                string.Join(", ", mappingResult.UnmappedChannels));
-            return [];
-        }
-
-        var validationResult = _dataPointValuesValidator.ValidateAll(mappingResult.MappedValues);
-        if (!validationResult.IsValid)
-        {
-            _logger.BatchValidationFailed(validationResult.Failures.Count, values.Count);
-            return [];
-        }
-
-        return validationResult.ValidValues;
+        if (Client is null) return;
+        await ClientLifecycleManager.ReleaseAsync(ClientInformation, cancellationToken)
+            .ConfigureAwait(false);
+        Client = default;
     }
 
-    /// <summary>
-    /// Maps external values to data point values, collecting any unmapped channels.
-    /// </summary>
-    /// <param name="externalValues">The external values to map.</param>
-    /// <returns>A result containing mapped DataPointValues and any unmapped channel names.</returns>
-    private ExternalValuesMappingResult<TDataPoint, TDataPointValue> MapExternalValuesToDataPointValues(
-        IReadOnlyCollection<ExternalValue> externalValues)
+
+    private List<ResolvedChannel<TDataPoint>> ResolveChannels(IReadOnlyCollection<ExternalValue> values)
     {
-        var dataPointValues = new List<TDataPointValue>(externalValues.Count);
-        var unmappedChannels = new List<string>();
-
-        foreach (var externalValue in externalValues)
-        {
-            if (_channelToDataPointMap.TryGetValue(externalValue.Channel, out var dataPoint))
-            {
-                dataPointValues.Add(ValueFactory.Create(dataPoint, externalValue.Value));
-            }
-            else
-            {
-                unmappedChannels.Add(externalValue.Channel);
-            }
-        }
-
-        return new ExternalValuesMappingResult<TDataPoint, TDataPointValue>(dataPointValues, unmappedChannels);
+        var resolution = _channelResolver.Resolve(values);
+        if (resolution.UnresolvedChannels.Count <= 0) return resolution.ResolvedChannels;
+        var unresolvedChannelNames =
+            resolution.UnresolvedChannels.Select(static channel => channel.ExternalValue.Channel);
+        _logger.UnresolvedChannels(resolution.UnresolvedChannels.Count, string.Join(", ", unresolvedChannelNames));
+        return resolution.ResolvedChannels;
     }
 
-    /// <summary>
-    /// Background task that processes queued write operations with retry logic.
-    /// </summary>
-    /// <returns>Async task</returns>
-    private async Task ProcessQueueAsync()
+    [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
+    private List<TDataPointValue> ToDataPointValues(List<ResolvedChannel<TDataPoint>> resolvedChannels)
     {
-        // Capture token at start to avoid race condition with DisconnectAsync setting _cancellationTokenSource to null
-        var token = _cancellationTokenSource!.Token;
-
-        try
+        var dataPointValues = new List<TDataPointValue>(resolvedChannels.Count);
+        foreach (var channel in resolvedChannels)
         {
-            while (!token.IsCancellationRequested)
-            {
-                var item = await _queue.PeekAsync(token).ConfigureAwait(false);
-                if (item is null)
-                {
-                    await _delayProvider.DelayAsync(TimeSpan.FromMilliseconds(10), token)
-                        .ConfigureAwait(false);
-                    continue;
-                }
-
-                try
-                {
-                    await PublishAsync(item, token).ConfigureAwait(false);
-                    await _queue.MarkItemAsReadAsync(item, token).ConfigureAwait(false);
-                }
-                catch (QueueBackpressureException)
-                {
-                    // Item dropped due to backpressure during retry
-                    _logger.ItemDroppedDueToBackpressure();
-                    await _queue.MarkItemAsReadAsync(item, token).ConfigureAwait(false);
-                }
-                catch (MaxRetriesExceededException ex)
-                {
-                    _logger.MaxRetriesExceeded(ex);
-                    await _queue.MarkItemAsReadAsync(item, token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Normal cancellation during shutdown
-                    break;
-                }
-            }
+            var dataPointValue = ConvertValue(channel.ExternalValue, channel.DataPoint);
+            dataPointValues.Add(dataPointValue);
         }
-        catch (OperationCanceledException)
-        {
-            // Expected during disconnect
-        }
-    }
 
-    /// <summary>
-    /// Publishes data point values to the external system with exponential backoff retry logic.
-    /// </summary>
-    /// <param name="dataPointValues">Values to write</param>
-    /// <param name="cancellationToken">Cancellation token for shutdown (retries always use CancellationToken.None)</param>
-    /// <returns>Async task</returns>
-    /// <exception cref="MaxRetriesExceededException">Thrown when retry policy exhausted</exception>
-    /// <exception cref="QueueBackpressureException">Thrown when item superseded by queue overflow</exception>
-    private async ValueTask PublishAsync(IReadOnlyList<TDataPointValue> dataPointValues,
-        CancellationToken cancellationToken)
-    {
-        long retryCount = 0;
-
-        while (true)
-        {
-            try
-            {
-                // Always use CancellationToken.None for retries (don't cancel mid-write)
-                await WriteClient.WriteAsync(dataPointValues, CancellationToken.None).ConfigureAwait(false);
-                return; // Success
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                retryCount++;
-
-                // Check if we should continue retrying
-                if (!RetryPolicy.ShouldRetry(retryCount))
-                {
-                    RetryPolicy.OnMaxRetriesExceeded(retryCount, ex);
-                    throw new MaxRetriesExceededException(retryCount,
-                        $"Write operation failed after maximum retry attempts ({dataPointValues.Count} data points)",
-                        ex);
-                }
-
-                // Calculate exponential backoff
-                var delay = RetryBackoffCalculator.CalculateDelay(retryCount, initialDelayMs: 200, maxDelayMs: 1000);
-
-                // Progressive logging
-                RetryLogger.LogRetryAttempt(retryCount, delay, _logger);
-
-                await _delayProvider.DelayAsync(delay, cancellationToken).ConfigureAwait(false);
-
-                // Backpressure detection: Check if this item is still at queue head
-                if (!_queue.IsItemStillHead(dataPointValues))
-                {
-                    _logger.AbandoningRetryDueToBackpressure(retryCount);
-                    throw new QueueBackpressureException();
-                }
-            }
-        }
+        return dataPointValues;
     }
 }
