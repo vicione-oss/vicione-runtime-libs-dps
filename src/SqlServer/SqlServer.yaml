@@ -266,7 +266,7 @@ Properties:
     DataType    : UInt16
     UiControl   : NumericUpDown
     MinValue    : 1
-    DefaultValue: 5432
+    DefaultValue: 1433
 
   - Id          : BulkSize
     Name        : "Bulk size"
