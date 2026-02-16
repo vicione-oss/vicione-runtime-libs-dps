@@ -274,7 +274,7 @@
       "ViciOne.Suite.DataPort.RelationalDatabase": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Suite.DataPort": "[0.29.0, )"
+          "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {

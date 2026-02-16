@@ -1,4 +1,4 @@
-namespace ViciOne.Suite.DataPort;
+﻿namespace ViciOne.Suite.DataPort;
 
 public enum UserAuthenticationType
 {

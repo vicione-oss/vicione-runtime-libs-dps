@@ -768,7 +768,7 @@ dotnet_remove_unnecessary_suppression_exclusions = none # Enables the rule for a
 # Overrides   #
 ###############
 
-[tests/**{Facts,Tests}*.cs]
+[tests/**/*{Test,Facts,Tests}*.cs]
 dotnet_diagnostic.CA1034.severity = none # Nested types should not be visible
 dotnet_diagnostic.CA1052.severity = none # Static holder types should be sealed
 dotnet_diagnostic.CA1506.severity = none # Avoid excessive class coupling

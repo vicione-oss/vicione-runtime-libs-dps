@@ -39,4 +39,3 @@ public class SqlServerRelationalDatabase_CreateDataRowsFromTemplate
             });
     }
 }
-

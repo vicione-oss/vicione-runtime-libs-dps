@@ -6,6 +6,19 @@
 
 - Add `Name` property to `DataPortCommunication`
 - Implement `Http Server` data port
+- Introduce `ViciOne.Suite.DataPort.Extensions` package with reusable base classes and utilities for implementing custom data ports:
+  - Base templates: `IncomingDataPortBase` for read-oriented data ports with periodic polling, `OutgoingDataPortBase` for write-oriented data ports with queue processing and retry logic
+  - Infrastructure components: `PeriodicJob` for periodic task execution with Polly resilience, `TypedNodeMapper` for configuration mapping with FluentValidation integration
+  - Queue system: `ChannelQueue` and `PrependableChannelQueue` with configurable overflow strategies (drop oldest/newest, throw exception)
+  - Resilience utilities: `RetryBackoffCalculator` for exponential/linear backoff with jitter, retry policies (`BoundedRetryPolicy`, `InfiniteRetryPolicy`)
+  - Value validation: `DataPointValueValidator` with all-or-nothing semantics
+  - Data port abstractions: `IConnectionManager`, `IReadClient`, `IWriteClient`, `IDataPoint`, `IPollingDataPoint`, `IDataPointPollingGroup`, `IDataPointValue`, `IRetryPolicy`
+  - Structured exception types: `ConnectionFailureException`, `DataRetrievalException`, `DataConversionException`, `InvalidConfigurationException`, `MaxRetriesExceededException`, `QueueBackpressureException`
+- Introduce `ViciOne.Suite.DataPort.Extensions.Testing` package with specialized test utilities for data port development:
+  - Eventual assertions: `EventualAssertions`, `EventualValue<T>`, `EventualValueAssertions<T>`
+  - YAML consistency testing: `YamlConsistencyBaseTest` base class for validating consistency between YAML configuration files and C# DataPort implementations
+  - Test helpers: `DataPortCommunicationExtensions` for reflection-based Communication analysis, `RulesetExtensions` for querying YAML rulesets
+  - Centralized test logging configuration
 
 ### Changed
 

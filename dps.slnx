@@ -1,0 +1,74 @@
+<Solution>
+    <Folder Name="/docs/DataPort.Extensions/">
+        <File Path="docs/DataPort.Extensions/Exceptions.md" />
+        <File Path="docs/DataPort.Extensions/IncomingDataPort.md" />
+        <File Path="docs/DataPort.Extensions/Interfaces.md" />
+        <File Path="docs/DataPort.Extensions/Logging.md" />
+        <File Path="docs/DataPort.Extensions/Model.md" />
+        <File Path="docs/DataPort.Extensions/OutgoingDataPort.md" />
+        <File Path="docs/DataPort.Extensions/Overview.md" />
+        <File Path="docs/DataPort.Extensions/Queue.md" />
+        <File Path="docs/DataPort.Extensions/README.md" />
+        <File Path="docs/DataPort.Extensions/Resilience.md" />
+        <File Path="docs/DataPort.Extensions/ValueValidation.md" />
+    </Folder>
+    <Folder Name="/samples/">
+        <Project Path="samples/Benchmarks/Benchmarks.csproj" />
+        <Project Path="samples/DataPortConnectionTester/DataPortConnectionTester.csproj" />
+        <Project Path="samples/HttpServerIncomingTest/HttpServerIncomingTest.csproj" />
+        <Project Path="samples/HttpServerOutgoingTest/HttpServerOutgoingTest.csproj" />
+        <Project Path="samples/OpcUa.Server.Standalone/OpcUa.Server.Standalone.csproj" />
+    </Folder>
+    <Folder Name="/docs/DataPort.Extensions.Testing/">
+        <File Path="docs/DataPort.Extensions.Testing/README.md" />
+    </Folder>
+    <Folder Name="/Solution Items/">
+        <File Path=".gitlab-ci.yml" />
+        <File Path="CHANGELOG.md" />
+        <File Path="Directory.Build.props" />
+        <File Path="Directory.Packages.props" />
+        <File Path="NuGet.Config" />
+        <File Path="README.md" />
+        <File Path="THIRD-PARTY-NOTICES.md" />
+        <File Path="VERSION" />
+    </Folder>
+    <Folder Name="/src/">
+        <Project Path="src/Aws.Iot/Aws.Iot.csproj" />
+        <Project Path="src/Azure.EventGrid.Topic/Azure.EventGrid.Topic.csproj" />
+        <Project Path="src/Azure.IotHub/Azure.IotHub.csproj" />
+        <Project Path="src/DataPort.Extensions/DataPort.Extensions.csproj" />
+        <Project Path="src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj" />
+        <Project Path="src/DataPort/DataPort.csproj" />
+        <Project Path="src/Http.Client/Http.Client.csproj" />
+        <Project Path="src/Http.Server/Http.Server.csproj" />
+        <Project Path="src/InfluxDb/InfluxDb.csproj" />
+        <Project Path="src/Mqtt/Mqtt.csproj" />
+        <Project Path="src/MySql/MySql.csproj" />
+        <Project Path="src/OpcUa.Client/OpcUa.Client.csproj" />
+        <Project Path="src/OpcUa.Server/OpcUa.Server.csproj" />
+        <Project Path="src/PostgreSql/PostgreSql.csproj" />
+        <Project Path="src/RelationalDatabase/RelationalDatabase.csproj" />
+        <Project Path="src/Sqlite/Sqlite.csproj" />
+        <Project Path="src/SqlServer/SqlServer.csproj" />
+    </Folder>
+    <Folder Name="/tests/">
+        <Project Path="tests/Aws.Iot.Tests/Aws.Iot.Tests.csproj" />
+        <Project Path="tests/Azure.EventGrid.Topic.Tests/Azure.EventGrid.Topic.Tests.csproj" />
+        <Project Path="tests/Azure.IotHub.Tests/Azure.IotHub.Tests.csproj" />
+        <Project Path="tests/Common.Tests/Common.Tests.csproj" />
+        <Project Path="tests/DataPort.Extensions.Tests/DataPort.Extensions.Tests.csproj" />
+        <Project Path="tests/DataPort.Extensions.Testing.Tests/DataPort.Extensions.Testing.Tests.csproj" />
+        <Project Path="tests/DataPort.Tests/DataPort.Tests.csproj" />
+        <Project Path="tests/Http.Client.Tests/Http.Client.Tests.csproj" />
+        <Project Path="tests/Http.Server.Tests/Http.Server.Tests.csproj" />
+        <Project Path="tests/InfluxDb.Tests/InfluxDb.Tests.csproj" />
+        <Project Path="tests/Mqtt.Tests/Mqtt.Tests.csproj" />
+        <Project Path="tests/MySql.Tests/MySql.Tests.csproj" />
+        <Project Path="tests/OpcUa.Client.Tests/OpcUa.Client.Tests.csproj" />
+        <Project Path="tests/OpcUa.Server.Tests/OpcUa.Server.Tests.csproj" />
+        <Project Path="tests/PostgreSql.Tests/PostgreSql.Tests.csproj" />
+        <Project Path="tests/RelationalDatabase.Tests/RelationalDatabase.Tests.csproj" />
+        <Project Path="tests/Sqlite.Tests/Sqlite.Tests.csproj" />
+        <Project Path="tests/SqlServer.Tests/SqlServer.Tests.csproj" />
+    </Folder>
+</Solution>
