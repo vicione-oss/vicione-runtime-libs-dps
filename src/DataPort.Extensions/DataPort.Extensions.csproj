@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>ViciOne.Suite.DataPort.Extensions</RootNamespace>
+        <AssemblyName>ViciOne.Suite.DataPort.Extensions</AssemblyName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- XML Documentation (generates .xml file included in package for IntelliSense) -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Separate symbol package (.snupkg) - Currently commented out as it's redundant
+             since we're already embedding sources in the PDB included in the main package.
+             TODO: Discuss with team if separate symbol packages are needed for symbol server publishing. -->
+        <!--<IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>-->
+
+        <!-- Include symbols and sources in main package -->
+        <DebugType>portable</DebugType>
+        <EmbedAllSources>true</EmbedAllSources>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+
+        <!-- Package Metadata -->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Description>Extension library for ViciOne DataPort providing base classes, resilience, validation, queuing, and logging utilities for building incoming and outgoing data port providers.</Description>
+    </PropertyGroup>
+
+    <!-- Include all documentation files in the package at root (flat structure) -->
+    <ItemGroup>
+        <None Include="..\..\docs\DataPort.Extensions\*.md" Pack="true" PackagePath="\" Visible="false"/>
+    </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataPort\DataPort.csproj" />
+  </ItemGroup>
+
+</Project>

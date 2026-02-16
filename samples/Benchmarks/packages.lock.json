@@ -938,7 +938,7 @@
         "type": "Project",
         "dependencies": {
           "AWSSDK.IoT": "[4.0.0.13, )",
-          "ViciOne.Suite.DataPort.Mqtt": "[0.29.0, )"
+          "ViciOne.Suite.DataPort.Mqtt": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.Azure.IotHub": {
@@ -946,68 +946,68 @@
         "dependencies": {
           "Microsoft.Azure.Devices": "[1.40.0, )",
           "Microsoft.Azure.Devices.Client": "[1.42.3, )",
-          "ViciOne.Suite.DataPort": "[0.29.0, )"
+          "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.Http.Client": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Suite.DataPort": "[0.29.0, )"
+          "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.InfluxDb": {
         "type": "Project",
         "dependencies": {
           "InfluxDB.Client": "[4.18.0, )",
-          "ViciOne.Suite.DataPort": "[0.29.0, )"
+          "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.Mqtt": {
         "type": "Project",
         "dependencies": {
           "MQTTnet.Extensions": "[0.21.0, )",
-          "ViciOne.Suite.DataPort": "[0.29.0, )"
+          "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.MySql": {
         "type": "Project",
         "dependencies": {
           "MySqlConnector": "[2.4.0, )",
-          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.29.0, )"
+          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.OpcUa.Client": {
         "type": "Project",
         "dependencies": {
           "OPCFoundation.NetStandard.Opc.Ua.Client": "[1.5.375.457, )",
-          "ViciOne.Suite.DataPort": "[0.29.0, )"
+          "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.PostgreSql": {
         "type": "Project",
         "dependencies": {
           "Npgsql": "[9.0.3, )",
-          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.29.0, )"
+          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.RelationalDatabase": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Suite.DataPort": "[0.29.0, )"
+          "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.Sqlite": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Data.Sqlite": "[9.0.7, )",
-          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.29.0, )"
+          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.30.0, )"
         }
       },
       "ViciOne.Suite.DataPort.SqlServer": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Data.SqlClient": "[6.0.2, )",
-          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.29.0, )"
+          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.30.0, )"
         }
       },
       "AWSSDK.IoT": {

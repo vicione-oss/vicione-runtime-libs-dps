@@ -155,7 +155,7 @@
         "type": "Project",
         "dependencies": {
           "OPCFoundation.NetStandard.Opc.Ua.Server": "[1.5.375.457, )",
-          "ViciOne.Suite.DataPort": "[0.29.0, )"
+          "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
