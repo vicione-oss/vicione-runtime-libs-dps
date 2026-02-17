@@ -35,6 +35,7 @@
 - Fix OPC UA server exception on sending the same status code multiple times
 - Fix OPC UA server crash on receiving a number while max and min properties are set
 - Fix OPC UA server exception on connect when incoming and outgoing have the same nodes
+- Fix default port of SQL Server in yaml file
 
 ## 0.29.0 - 2025-10-21
 
