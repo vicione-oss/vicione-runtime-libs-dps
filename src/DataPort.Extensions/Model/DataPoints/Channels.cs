@@ -15,10 +15,10 @@ public record Channels(
 /// Represents a channel that is affected by a data point's operations but may not actively transfer data.
 /// </summary>
 /// <param name="Value">The unique identifier or name of the affected channel.</param>
-public record AffectedChannel(string Value);
+public readonly record struct AffectedChannel(string Value);
 
 /// <summary>
 /// Represents a channel through which data is actively transferred.
 /// </summary>
 /// <param name="Value">The unique identifier or name of the transferred channel.</param>
-public record TransferredChannel(string Value);
+public readonly record struct TransferredChannel(string Value);

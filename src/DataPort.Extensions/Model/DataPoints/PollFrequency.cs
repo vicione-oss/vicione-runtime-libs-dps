@@ -6,7 +6,7 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 /// <summary>
 /// Represents the polling frequency for reading a data point from an external system.
 /// </summary>
-public record PollFrequency(TimeSpan Value)
+public readonly record struct PollFrequency(TimeSpan Value)
 {
     /// <summary>
     /// Implicitly converts a TimeSpan to a PollFrequency.

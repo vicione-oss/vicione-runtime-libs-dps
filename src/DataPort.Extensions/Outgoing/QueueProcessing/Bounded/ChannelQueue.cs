@@ -64,7 +64,7 @@ public sealed class ChannelQueue<T> : ChannelQueueBase<T>
     /// </summary>
     /// <param name="item">The item to append to the queue.</param>
     /// <remarks>
-    /// This method is thread-safe for single-writer scenarios.
+    /// This method is thread-safe for concurrent callers.
     /// When the queue is at capacity, the configured <see cref="QueueStrategy"/> determines which item is dropped.
     /// </remarks>
     public override void Append(T item)

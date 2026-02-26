@@ -31,7 +31,6 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping.Properties;
 /// throw new InvalidPropertyException(PropertyValidationErrorType.Missing, "PropertyName");
 /// </code>
 /// </example>
-
 [SuppressMessage("Design", "CA1032:Implement standard exception constructors")]
 public class InvalidPropertyException(
     PropertyValidationErrorType errorType,

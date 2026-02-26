@@ -17,4 +17,4 @@ public record MisconfiguredDataPoint<TDataPoint>(
 /// Represents a single configuration mismatch detected during data point verification.
 /// </summary>
 /// <param name="Value">A human-readable description of the mismatch.</param>
-public record MismatchingConfiguration(string Value);
+public readonly record struct MismatchingConfiguration(string Value);

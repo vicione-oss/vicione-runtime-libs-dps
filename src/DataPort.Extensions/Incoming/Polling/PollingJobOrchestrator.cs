@@ -103,6 +103,7 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
         _logger.StoppingPollingJobs(_pollingJobs.Count);
         await _cancellationSource.CancelAsync().ConfigureAwait(false);
         await DisposeAllJobsAsync().ConfigureAwait(false);
+        _logger.PollingJobsStopped();
         _pollingJobs.Clear();
         _cancellationSource.Dispose();
     }
