@@ -26,7 +26,7 @@ public class DataPointValueValidator<TDataPoint, TDataPointValue>(ILogger logger
         ArgumentNullException.ThrowIfNull(dataPointValues);
 
         var validValues = new List<TDataPointValue>(dataPointValues.Count);
-        var failures = new List<DataPointValueValidationFailure<TDataPoint>>(dataPointValues.Count);
+        var failures = new List<DataPointValueValidationFailure<TDataPoint>>();
 
         foreach (var dataPointValue in dataPointValues)
         {

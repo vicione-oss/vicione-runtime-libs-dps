@@ -102,8 +102,6 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
     {
         _logger.StoppingPollingJobs(_pollingJobs.Count);
         await _cancellationSource.CancelAsync().ConfigureAwait(false);
-        await StopAllJobsAsync().ConfigureAwait(false);
-        _logger.PollingJobsStopped();
         await DisposeAllJobsAsync().ConfigureAwait(false);
         _pollingJobs.Clear();
         _cancellationSource.Dispose();
@@ -127,20 +125,6 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
             logger: _loggerFactory
                 .CreateLogger<DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>>(),
             externalCancellation: cancellationToken);
-    }
-
-    /// <summary>
-    /// Stops all polling jobs.
-    /// </summary>
-    private async Task StopAllJobsAsync()
-    {
-        var tasks = new Task[_pollingJobs.Count];
-        for (var i = 0; i < _pollingJobs.Count; i++)
-        {
-            tasks[i] = _pollingJobs[i].StopPeriodicExecution();
-        }
-
-        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     /// <summary>

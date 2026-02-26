@@ -41,7 +41,10 @@ public sealed class ChannelQueue<T> : ChannelQueueBase<T>
                 _ => throw new ArgumentOutOfRangeException(nameof(boundedChannelFullMode), boundedChannelFullMode, null)
             },
             SingleReader = true,
-            SingleWriter = true
+            // SingleWriter is intentionally not set (defaults to false).
+            // Append may be called from multiple threads (e.g. via OutgoingDataPortBase.EnqueueAsync
+            // which is reachable from SendAsync, an external entry point with no thread-affinity guarantee).
+            // SingleWriter = true removes write-side locking and would cause silent data corruption.
         });
     }
 

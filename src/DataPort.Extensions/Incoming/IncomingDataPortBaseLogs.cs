@@ -41,7 +41,7 @@ internal static partial class IncomingDataPortBaseLogs
 /// This allows conditional logging without explicit if-checks - the formatting only happens
 /// when the logger actually needs to write the log message.
 /// </summary>
-public record FormattedExternalValues(IReadOnlyCollection<ExternalValue> Values)
+public readonly record struct FormattedExternalValues(IReadOnlyCollection<ExternalValue> Values)
 {
     /// <summary>
     /// Formats the ExternalValue collection into a human-readable string representation.
