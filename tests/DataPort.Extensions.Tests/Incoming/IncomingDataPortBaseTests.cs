@@ -73,9 +73,9 @@ public class IncomingDataPortBaseTests
         var nodeMapper = CreateTestNodeMapper("192.168.1.100", dataPointNodes);
 
 
-        var misConfiguredDataPoint = new MisConfiguredDataPoint<TestDataPoint>(
+        var misConfiguredDataPoint = new MisconfiguredDataPoint<TestDataPoint>(
             new TestDataPoint(),
-            [new MisMatchingConfiguration("Test mismatch")]);
+            [new MismatchingConfiguration("Test mismatch")]);
 
         var verifier = new TestDataPointConfigurationVerifier { VerifyResult = [misConfiguredDataPoint] };
 
@@ -94,7 +94,7 @@ public class IncomingDataPortBaseTests
 
         // Assert
         await act.Should().ThrowExactlyAsync<InvalidConfigurationException>()
-            .WithMessage("*1 data point(s) are misconfigured*");
+            .WithMessage("*misconfigured dataPoints*");
 
         // Verify DisconnectAsync was called (releases client)
         _connectionManager.ReleaseCallCount.Should().Be(1);

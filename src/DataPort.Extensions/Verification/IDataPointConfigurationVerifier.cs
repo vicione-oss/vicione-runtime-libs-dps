@@ -17,8 +17,8 @@ public interface IDataPointConfigurationVerifier<TDataPoint> where TDataPoint : 
     /// <param name="dataPoints">The data points to verify.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>
-    /// A list of <see cref="MisConfiguredDataPoint{TDataPoint}"/> entries for each data point
+    /// A list of <see cref="MisconfiguredDataPoint{TDataPoint}"/> entries for each data point
     /// that failed verification. Returns an empty list if all data points are valid.
     /// </returns>
-    ValueTask<List<MisConfiguredDataPoint<TDataPoint>>> Verify(List<TDataPoint> dataPoints, CancellationToken cancellationToken);
+    ValueTask<IReadOnlyList<MisconfiguredDataPoint<TDataPoint>>> Verify(IReadOnlyList<TDataPoint> dataPoints, CancellationToken cancellationToken);
 }

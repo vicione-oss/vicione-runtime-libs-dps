@@ -19,4 +19,4 @@ namespace ViciOne.Suite.DataPort.Extensions.Outgoing.ValueValidation;
 public readonly record struct TypeValidationResult(
     bool IsValid,
     Type? ActualType,
-    List<Type> AllowedTypes);
+    IReadOnlyList<Type> AllowedTypes);

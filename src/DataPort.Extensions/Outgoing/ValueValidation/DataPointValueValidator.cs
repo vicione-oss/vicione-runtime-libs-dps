@@ -21,7 +21,7 @@ public class DataPointValueValidator<TDataPoint, TDataPointValue>(ILogger logger
     /// <param name="dataPointValues">Collection of data point values to validate.</param>
     /// <returns>Validation result containing valid values and all failures encountered.</returns>
     public DataPointValuesValidationResult<TDataPoint, TDataPointValue> ValidateAll(
-        IReadOnlyCollection<TDataPointValue> dataPointValues)
+        IReadOnlyList<TDataPointValue> dataPointValues)
     {
         ArgumentNullException.ThrowIfNull(dataPointValues);
 
@@ -55,7 +55,8 @@ public class DataPointValueValidator<TDataPoint, TDataPointValue>(ILogger logger
         IDataPointValue<TDataPoint> dataPointValue)
     {
         var dataPoint = dataPointValue.DataPoint;
-        var channel = dataPoint.Channels.TransferredChannels.FirstOrDefault()?.Value ?? "unknown";
+        var transferredChannels = dataPoint.Channels.TransferredChannels;
+        var channel = transferredChannels.Count > 0 ? transferredChannels[0].Value : "unknown";
 
         var dataType = dataPoint.DataTypeName.Value;
         logger.ValueOutOfRange(
@@ -77,7 +78,8 @@ public class DataPointValueValidator<TDataPoint, TDataPointValue>(ILogger logger
         TypeValidationResult typeValidation)
     {
         var dataPoint = dataPointValue.DataPoint;
-        var channel = dataPoint.Channels.TransferredChannels.FirstOrDefault()?.Value ?? "unknown";
+        var transferredChannels = dataPoint.Channels.TransferredChannels;
+        var channel = transferredChannels.Count > 0 ? transferredChannels[0].Value : "unknown";
         var allowedTypes = string.Join(", ", typeValidation.AllowedTypes.Select(type => type.Name));
 
         logger.ValueHasWrongType(

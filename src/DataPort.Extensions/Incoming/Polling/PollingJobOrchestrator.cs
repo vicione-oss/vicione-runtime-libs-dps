@@ -26,9 +26,9 @@ namespace ViciOne.Suite.DataPort.Extensions.Incoming.Polling;
 /// </list>
 /// <para><b>Lifecycle:</b></para>
 /// <list type="number">
-/// <item>Call <see cref="StartAll"/> to create and start polling jobs (supports reconnection)</item>
-/// <item>Call <see cref="StopAllAsync"/> to cancel and stop all running jobs</item>
-/// <item>Call <see cref="DisposeAsync"/> for final cleanup</item>
+/// <item>Create via constructor with all dependencies including client, groups, and callback</item>
+/// <item>Call <see cref="Start"/> to create and start polling jobs</item>
+/// <item>Call <see cref="DisposeAsync"/> to stop and dispose all jobs</item>
 /// </list>
 /// </remarks>
 internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>
@@ -41,81 +41,58 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
     private readonly ILogger _logger;
     private readonly ILoggerFactory _loggerFactory;
     private readonly TimeProvider _timeProvider;
-
     private List<DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>> _pollingJobs = [];
-    private CancellationTokenSource _cancellationSource = new();
+    private readonly CancellationTokenSource _cancellationSource = new();
+    private readonly TReadClient _readClient;
+    private readonly IReadOnlyList<TDataPointGroup> _groups;
+    private readonly Action<IReadOnlyList<TDataPointValue>> _onDataReceived;
 
     /// <summary>
     /// Initializes a new instance of the PollingJobOrchestrator class.
     /// </summary>
     /// <param name="loggerFactory">Factory for creating loggers.</param>
     /// <param name="timeProvider">Time provider for job scheduling.</param>
+    /// <param name="readClient">Client for reading data point values.</param>
+    /// <param name="groups">Data point groups to poll.</param>
+    /// <param name="onDataReceived">Callback invoked when data is received.</param>
     internal PollingJobOrchestrator(
         ILoggerFactory loggerFactory,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        TReadClient readClient,
+        IReadOnlyList<TDataPointGroup> groups,
+        Action<IReadOnlyList<TDataPointValue>> onDataReceived)
     {
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger(GetType());
         _timeProvider = timeProvider;
+        _readClient = readClient;
+        _groups = groups;
+        _onDataReceived = onDataReceived;
     }
 
     /// <summary>
     /// Creates polling jobs for each group and starts periodic execution.
     /// </summary>
-    /// <param name="groups">Data point groups to poll.</param>
-    /// <param name="readClient">Client for reading data point values.</param>
-    /// <param name="onDataReceived">Callback invoked when data is received.</param>
-    /// <remarks>
-    /// Creates a fresh CancellationTokenSource on each call to support reconnection scenarios.
-    /// </remarks>
-    [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
-    internal void StartAll(
-        List<TDataPointGroup> groups,
-        TReadClient readClient,
-        Action<IReadOnlyList<TDataPointValue>> onDataReceived)
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+    internal void Start()
     {
-        // Reset cancellation if needed (reconnection scenario)
-        if (_cancellationSource.IsCancellationRequested)
-        {
-            _cancellationSource.Dispose();
-            _cancellationSource = new CancellationTokenSource();
-        }
-
-        _logger.CreatingPollingJobs(groups.Count);
+        _logger.CreatingPollingJobs(_groups.Count);
 
         var jobs =
-            new List<DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>>(groups.Count);
-        foreach (var t in groups)
+            new List<DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>>(
+                _groups.Count);
+        foreach (var group in _groups)
         {
-            jobs.Add(CreatePollingJob(t, readClient, onDataReceived, _cancellationSource.Token));
+            jobs.Add(CreatePollingJob(group, _cancellationSource.Token));
         }
 
         _pollingJobs = jobs;
-        foreach (var t in _pollingJobs)
+        foreach (var job in _pollingJobs)
         {
-            t.StartPeriodicExecution();
+            job.StartPeriodicExecution();
         }
 
         _logger.PollingJobsCreatedAndStarted(_pollingJobs.Count);
-    }
-
-    /// <summary>
-    /// Cancels the CancellationTokenSource and stops all running jobs.
-    /// </summary>
-    internal async Task StopAllAsync()
-    {
-        _logger.StoppingPollingJobs(_pollingJobs.Count);
-
-        await _cancellationSource.CancelAsync().ConfigureAwait(false);
-
-        var tasks = new Task[_pollingJobs.Count];
-        for (var i = 0; i < _pollingJobs.Count; i++)
-        {
-            tasks[i] = _pollingJobs[i].StopPeriodicExecution();
-        }
-
-        await Task.WhenAll(tasks).ConfigureAwait(false);
-        _logger.PollingJobsStopped();
     }
 
     /// <summary>
@@ -123,8 +100,10 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
     /// </summary>
     public async ValueTask DisposeAsync()
     {
+        _logger.StoppingPollingJobs(_pollingJobs.Count);
         await _cancellationSource.CancelAsync().ConfigureAwait(false);
         await StopAllJobsAsync().ConfigureAwait(false);
+        _logger.PollingJobsStopped();
         await DisposeAllJobsAsync().ConfigureAwait(false);
         _pollingJobs.Clear();
         _cancellationSource.Dispose();
@@ -135,8 +114,6 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
     /// </summary>
     private DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient> CreatePollingJob(
         TDataPointGroup group,
-        TReadClient readClient,
-        Action<IReadOnlyList<TDataPointValue>> onDataReceived,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(group);
@@ -144,8 +121,8 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
         return new DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>(
             group.PollFrequency,
             group,
-            readClient,
-            onDataReceived,
+            _readClient,
+            _onDataReceived,
             timeProvider: _timeProvider,
             logger: _loggerFactory
                 .CreateLogger<DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>>(),

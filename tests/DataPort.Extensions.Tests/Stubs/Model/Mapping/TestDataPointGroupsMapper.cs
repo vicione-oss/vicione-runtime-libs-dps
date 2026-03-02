@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
@@ -14,7 +13,7 @@ namespace ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Mapping;
 internal sealed class TestDataPointGroupsMapper
     : IDataPointGroupsMapper<TestDataPoint, TestDataPointGroup, TestDeviceNode, TestCommunication>
 {
-    public List<TestDataPoint> ToDataPoints(TestDeviceNode deviceNode) =>
+    public IReadOnlyList<TestDataPoint> ToDataPoints(TestDeviceNode deviceNode) =>
     [
         .. deviceNode.DataPointNodes.OfType<TestDataPointNode>()
             .Select(dataPointNode => new TestDataPoint
@@ -24,7 +23,7 @@ internal sealed class TestDataPointGroupsMapper
             })
     ];
 
-    public TestDataPointGroup CreateGroup(PollFrequency pollFrequency, ImmutableList<TestDataPoint> dataPoints) =>
+    public TestDataPointGroup CreateGroup(PollFrequency pollFrequency, IReadOnlyList<TestDataPoint> dataPoints) =>
         new()
         {
             DataPoints = dataPoints,

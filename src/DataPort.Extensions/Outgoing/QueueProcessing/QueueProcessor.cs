@@ -18,10 +18,9 @@ namespace ViciOne.Suite.DataPort.Extensions.Outgoing.QueueProcessing;
 /// <remarks>
 /// <para><b>Lifecycle:</b></para>
 /// <list type="number">
-/// <item>Call <see cref="Start"/> after connection is established to begin background processing</item>
+/// <item>Call <see cref="Start"/> after construction to begin background processing</item>
 /// <item>Call <see cref="Enqueue"/> to add batches of values to the queue</item>
-/// <item>Call <see cref="StopAsync"/> to drain and stop background processing</item>
-/// <item>Call <see cref="DisposeAsync"/> for final cleanup</item>
+/// <item>Call <see cref="DisposeAsync"/> to stop background processing and release resources</item>
 /// </list>
 /// </remarks>
 internal sealed class QueueProcessor<TValue> : IAsyncDisposable
@@ -29,14 +28,12 @@ internal sealed class QueueProcessor<TValue> : IAsyncDisposable
     private readonly ChannelQueue<IReadOnlyList<TValue>> _queue;
     private readonly IDelayProvider _delayProvider;
     private readonly ILogger _logger;
+    private readonly IWriteClient<TValue> _writeClient;
+    private readonly IRetryPolicy _retryPolicy;
 
     // Lifecycle state — null until Start() is called
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _queueTask;
-
-    // Set by Start(), used in ProcessQueueAsync/PublishAsync
-    private IWriteClient<TValue>? _writeClient;
-    private IRetryPolicy? _retryPolicy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QueueProcessor{TDataPointValue}"/> class.
@@ -45,15 +42,21 @@ internal sealed class QueueProcessor<TValue> : IAsyncDisposable
     /// <param name="delayProvider">Delay provider for retry backoff</param>
     /// <param name="logger">Logger instance</param>
     /// <param name="queueName">Name used for queue logging</param>
+    /// <param name="writeClient">Write client used to publish values to the external system</param>
+    /// <param name="retryPolicy">Retry policy governing retry behaviour on write failures</param>
     internal QueueProcessor(
         QueueConfiguration queueConfiguration,
         IDelayProvider delayProvider,
         ILogger logger,
-        string queueName)
+        string queueName,
+        IWriteClient<TValue> writeClient,
+        IRetryPolicy retryPolicy)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(queueConfiguration.QueueSize.Value);
         _delayProvider = delayProvider;
         _logger = logger;
+        _writeClient = writeClient;
+        _retryPolicy = retryPolicy;
         _queue = new ChannelQueue<IReadOnlyList<TValue>>(
             capacity: queueConfiguration.QueueSize.Value,
             boundedChannelFullMode: queueConfiguration.Strategy,
@@ -67,17 +70,12 @@ internal sealed class QueueProcessor<TValue> : IAsyncDisposable
     internal void Enqueue(IReadOnlyList<TValue> values) => _queue.Append(values);
 
     /// <summary>
-    /// Starts background queue processing. Supports reconnection via repeated calls.
+    /// Starts background queue processing.
     /// </summary>
-    /// <param name="writeClient">Write client used to publish values to the external system</param>
-    /// <param name="retryPolicy">Retry policy governing retry behaviour on write failures</param>
-    internal void Start(IWriteClient<TValue> writeClient, IRetryPolicy retryPolicy)
+    internal void Start()
     {
-        _writeClient = writeClient;
-        _retryPolicy = retryPolicy;
-
         _cancellationTokenSource = new CancellationTokenSource();
-        _queueTask ??= ProcessQueueAsync();
+        _queueTask = ProcessQueueAsync();
     }
 
     /// <summary>
@@ -180,7 +178,7 @@ internal sealed class QueueProcessor<TValue> : IAsyncDisposable
             try
             {
                 // Always use CancellationToken.None for retries (don't cancel mid-write)
-                await _writeClient!.WriteAsync(dataPointValues, CancellationToken.None).ConfigureAwait(false);
+                await _writeClient.WriteAsync(dataPointValues, CancellationToken.None).ConfigureAwait(false);
                 return; // Success
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -188,7 +186,7 @@ internal sealed class QueueProcessor<TValue> : IAsyncDisposable
                 retryCount++;
 
                 // Check if we should continue retrying
-                if (!_retryPolicy!.ShouldRetry(retryCount))
+                if (!_retryPolicy.ShouldRetry(retryCount))
                 {
                     _retryPolicy.OnMaxRetriesExceeded(retryCount, ex);
                     throw new MaxRetriesExceededException(retryCount,

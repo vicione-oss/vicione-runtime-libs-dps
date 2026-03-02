@@ -683,9 +683,9 @@ public sealed class OutgoingDataPortBaseTests
         {
             VerifyResult =
             [
-                new MisConfiguredDataPoint<TestDataPoint>(
+                new MisconfiguredDataPoint<TestDataPoint>(
                     new TestDataPoint { Channels = new([], [new TransferredChannel("channel1")]) },
-                    [new MisMatchingConfiguration("Type mismatch: expected Int32, got String")])
+                    [new MismatchingConfiguration("Type mismatch: expected Int32, got String")])
             ]
         };
         var communication = CreateTestCommunication();
@@ -714,12 +714,12 @@ public sealed class OutgoingDataPortBaseTests
         {
             VerifyResult =
             [
-                new MisConfiguredDataPoint<TestDataPoint>(
+                new MisconfiguredDataPoint<TestDataPoint>(
                     new TestDataPoint { Channels = new([], [new TransferredChannel("channel1")]) },
-                    [new MisMatchingConfiguration("Type mismatch")]),
-                new MisConfiguredDataPoint<TestDataPoint>(
+                    [new MismatchingConfiguration("Type mismatch")]),
+                new MisconfiguredDataPoint<TestDataPoint>(
                     new TestDataPoint { Channels = new([], [new TransferredChannel("channel2")]) },
-                    [new MisMatchingConfiguration("Range exceeded")])
+                    [new MismatchingConfiguration("Range exceeded")])
             ]
         };
         var communication = CreateTestCommunication();

@@ -8,13 +8,13 @@ namespace ViciOne.Suite.DataPort.Extensions.Verification;
 /// </summary>
 /// <typeparam name="TDataPoint">The type of the data point.</typeparam>
 /// <param name="DataPoint">The misconfigured data point.</param>
-/// <param name="MisMatchingConfigurations">The list of configuration mismatches detected for the data point.</param>
-public record MisConfiguredDataPoint<TDataPoint>(
+/// <param name="MismatchingConfigurations">The list of configuration mismatches detected for the data point.</param>
+public record MisconfiguredDataPoint<TDataPoint>(
     TDataPoint DataPoint,
-    List<MisMatchingConfiguration> MisMatchingConfigurations) where TDataPoint : IDataPoint;
+    IReadOnlyList<MismatchingConfiguration> MismatchingConfigurations) where TDataPoint : IDataPoint;
 
 /// <summary>
 /// Represents a single configuration mismatch detected during data point verification.
 /// </summary>
 /// <param name="Value">A human-readable description of the mismatch.</param>
-public record MisMatchingConfiguration(string Value);
+public record MismatchingConfiguration(string Value);

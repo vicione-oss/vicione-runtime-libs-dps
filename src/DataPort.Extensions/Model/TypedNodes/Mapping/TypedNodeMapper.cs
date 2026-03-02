@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using ViciOne.Suite.DataPort.Extensions.Exceptions;
 
@@ -15,8 +14,8 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
 /// <typeparam name="TRootConfigurationNode">The root node type for the hierarchy.</typeparam>
 public class TypedNodeMapper<TCommunication, TRootConfigurationNode>(
     IRootConfigurationNodeMapper<TRootConfigurationNode, TCommunication> rootMapper,
-    ImmutableList<IBranchConfigurationNodeMapper<IBranchConfigurationNode>> configurationNodeMappers,
-    ImmutableList<IDataPointNodeMapper<IDataPointNode>> dataPointNodeMappers)
+    IReadOnlyList<IBranchConfigurationNodeMapper<IBranchConfigurationNode>> configurationNodeMappers,
+    IReadOnlyList<IDataPointNodeMapper<IDataPointNode>> dataPointNodeMappers)
     where TCommunication : DataPortCommunication
     where TRootConfigurationNode : IRootConfigurationNode<TCommunication>
 {
@@ -46,7 +45,7 @@ public class TypedNodeMapper<TCommunication, TRootConfigurationNode>(
     /// Adds top-level typed nodes to the root configuration node.
     /// Separates configuration nodes (branches) from data point nodes (leaves) and adds them accordingly.
     /// </summary>
-    private static void AddTypedNodes(IConfigurationNode rootConfiguration, ImmutableList<ITypedNode> typedNodes)
+    private static void AddTypedNodes(IConfigurationNode rootConfiguration, IReadOnlyList<ITypedNode> typedNodes)
     {
         foreach (var configNode in typedNodes.OfType<IConfigurationNode>())
         {
@@ -63,11 +62,10 @@ public class TypedNodeMapper<TCommunication, TRootConfigurationNode>(
     /// Converts a flat list of YAML nodes to a list of typed nodes with parent-child relationships.
     /// First creates LinkedNodes to establish parent-child structure, then recursively maps each to its typed representation.
     /// </summary>
-    private ImmutableList<ITypedNode> ConvertNodesToTypedNodes(List<Node> nodes)
+    private IReadOnlyList<ITypedNode> ConvertNodesToTypedNodes(List<Node> nodes)
     {
         var linkedNodes = LinkedNodeFactory.Create(nodes);
-        var typedNodes = linkedNodes.Select(MapToTypedNode).ToImmutableList();
-        return typedNodes;
+        return [.. linkedNodes.Select(MapToTypedNode)];
     }
 
     /// <summary>
@@ -118,7 +116,7 @@ public class TypedNodeMapper<TCommunication, TRootConfigurationNode>(
         IBranchConfigurationNodeMapper<IBranchConfigurationNode> branchConfigurationNodeMapper)
     {
         var configurationNode = branchConfigurationNodeMapper.Map(linkedNode);
-        var childNodes = linkedNode.Children.Select(MapToTypedNode).ToImmutableList();
+        var childNodes = linkedNode.Children.Select(MapToTypedNode).ToList();
 
         AttachChildNodesToParent(configurationNode, childNodes);
 
@@ -130,7 +128,7 @@ public class TypedNodeMapper<TCommunication, TRootConfigurationNode>(
     /// For configuration nodes: sets parent reference and adds to parent's configuration children.
     /// For data point nodes: adds to parent's data point children (no parent reference needed for leaves).
     /// </summary>
-    private static void AttachChildNodesToParent(IConfigurationNode parentNode, ImmutableList<ITypedNode> childNodes)
+    private static void AttachChildNodesToParent(IConfigurationNode parentNode, IReadOnlyList<ITypedNode> childNodes)
     {
         foreach (var childConfigNode in childNodes.OfType<IConfigurationNode>())
         {
@@ -154,11 +152,11 @@ public class TypedNodeMapper<TCommunication, TRootConfigurationNode>(
     /// <summary>
     /// Gets the collection of branch configuration node mappers used for mapping configuration (branch) nodes.
     /// </summary>
-    public ImmutableList<IBranchConfigurationNodeMapper<IBranchConfigurationNode>> ConfigurationNodeMappers =>
+    public IReadOnlyList<IBranchConfigurationNodeMapper<IBranchConfigurationNode>> ConfigurationNodeMappers =>
         configurationNodeMappers;
 
     /// <summary>
     /// Gets the collection of data point node mappers used for mapping data point (leaf) nodes.
     /// </summary>
-    public ImmutableList<IDataPointNodeMapper<IDataPointNode>> DataPointNodeMappers => dataPointNodeMappers;
+    public IReadOnlyList<IDataPointNodeMapper<IDataPointNode>> DataPointNodeMappers => dataPointNodeMappers;
 }

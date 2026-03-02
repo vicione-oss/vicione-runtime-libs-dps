@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 
 namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 
@@ -8,8 +8,8 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 /// <param name="AffectedChannels">The collection of channels that are affected by this data point's operations.</param>
 /// <param name="TransferredChannels">The collection of channels through which data is actively transferred.</param>
 public record Channels(
-    ImmutableList<AffectedChannel> AffectedChannels,
-    ImmutableList<TransferredChannel> TransferredChannels);
+    IReadOnlyList<AffectedChannel> AffectedChannels,
+    IReadOnlyList<TransferredChannel> TransferredChannels);
 
 /// <summary>
 /// Represents a channel that is affected by a data point's operations but may not actively transfer data.

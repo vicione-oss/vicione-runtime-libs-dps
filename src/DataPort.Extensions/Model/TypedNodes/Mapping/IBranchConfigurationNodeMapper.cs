@@ -46,7 +46,7 @@ public interface IBranchConfigurationNodeMapper<out T> where T : IBranchConfigur
     /// <summary>
     /// Gets the properties defined on the branch configuration node type, excluding base IConfigurationNode and IBranchConfigurationNode properties.
     /// </summary>
-    List<PropertyInfo> GetPropertiesDefinedInTargetNode() =>
+    IReadOnlyList<PropertyInfo> GetPropertiesDefinedInTargetNode() =>
     [
         .. NodeType.GetProperties()
             .ExceptBy(BasePropertyNames(), static p => p.Name)
@@ -55,9 +55,9 @@ public interface IBranchConfigurationNodeMapper<out T> where T : IBranchConfigur
     /// <summary>
     /// Gets the names of properties defined on the branch configuration node type, excluding base IConfigurationNode and IBranchConfigurationNode properties.
     /// </summary>
-    List<string> PropertyNamesDefinedInTargetNode() => [.. GetPropertiesDefinedInTargetNode().Select(static p => p.Name)];
+    IReadOnlyList<string> PropertyNamesDefinedInTargetNode() => [.. GetPropertiesDefinedInTargetNode().Select(static p => p.Name)];
 
-    private static List<string> BasePropertyNames() =>
+    private static IReadOnlyList<string> BasePropertyNames() =>
     [
         .. typeof(IConfigurationNode).GetProperties()
             .Concat(typeof(IBranchConfigurationNode).GetProperties())

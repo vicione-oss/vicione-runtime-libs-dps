@@ -99,7 +99,7 @@ public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
         try
         {
             while (!_forCancelling.IsCancellationRequested &&
-                   await _timer.Value.WaitForNextTickAsync(_forCancelling.Token))
+                   await _timer.Value.WaitForNextTickAsync(_forCancelling.Token).ConfigureAwait(false))
             {
                 // do not await here to allow overlapping executions
                 _ = ExecuteJobIteration();
@@ -123,8 +123,8 @@ public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
         {
             _logger.JobIterationStarting(JobName);
             var jobOutput = await _resiliencePipeline.ExecuteAsync(
-                async pipeLineCancellation => await PerformJob(_input, pipeLineCancellation),
-                _forCancelling.Token);
+                async pipeLineCancellation => await PerformJob(_input, pipeLineCancellation).ConfigureAwait(false),
+                _forCancelling.Token).ConfigureAwait(false);
             _onJobOutputAvailable.Invoke(jobOutput);
             _logger.JobIterationFinished(JobName);
         }
@@ -156,10 +156,10 @@ public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
     public async Task StopPeriodicExecution()
     {
         _logger.JobStopping(JobName);
-        await _forCancelling.CancelAsync();
+        await _forCancelling.CancelAsync().ConfigureAwait(false);
         if (_periodExecutionLoop != null)
         {
-            await _periodExecutionLoop;
+            await _periodExecutionLoop.ConfigureAwait(false);
         }
 
         _logger.JobStopped(JobName);
@@ -171,7 +171,7 @@ public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
     /// <returns>A task that represents the asynchronous dispose operation.</returns>
     public async ValueTask DisposeAsync()
     {
-        await StopPeriodicExecution();
+        await StopPeriodicExecution().ConfigureAwait(false);
         if (_timer.IsValueCreated)
         {
             _timer.Value.Dispose();

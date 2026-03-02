@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping.Properties;
 
@@ -30,8 +31,8 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping.Properties;
 /// throw new InvalidPropertyException(PropertyValidationErrorType.Missing, "PropertyName");
 /// </code>
 /// </example>
-// ReSharper disable once ClassWithoutDefaultConstructor - Exception requires specific parameters for meaningful error messages
-#pragma warning disable CA1032 // Implement standard exception constructors - Exception requires specific parameters
+
+[SuppressMessage("Design", "CA1032:Implement standard exception constructors")]
 public class InvalidPropertyException(
     PropertyValidationErrorType errorType,
     string propertyName,

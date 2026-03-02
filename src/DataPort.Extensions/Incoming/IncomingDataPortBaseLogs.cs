@@ -25,6 +25,12 @@ internal static partial class IncomingDataPortBaseLogs
     [LoggerMessage(105, LogLevel.Information, "Disconnecting from device {deviceAddress}")]
     internal static partial void DisconnectingFromDevice(this ILogger logger, DeviceIdentifier deviceAddress);
 
+    [LoggerMessage(106, LogLevel.Warning, "Already connected to device {deviceAddress}")]
+    internal static partial void AlreadyConnectedToDevice(this ILogger logger, DeviceIdentifier deviceAddress);
+
+    [LoggerMessage(108, LogLevel.Warning, "Already disconnected from device {deviceAddress}")]
+    internal static partial void AlreadyDisconnectedFromDevice(this ILogger logger, DeviceIdentifier deviceAddress);
+
     [LoggerMessage(107, LogLevel.Debug, "Publishing {externalValuesCount} external values: {externalValuesFormatted}")]
     internal static partial void PublishingExternalValues(this ILogger logger, int externalValuesCount,
         FormattedExternalValues externalValuesFormatted);

@@ -20,5 +20,5 @@ public interface IDataPointsMapper<in TRootNode, TDataPortCommunication, TDataPo
     /// </summary>
     /// <param name="deviceNode">The root configuration node to map.</param>
     /// <returns>A list of data points.</returns>
-    List<TDataPoint> ToDataPoints(TRootNode deviceNode);
+    IReadOnlyList<TDataPoint> ToDataPoints(TRootNode deviceNode);
 }

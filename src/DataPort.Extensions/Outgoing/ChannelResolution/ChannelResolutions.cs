@@ -5,8 +5,8 @@ using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 namespace ViciOne.Suite.DataPort.Extensions.Outgoing.ChannelResolution;
 
 internal readonly record struct ChannelResolutions<TDataPoint>(
-    List<ResolvedChannel<TDataPoint>> ResolvedChannels,
-    List<UnresolvedChannel> UnresolvedChannels)
+    IReadOnlyList<ResolvedChannel<TDataPoint>> ResolvedChannels,
+    IReadOnlyList<UnresolvedChannel> UnresolvedChannels)
     where TDataPoint : IDataPoint;
 
 /// <summary>

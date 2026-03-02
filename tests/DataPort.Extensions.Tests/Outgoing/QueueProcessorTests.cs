@@ -24,7 +24,9 @@ public class QueueProcessorTests
             new QueueConfiguration(QueueStrategy.DropOldest, new QueueSize(invalidSize)),
             new InstantDelayProvider(),
             NullLogger.Instance,
-            "TestQueue");
+            "TestQueue",
+            Substitute.For<IWriteClient<int>>(),
+            Substitute.For<IRetryPolicy>());
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
@@ -49,8 +51,8 @@ public class QueueProcessorTests
     [Fact]
     public async Task StopAsync_WhenStarted_CompletesCleanly()
     {
-        await using var sut = CreateSut();
-        sut.Start(Substitute.For<IWriteClient<int>>(), InfiniteRetryPolicy());
+        await using var sut = CreateSut(retryPolicy: InfiniteRetryPolicy());
+        sut.Start();
 
         await sut.Invoking(s => s.StopAsync()).Should().NotThrowAsync();
     }
@@ -66,8 +68,8 @@ public class QueueProcessorTests
             return ValueTask.CompletedTask;
         });
 
-        await using var sut = CreateSut();
-        sut.Start(writeClient, InfiniteRetryPolicy());
+        await using var sut = CreateSut(writeClient: writeClient, retryPolicy: InfiniteRetryPolicy());
+        sut.Start();
         sut.Enqueue([1, 2, 3]);
         
         var result = await written.Task.WaitAsync(TimeSpan.FromSeconds(2),_testCancellationToken);
@@ -86,8 +88,8 @@ public class QueueProcessorTests
             return ValueTask.CompletedTask;
         });
 
-        await using var sut = CreateSut();
-        sut.Start(writeClient, InfiniteRetryPolicy());
+        await using var sut = CreateSut(writeClient: writeClient, retryPolicy: InfiniteRetryPolicy());
+        sut.Start();
         sut.Enqueue([42]);
 
         await written.Task.WaitAsync(TimeSpan.FromSeconds(2),_testCancellationToken);
@@ -107,8 +109,8 @@ public class QueueProcessorTests
             return ValueTask.CompletedTask;
         });
 
-        await using var sut = CreateSut();
-        sut.Start(writeClient, NoRetryPolicy());
+        await using var sut = CreateSut(writeClient: writeClient, retryPolicy: NoRetryPolicy());
+        sut.Start();
 
         sut.Enqueue([1]); // Fails — max retries immediately exceeded
         sut.Enqueue([2]); // Should still be processed
@@ -129,8 +131,8 @@ public class QueueProcessorTests
             return ValueTask.CompletedTask;
         });
 
-        await using var sut = CreateSut();
-        sut.Start(writeClient, InfiniteRetryPolicy());
+        await using var sut = CreateSut(writeClient: writeClient, retryPolicy: InfiniteRetryPolicy());
+        sut.Start();
         sut.Enqueue([1]);
         sut.Enqueue([2]);
         sut.Enqueue([3]);
@@ -242,19 +244,27 @@ public class QueueProcessorTests
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
-    private static QueueProcessor<int> CreateSut(IDelayProvider? delayProvider = null, int queueSize = 10)
+    private static QueueProcessor<int> CreateSut(
+        IDelayProvider? delayProvider = null,
+        int queueSize = 10,
+        IWriteClient<int>? writeClient = null,
+        IRetryPolicy? retryPolicy = null)
         => new(
             new QueueConfiguration(QueueStrategy.DropOldest, new QueueSize(queueSize)),
             delayProvider ?? new InstantDelayProvider(),
             NullLogger.Instance,
-            "TestQueue");
+            "TestQueue",
+            writeClient ?? Substitute.For<IWriteClient<int>>(),
+            retryPolicy ?? Substitute.For<IRetryPolicy>());
 
     private static QueueProcessor<int> CreateSut(ILogger logger, int queueSize = 10)
         => new(
             new QueueConfiguration(QueueStrategy.DropOldest, new QueueSize(queueSize)),
             new InstantDelayProvider(),
             logger,
-            "TestQueue");
+            "TestQueue",
+            Substitute.For<IWriteClient<int>>(),
+            Substitute.For<IRetryPolicy>());
 
     private static IRetryPolicy InfiniteRetryPolicy()
     {

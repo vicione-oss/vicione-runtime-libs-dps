@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
@@ -23,5 +23,5 @@ public interface IDataPointPollingGroup<TPollingDataPointType> where TPollingDat
     /// <summary>
     /// Gets or initializes the collection of data points that belong to this polling group.
     /// </summary>
-    IImmutableList<TPollingDataPointType> DataPoints { get; init; }
+    IReadOnlyList<TPollingDataPointType> DataPoints { get; init; }
 }

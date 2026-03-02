@@ -8,9 +8,9 @@ namespace ViciOne.Suite.DataPort.Extension.Tests.Stubs.Verification;
 
 internal sealed class TestDataPointConfigurationVerifier : IDataPointConfigurationVerifier<TestDataPoint>
 {
-    public List<MisConfiguredDataPoint<TestDataPoint>> VerifyResult { get; set; } = [];
+    public IReadOnlyList<MisconfiguredDataPoint<TestDataPoint>> VerifyResult { get; init; } = [];
 
-    public ValueTask<List<MisConfiguredDataPoint<TestDataPoint>>> Verify(
-        List<TestDataPoint> dataPoints, CancellationToken cancellationToken) =>
+    public ValueTask<IReadOnlyList<MisconfiguredDataPoint<TestDataPoint>>> Verify(
+        IReadOnlyList<TestDataPoint> dataPoints, CancellationToken cancellationToken) =>
         ValueTask.FromResult(VerifyResult);
 }

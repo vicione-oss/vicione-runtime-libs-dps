@@ -26,7 +26,7 @@ internal class TestIncomingDataPort(
     : IncomingDataPortBase<TestCommunication, TestDeviceNode, TestDataPoint, TestDataPointGroup, TestDataPointValue,
         TestClient, TestClientInformation>(communication, loggerFactory, typedNodeMapper, dataPointGroupsMapper, timeProvider)
 {
-    protected override IDataPointConfigurationVerifier<TestDataPoint>? ConfigurationVerifier { get; } =
+    protected override IDataPointConfigurationVerifier<TestDataPoint>? CreateConfigurationVerifier(TestClient client) =>
         configurationVerifier;
 
     protected override IClientLifecycleManager<TestClient, TestClientInformation> ClientLifecycleManager { get; } =

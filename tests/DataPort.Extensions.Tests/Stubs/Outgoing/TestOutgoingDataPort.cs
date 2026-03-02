@@ -44,7 +44,7 @@ internal class TestOutgoingDataPort(
     public Task EnqueueAsync(IReadOnlyList<ExternalValue> externalValues)
         => base.SendAsync(0, externalValues, CancellationToken.None);
 
-    protected override IDataPointConfigurationVerifier<TestDataPoint>? ConfigurationVerifier { get; } =
+    protected override IDataPointConfigurationVerifier<TestDataPoint>? CreateConfigurationVerifier(TestClient client) =>
         configurationVerifier;
 
     protected override IClientLifecycleManager<TestClient, TestClientInformation> ClientLifecycleManager { get; } =

@@ -55,17 +55,18 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
     where TCommunication : DataPortCommunication
     where TClientInformation : IClientInformation
 {
-    private readonly ChannelResolver<TDataPoint> _channelResolver;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-
-    private readonly QueueProcessor<TDataPointValue> _queueProcessor;
+    private readonly ChannelResolver<TDataPoint> _channelResolver;
+    private readonly QueueConfiguration _queueConfiguration;
+    private readonly IDelayProvider _delayProvider;
     private readonly DataPointValueValidator<TDataPoint, TDataPointValue> _validator;
 
-    private bool _isConnected;
+    private QueueProcessor<TDataPointValue>? _queueProcessor;
     private bool _disposed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OutgoingDataPortBase{TDataPoint, TDataPointValue, TWriteClient, TRootNode, TCommunication, TClientInformation}"/> class.
+    /// Initializes a new instance.
     /// </summary>
     /// <param name="communication">The communication configuration used to establish the connection</param>
     /// <param name="loggerFactory">Logger factory for creating typed loggers</param>
@@ -81,74 +82,42 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
         QueueConfiguration queueConfiguration,
         IDelayProvider delayProvider)
     {
+        _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger(GetType());
-        DevicNode = typedNodeMapper.MapToTypedNodes(communication);
-        DataPoints = mapper.ToDataPoints(DevicNode);
+        _queueConfiguration = queueConfiguration;
+        _delayProvider = delayProvider;
+        DeviceNode = typedNodeMapper.MapToTypedNodes(communication);
+        DataPoints = mapper.ToDataPoints(DeviceNode);
         _channelResolver = new ChannelResolver<TDataPoint>(DataPoints);
         _validator = new DataPointValueValidator<TDataPoint, TDataPointValue>(
             loggerFactory.CreateLogger<DataPointValueValidator<TDataPoint, TDataPointValue>>());
-
-        _queueProcessor = new QueueProcessor<TDataPointValue>(
-            queueConfiguration,
-            delayProvider,
-            loggerFactory.CreateLogger<QueueProcessor<TDataPointValue>>(),
-            $"{GetType().Name}Queue");
     }
-
-    /// <summary>
-    /// Optional verifier that checks data points for configuration mismatches before queue processing starts
-    /// </summary>
-    protected abstract IDataPointConfigurationVerifier<TDataPoint>? ConfigurationVerifier { get; }
-
-    /// <summary>
-    /// Manager for acquiring and releasing client connections.
-    /// </summary>
-    protected abstract IClientLifecycleManager<TWriteClient, TClientInformation> ClientLifecycleManager { get; }
-
-    /// <summary>Gets the root configuration node derived from the communication object.</summary>
-    public TRootNode DevicNode { get; }
-
-    /// <summary>Gets the data points mapped from the root configuration node.</summary>
-    public List<TDataPoint> DataPoints { get; }
 
     /// <summary>
     /// The information required to uniquely identify and create a client.
     /// </summary>
     public abstract TClientInformation ClientInformation { get; }
 
+    /// <summary>Gets the root configuration node derived from the communication object.</summary>
+    public TRootNode DeviceNode { get; }
+
+    /// <summary>Gets the data points mapped from the root configuration node.</summary>
+    public IReadOnlyList<TDataPoint> DataPoints { get; }
+
     /// <summary>
-    /// The client used for writing datapoints. Will be set after intial connect.
+    /// Manager for acquiring and releasing client connections.
     /// </summary>
-    protected TWriteClient? Client { get; private set; }
+    protected abstract IClientLifecycleManager<TWriteClient, TClientInformation> ClientLifecycleManager { get; }
 
     /// <summary>
     /// Gets the retry policy for write operations (implementation-specific).
     /// </summary>
-    protected abstract IRetryPolicy RetryPolicy { get; }
+    protected virtual IRetryPolicy RetryPolicy => new InfiniteRetryPolicy();
 
     /// <summary>
-    /// Disposes the data port and releases all resources.
+    /// The client used for writing datapoints. Will be set after initial connect.
     /// </summary>
-    public async ValueTask DisposeAsync()
-    {
-        if (_disposed) return;
-        _disposed = true;
-        await DisposeAdditionalResourcesAsync().ConfigureAwait(false);
-        if (_isConnected)
-        {
-            await DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        await _queueProcessor.DisposeAsync().ConfigureAwait(false);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Override to dispose resources owned by the subclass. Called before the base class releases its own resources.
-    /// No need to call <c>base.DisposeAdditionalResourcesAsync()</c>.
-    /// </summary>
-    protected virtual ValueTask DisposeAdditionalResourcesAsync() => ValueTask.CompletedTask;
-
+    protected TWriteClient? Client { get; private set; }
 
     /// <summary>
     /// Template method: Connect to external system and start queue processing.
@@ -158,14 +127,19 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
     /// <returns>Async task</returns>
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
+        if (Client is not null) return;
         Client = await ClientLifecycleManager.AcquireConnectedAsync(ClientInformation, cancellationToken)
             .ConfigureAwait(false);
 
-        await VerifyDataPoints(cancellationToken).ConfigureAwait(false);
-        _queueProcessor.Start(Client, RetryPolicy);
-        _isConnected = true;
-    }
+        var misconfiguredDataPoints = await VerifyDataPoints(Client, cancellationToken).ConfigureAwait(false);
+        if (misconfiguredDataPoints.Count > 0)
+        {
+            await DisconnectAsync(cancellationToken).ConfigureAwait(false);
+            throw new InvalidConfigurationException("Failed to connect as there are misconfigured dataPoints.");
+        }
 
+        StartWritingDataPoints(Client);
+    }
 
     /// <summary>
     /// Matches, converts, validates, and enqueues a batch of external values for writing.
@@ -195,47 +169,75 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
     /// <returns>Async task</returns>
     public async Task DisconnectAsync(CancellationToken cancellationToken)
     {
-        _isConnected = false;
-        await _queueProcessor.StopAsync().ConfigureAwait(false);
+        if (Client is null) return;
+        await StopWritingDataPointsAsync().ConfigureAwait(false);
         await ReleaseClientAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Disposes the data port and releases all resources.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        await DisposeAdditionalResourcesAsync().ConfigureAwait(false);
+        await DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Optional verifier that checks data points for configuration mismatches before queue processing starts
+    /// </summary>
+    protected virtual IDataPointConfigurationVerifier<TDataPoint>? CreateConfigurationVerifier(TWriteClient client) =>
+        null;
 
     /// <summary>
     /// Converts an external value matched to a specific data point into a typed data point value.
     /// </summary>
     protected abstract TDataPointValue ConvertValue(ExternalValue externalValue, TDataPoint dataPoint);
 
-    private async ValueTask<List<MisConfiguredDataPoint<TDataPoint>>> VerifyDataPoints(
-        CancellationToken cancellationToken)
+    /// <summary>
+    /// Override to dispose resources owned by the subclass. Called before the base class releases its own resources.
+    /// No need to call <c>base.DisposeAdditionalResourcesAsync()</c>.
+    /// </summary>
+    protected virtual ValueTask DisposeAdditionalResourcesAsync() => ValueTask.CompletedTask;
+
+    private void StartWritingDataPoints(TWriteClient client)
     {
-        if (ConfigurationVerifier == null) return [];
-        var misconfiguredDataPoints = await ConfigurationVerifier
+        _queueProcessor = new QueueProcessor<TDataPointValue>(
+            _queueConfiguration,
+            _delayProvider,
+            _loggerFactory.CreateLogger<QueueProcessor<TDataPointValue>>(),
+            $"{GetType().Name}Queue",
+            client,
+            RetryPolicy);
+        _queueProcessor.Start();
+    }
+
+    private async ValueTask<IReadOnlyList<MisconfiguredDataPoint<TDataPoint>>> VerifyDataPoints(
+        TWriteClient client, CancellationToken cancellationToken)
+    {
+        var verifier = CreateConfigurationVerifier(client);
+        if (verifier == null) return [];
+        var misconfiguredDataPoints = await verifier
             .Verify(DataPoints, cancellationToken)
             .ConfigureAwait(false);
         foreach (var misconfigured in misconfiguredDataPoints)
         {
             var misconfigurations =
-                string.Join(", ", misconfigured.MisMatchingConfigurations.Select(static m => m.Value));
+                string.Join(", ", misconfigured.MismatchingConfigurations.Select(static m => m.Value));
             _logger.MisConfiguredDataPoint(misconfigured.DataPoint.Identifier.Value, misconfigurations);
         }
 
-        if (misconfiguredDataPoints.Count <= 0) return misconfiguredDataPoints;
-
-        await DisconnectAsync(cancellationToken).ConfigureAwait(false);
-        var exceptionMessage = $"Failed to connect as {misconfiguredDataPoints.Count} data point(s) are misconfigured.";
-        throw new InvalidConfigurationException(exceptionMessage);
+        return misconfiguredDataPoints;
     }
 
-    /// <summary>
-    /// Enqueues external values for writing to the external system.
-    /// </summary>
-    /// <param name="dataPointValues">DataPoint-values to enqueue</param>
-    /// <returns>Async task</returns>
-    private Task EnqueueAsync(IReadOnlyList<TDataPointValue> dataPointValues)
+    private async Task StopWritingDataPointsAsync()
     {
-        if (dataPointValues.Count == 0) return Task.CompletedTask;
-        _queueProcessor.Enqueue(dataPointValues);
-        return Task.CompletedTask;
+        if (_queueProcessor is null) return;
+        await _queueProcessor.DisposeAsync().ConfigureAwait(false);
+        _queueProcessor = null;
     }
 
     private async ValueTask ReleaseClientAsync(CancellationToken cancellationToken)
@@ -246,8 +248,7 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
         Client = default;
     }
 
-
-    private List<ResolvedChannel<TDataPoint>> ResolveChannels(IReadOnlyCollection<ExternalValue> values)
+    private IReadOnlyList<ResolvedChannel<TDataPoint>> ResolveChannels(IReadOnlyCollection<ExternalValue> values)
     {
         var resolution = _channelResolver.Resolve(values);
         if (resolution.UnresolvedChannels.Count <= 0) return resolution.ResolvedChannels;
@@ -257,8 +258,8 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
         return resolution.ResolvedChannels;
     }
 
-    [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
-    private List<TDataPointValue> ToDataPointValues(List<ResolvedChannel<TDataPoint>> resolvedChannels)
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+    private List<TDataPointValue> ToDataPointValues(IReadOnlyList<ResolvedChannel<TDataPoint>> resolvedChannels)
     {
         var dataPointValues = new List<TDataPointValue>(resolvedChannels.Count);
         foreach (var channel in resolvedChannels)
@@ -268,5 +269,12 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
         }
 
         return dataPointValues;
+    }
+
+    private Task EnqueueAsync(IReadOnlyList<TDataPointValue> dataPointValues)
+    {
+        if (dataPointValues.Count == 0) return Task.CompletedTask;
+        _queueProcessor?.Enqueue(dataPointValues);
+        return Task.CompletedTask;
     }
 }

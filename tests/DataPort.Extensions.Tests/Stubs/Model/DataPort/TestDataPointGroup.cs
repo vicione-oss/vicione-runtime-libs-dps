@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort;
@@ -8,6 +8,6 @@ namespace ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort;
 /// </summary>
 internal sealed class TestDataPointGroup : IDataPointPollingGroup<TestDataPoint>
 {
-    public required IImmutableList<TestDataPoint> DataPoints { get; init; }
+    public required IReadOnlyList<TestDataPoint> DataPoints { get; init; }
     public required PollFrequency PollFrequency { get; init; }
 }

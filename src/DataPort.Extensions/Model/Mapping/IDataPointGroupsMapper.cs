@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
@@ -27,14 +26,14 @@ public interface IDataPointGroupsMapper<TDataPoint, TDataPointGroup, in TRootNod
     /// </summary>
     /// <param name="deviceNode">The root configuration node to map.</param>
     /// <returns>A list of data point groups.</returns>
-    List<TDataPointGroup> ToDataPointGroups(TRootNode deviceNode) => Group(ToDataPoints(deviceNode));
+    IReadOnlyList<TDataPointGroup> ToDataPointGroups(TRootNode deviceNode) => Group(ToDataPoints(deviceNode));
 
     /// <summary>
     /// Groups a flat list of data points by their poll frequency.
     /// </summary>
     /// <param name="dataPoints">The data points to group.</param>
     /// <returns>A list of data point groups.</returns>
-    List<TDataPointGroup> Group(List<TDataPoint> dataPoints) =>
+    IReadOnlyList<TDataPointGroup> Group(IReadOnlyList<TDataPoint> dataPoints) =>
     [
         .. dataPoints
             .GroupBy(dp => dp.PollFrequency)
@@ -47,5 +46,5 @@ public interface IDataPointGroupsMapper<TDataPoint, TDataPointGroup, in TRootNod
     /// <param name="pollFrequency">The poll frequency for the group.</param>
     /// <param name="dataPoints">The data points in the group.</param>
     /// <returns>A new data point group.</returns>
-    TDataPointGroup CreateGroup(PollFrequency pollFrequency, ImmutableList<TDataPoint> dataPoints);
+    TDataPointGroup CreateGroup(PollFrequency pollFrequency, IReadOnlyList<TDataPoint> dataPoints);
 }

@@ -58,13 +58,11 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
     where TReadClient : IReadClient<TDataPointGroup, TDataPointValue>
     where TClientInformation : IClientInformation
 {
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-
-    private readonly PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>
-        _pollingOrchestrator;
-
     private readonly TimeProvider _timeProvider;
 
+    private PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>? _pollingOrchestrator;
     private bool _disposed;
 
     /// <summary>
@@ -82,28 +80,37 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
         IDataPointGroupsMapper<TDataPoint, TDataPointGroup, TDeviceNode, TCommunication> dataPointGroupsMapper,
         TimeProvider? timeProvider = null)
     {
+        _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger(GetType());
         _timeProvider = timeProvider ?? TimeProvider.System;
         DeviceNode = typedNodeMapper.MapToTypedNodes(communication);
         DataPoints = dataPointGroupsMapper.ToDataPoints(DeviceNode);
         DataPointGroups = dataPointGroupsMapper.Group(DataPoints);
-        _pollingOrchestrator = new PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>(
-            loggerFactory, _timeProvider);
     }
-
-    /// <summary>The typed device node built from the communication configuration.</summary>
-    public TDeviceNode DeviceNode { get; }
-
-    /// <summary>The flat list of data points extracted from the device node.</summary>
-    public List<TDataPoint> DataPoints { get; }
-
-    /// <summary>The data points grouped for polling, derived from <see cref="DataPoints"/>.</summary>
-    public List<TDataPointGroup> DataPointGroups { get; }
 
     /// <summary>
     /// The information required to uniquely identify and create a client.
     /// </summary>
     public abstract TClientInformation ClientInformation { get; }
+
+    /// <summary>The typed device node built from the communication configuration.</summary>
+    public TDeviceNode DeviceNode { get; }
+
+    /// <summary>The flat list of data points extracted from the device node.</summary>
+    public IReadOnlyList<TDataPoint> DataPoints { get; }
+
+    /// <summary>The data points grouped for polling, derived from <see cref="DataPoints"/>.</summary>
+    public IReadOnlyList<TDataPointGroup> DataPointGroups { get; }
+
+    /// <summary>
+    /// Event raised when new data values are received from the device and converted to external values.
+    /// </summary>
+    public event Action<IReadOnlyCollection<ExternalValue>>? Received;
+
+    /// <summary>
+    /// Manager for acquiring and releasing client connections.
+    /// </summary>
+    protected abstract IClientLifecycleManager<TReadClient, TClientInformation> ClientLifecycleManager { get; }
 
     /// <summary>
     /// The client used for retrieving dataPoints. Will be set after initial connect.
@@ -111,14 +118,48 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
     protected TReadClient? Client { get; private set; }
 
     /// <summary>
-    /// Optional verifier that checks data points for configuration mismatches before queue processing starts
+    /// Template method: Connect to external system and start polling.
+    /// Orchestrates connection, validation, and polling job creation.
     /// </summary>
-    protected abstract IDataPointConfigurationVerifier<TDataPoint>? ConfigurationVerifier { get; }
+    public async Task ConnectAsync(CancellationToken cancellationToken)
+    {
+        if (Client is not null)
+        {
+            _logger.AlreadyConnectedToDevice(DeviceNode.DeviceIdentifier);
+            return;
+        }
+
+        _logger.ConnectingToDevice(DeviceNode.DeviceIdentifier);
+        Client = await ClientLifecycleManager
+            .AcquireConnectedAsync(ClientInformation, cancellationToken)
+            .ConfigureAwait(false);
+
+        var misConfiguredDataPoints = await VerifyDataPoints(Client, cancellationToken).ConfigureAwait(false);
+        if (misConfiguredDataPoints.Count > 0)
+        {
+            await DisconnectAsync(cancellationToken).ConfigureAwait(false);
+            throw new InvalidConfigurationException("Failed to connect as there are misconfigured dataPoints.");
+        }
+
+        StartPollingDataPoints(Client);
+    }
 
     /// <summary>
-    /// Manager for acquiring and releasing client connections.
+    /// Template method: Disconnect from external system and stop polling.
     /// </summary>
-    protected abstract IClientLifecycleManager<TReadClient, TClientInformation> ClientLifecycleManager { get; }
+    public async Task DisconnectAsync(CancellationToken cancellationToken)
+    {
+        if (Client is null)
+        {
+            _logger.AlreadyDisconnectedFromDevice(DeviceNode.DeviceIdentifier);
+            return;
+        }
+
+        _logger.DisconnectingFromDevice(DeviceNode.DeviceIdentifier);
+
+        await StopPollingDataPointsAsync().ConfigureAwait(false);
+        await ReleaseClientAsync(cancellationToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Performs application-defined tasks associated with freeing, releasing, or resetting resources asynchronously.
@@ -129,80 +170,15 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
         if (_disposed) return;
         _disposed = true;
         await DisposeAdditionalResourcesAsync().ConfigureAwait(false);
-        await _pollingOrchestrator.DisposeAsync().ConfigureAwait(false);
-        await ReleaseClientAsync(CancellationToken.None).ConfigureAwait(false);
+        await DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
         GC.SuppressFinalize(this);
     }
 
     /// <summary>
-    /// Override to dispose resources owned by the subclass. Called before the base class releases its own resources.
-    /// No need to call <c>base.DisposeAdditionalResourcesAsync()</c>.
+    /// Optional verifier that checks data points for configuration mismatches before queue processing starts
     /// </summary>
-    protected virtual ValueTask DisposeAdditionalResourcesAsync() => ValueTask.CompletedTask;
-
-    /// <summary>
-    /// Event raised when new data values are received from the device and converted to external values.
-    /// </summary>
-    public event Action<IReadOnlyCollection<ExternalValue>>? Received;
-
-    /// <summary>
-    /// Template method: Connect to external system and start polling.
-    /// Orchestrates connection, validation, and polling job creation.
-    /// </summary>
-    public async Task ConnectAsync(CancellationToken cancellationToken)
-    {
-        _logger.ConnectingToDevice(DeviceNode.DeviceIdentifier);
-        Client = await ClientLifecycleManager.AcquireConnectedAsync(ClientInformation, cancellationToken)
-            .ConfigureAwait(false);
-
-        var misConfiguredDataPoints = await VerifyDataPoints(cancellationToken).ConfigureAwait(false);
-        if (misConfiguredDataPoints.Count > 0)
-        {
-            await DisconnectAsync(cancellationToken).ConfigureAwait(false);
-            throw new InvalidConfigurationException(
-                $"Failed to connect as {misConfiguredDataPoints.Count} data point(s) are misconfigured.");
-        }
-
-        _pollingOrchestrator.StartAll(DataPointGroups, Client, PublishDataPointValues);
-    }
-
-    /// <summary>
-    /// Template method: Disconnect from external system and stop polling.
-    /// </summary>
-    public async Task DisconnectAsync(CancellationToken cancellationToken)
-    {
-        _logger.DisconnectingFromDevice(DeviceNode.DeviceIdentifier);
-        await _pollingOrchestrator.StopAllAsync().ConfigureAwait(false);
-        await ReleaseClientAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private async ValueTask<List<MisConfiguredDataPoint<TDataPoint>>> VerifyDataPoints(
-        CancellationToken cancellationToken)
-    {
-        if (ConfigurationVerifier == null) return [];
-        var misconfiguredDataPoints = await ConfigurationVerifier
-            .Verify(DataPoints, cancellationToken)
-            .ConfigureAwait(false);
-        foreach (var misconfigured in misconfiguredDataPoints)
-        {
-            var misconfigurations = string.Join(", ", misconfigured.MisMatchingConfigurations.Select(m => m.Value));
-            _logger.MisConfiguredDataPoint(misconfigured.DataPoint.Identifier.Value, misconfigurations);
-        }
-
-        return misconfiguredDataPoints;
-    }
-
-
-    /// <summary>
-    /// Publishes data point values as external values via Received event.
-    /// </summary>
-    private void PublishDataPointValues(IReadOnlyList<TDataPointValue> dataPointValues)
-    {
-        var publicationTime = _timeProvider.GetUtcNow().DateTime;
-        var externalValues = ToExternalValues(dataPointValues, publicationTime);
-        _logger.PublishingExternalValues(externalValues.Count, new FormattedExternalValues(externalValues));
-        Received?.Invoke(externalValues);
-    }
+    protected virtual IDataPointConfigurationVerifier<TDataPoint>? CreateConfigurationVerifier(TReadClient client) =>
+        null;
 
     /// <summary>
     /// Converts a batch of data point values to external values.
@@ -214,31 +190,80 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
         IReadOnlyList<TDataPointValue> values,
         DateTime timestamp)
     {
-        var totalCount = 0;
-        foreach (var dpv in values)
-            totalCount += dpv.DataPoint.Channels.TransferredChannels.Count;
-
-        var result = new List<ExternalValue>(totalCount);
+        var result = new List<ExternalValue>(values.Sum(dpv => dpv.DataPoint.Channels.TransferredChannels.Count));
         foreach (var dataPointValue in values)
         {
             foreach (var channel in dataPointValue.DataPoint.Channels.TransferredChannels)
             {
-                result.Add(new ExternalValue
-                {
-                    Channel = channel.Value,
-                    Value = dataPointValue.Value,
-                    Timestamp = timestamp,
-                    Validity = 1
-                });
+                result.Add(ToExternalValue(timestamp, channel, dataPointValue));
             }
         }
 
         return result;
     }
 
+    /// <summary>
+    /// Converts a data point value to an external value.
+    /// Override to provide custom conversion logic.
+    /// </summary>
+    protected virtual ExternalValue ToExternalValue(DateTime timestamp, TransferredChannel channel,
+        TDataPointValue dataPointValue) =>
+        new()
+        {
+            Channel = channel.Value,
+            Value = dataPointValue.Value,
+            Timestamp = timestamp,
+            Validity = 1
+        };
+
+    /// <summary>
+    /// Override to dispose resources owned by the subclass. Called before the base class releases its own resources.
+    /// No need to call <c>base.DisposeAdditionalResourcesAsync()</c>.
+    /// </summary>
+    protected virtual ValueTask DisposeAdditionalResourcesAsync() => ValueTask.CompletedTask;
+
+    private void StartPollingDataPoints(TReadClient client)
+    {
+        _pollingOrchestrator = new PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>(
+            _loggerFactory, _timeProvider, client, DataPointGroups, PublishDataPointValues);
+        _pollingOrchestrator.Start();
+    }
+
+    private async ValueTask<IReadOnlyList<MisconfiguredDataPoint<TDataPoint>>> VerifyDataPoints(TReadClient client,
+        CancellationToken cancellationToken)
+    {
+        var verifier = CreateConfigurationVerifier(client);
+        if (verifier == null) return [];
+
+        var misconfiguredDataPoints = await verifier
+            .Verify(DataPoints, cancellationToken)
+            .ConfigureAwait(false);
+        foreach (var misconfigured in misconfiguredDataPoints)
+        {
+            var misconfigurations = string.Join(", ", misconfigured.MismatchingConfigurations.Select(m => m.Value));
+            _logger.MisConfiguredDataPoint(misconfigured.DataPoint.Identifier.Value, misconfigurations);
+        }
+
+        return misconfiguredDataPoints;
+    }
+
+    private void PublishDataPointValues(IReadOnlyList<TDataPointValue> dataPointValues)
+    {
+        var publicationTime = _timeProvider.GetUtcNow().DateTime;
+        var externalValues = ToExternalValues(dataPointValues, publicationTime);
+        _logger.PublishingExternalValues(externalValues.Count, new FormattedExternalValues(externalValues));
+        Received?.Invoke(externalValues);
+    }
+
+    private async ValueTask StopPollingDataPointsAsync()
+    {
+        if (_pollingOrchestrator is null) return;
+        await _pollingOrchestrator.DisposeAsync().ConfigureAwait(false);
+        _pollingOrchestrator = null;
+    }
+
     private async ValueTask ReleaseClientAsync(CancellationToken cancellationToken)
     {
-        if (Client is null) return;
         await ClientLifecycleManager.ReleaseAsync(ClientInformation, cancellationToken).ConfigureAwait(false);
         Client = default;
     }

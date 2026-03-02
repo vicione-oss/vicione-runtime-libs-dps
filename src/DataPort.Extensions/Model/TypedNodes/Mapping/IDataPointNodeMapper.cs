@@ -46,19 +46,15 @@ public interface IDataPointNodeMapper<out T> where T : IDataPointNode
     /// <summary>
     /// Gets the properties defined on the node type, excluding base IDataPointNode properties.
     /// </summary>
-    List<PropertyInfo> GetPropertiesDefinedInTargetNode() =>
-        NodeType.GetProperties()
-            .ExceptBy(BasePropertyNames(), p => p.Name)
-            .ToList();
+    IReadOnlyList<PropertyInfo> GetPropertiesDefinedInTargetNode() =>
+        [.. NodeType.GetProperties().ExceptBy(BasePropertyNames(), p => p.Name)];
 
     /// <summary>
     /// Gets the names of properties defined on the node type, excluding base IDataPointNode properties.
     /// </summary>
-    List<string> PropertyNamesDefinedInTargetNode() =>
-        GetPropertiesDefinedInTargetNode()
-            .Select(p => p.Name)
-            .ToList();
+    IReadOnlyList<string> PropertyNamesDefinedInTargetNode() =>
+        [.. GetPropertiesDefinedInTargetNode().Select(p => p.Name)];
 
     private static List<string> BasePropertyNames() =>
-        typeof(IDataPointNode).GetProperties().Select(p => p.Name).ToList();
+        [.. typeof(IDataPointNode).GetProperties().Select(p => p.Name)];
 }
