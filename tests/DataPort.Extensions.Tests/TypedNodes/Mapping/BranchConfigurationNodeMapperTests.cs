@@ -1,9 +1,8 @@
 using System.Linq;
 using System.Reflection;
 using FluentValidation.Results;
-using NSubstitute;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes.Mapping;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.TypedNodes.Mapping;
 
@@ -13,7 +12,7 @@ public class BranchConfigurationNodeMapperTests
     public void GetPropertiesDefinedInTargetNode_ExcludesBaseProperties()
     {
         // Arrange
-        IBranchConfigurationNodeMapper<ITestBranchNode> mapper = new TestBranchMapper();
+        IBranchConfigurationNodeMapper<TestBranchNodeWithProperties> mapper = new TestBranchMapper();
 
         // Act
         var properties = mapper.GetPropertiesDefinedInTargetNode();
@@ -21,35 +20,35 @@ public class BranchConfigurationNodeMapperTests
         // Assert
         var propertyNames = properties.Select(p => p.Name).ToList();
         propertyNames.Should().HaveCount(2);
-        propertyNames.Should().Contain(nameof(ITestBranchNode.CustomProperty1));
-        propertyNames.Should().Contain(nameof(ITestBranchNode.CustomProperty2));
+        propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.CustomProperty1));
+        propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.CustomProperty2));
     }
 
     [Fact]
     public void PropertyNamesDefinedInTargetNode_ReturnsPropertyNames()
     {
         // Arrange
-        IBranchConfigurationNodeMapper<ITestBranchNode> mapper = new TestBranchMapper();
+        IBranchConfigurationNodeMapper<TestBranchNodeWithProperties> mapper = new TestBranchMapper();
 
         // Act
         var propertyNames = mapper.PropertyNamesDefinedInTargetNode();
 
         // Assert
         propertyNames.Should().HaveCount(2);
-        propertyNames.Should().Contain(nameof(ITestBranchNode.CustomProperty1));
-        propertyNames.Should().Contain(nameof(ITestBranchNode.CustomProperty2));
+        propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.CustomProperty1));
+        propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.CustomProperty2));
     }
 
     [Fact]
     public void WithMinimalNode_ReturnsEmptyList()
     {
-        // Arrange - IMinimalBranchNode has no custom properties beyond the interface
-        IBranchConfigurationNodeMapper<IMinimalBranchNode> mapper = new MinimalBranchMapper();
+        // Arrange - TestBranchNode has no custom properties beyond the interface
+        IBranchConfigurationNodeMapper<TestBranchNode> mapper = new MinimalBranchMapper();
 
         // Act
         var propertyNames = mapper.PropertyNamesDefinedInTargetNode();
 
-        // Assert - Should be empty since no properties beyond base interfaces
+        // Assert
         propertyNames.Should().BeEmpty();
     }
 
@@ -57,42 +56,35 @@ public class BranchConfigurationNodeMapperTests
     public void GetPropertiesDefinedInTargetNode_ReturnsPropertyInfo()
     {
         // Arrange
-        IBranchConfigurationNodeMapper<ITestBranchNode> mapper = new TestBranchMapper();
+        IBranchConfigurationNodeMapper<TestBranchNodeWithProperties> mapper = new TestBranchMapper();
 
         // Act
         var properties = mapper.GetPropertiesDefinedInTargetNode();
 
         // Assert
         properties.Should().AllBeAssignableTo<PropertyInfo>();
-        properties.Should().OnlyContain(p => p.DeclaringType == typeof(ITestBranchNode));
-    }
-
-    // Test node implementations
-
-    private interface ITestBranchNode : IBranchConfigurationNode
-    {
-        string CustomProperty1 { get; set; }
-        int CustomProperty2 { get; set; }
-    }
-
-    private interface IMinimalBranchNode : IBranchConfigurationNode
-    {
-        // No custom properties
+        properties.Should().OnlyContain(p => p.DeclaringType == typeof(TestBranchNodeWithProperties));
     }
 
     // Test mappers
 
-    private sealed class TestBranchMapper : IBranchConfigurationNodeMapper<ITestBranchNode>
+    private sealed class TestBranchMapper : IBranchConfigurationNodeMapper<TestBranchNodeWithProperties>
     {
         public string TargetLinkedNodeTypeId => "test-branch";
-        public ITestBranchNode Map(LinkedNode node) => Substitute.For<ITestBranchNode>();
+        public TestBranchNodeWithProperties Map(LinkedNode node) => new TestBranchNodeWithProperties
+        {
+            OriginalNode = node
+        };
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 
-    private sealed class MinimalBranchMapper : IBranchConfigurationNodeMapper<IMinimalBranchNode>
+    private sealed class MinimalBranchMapper : IBranchConfigurationNodeMapper<TestBranchNode>
     {
         public string TargetLinkedNodeTypeId => "minimal-branch";
-        public IMinimalBranchNode Map(LinkedNode node) => Substitute.For<IMinimalBranchNode>();
+        public TestBranchNode Map(LinkedNode node) => new TestBranchNode
+        {
+            OriginalNode = node
+        };
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 }

@@ -1,27 +1,28 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using FluentValidation.Results;
 using NSubstitute;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
 using ViciOne.Suite.DataPort.Extensions.Exceptions;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes.Mapping;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.TypedNodes.Mapping;
 
 public class TypedNodeMapperTests
 {
-    private readonly IRootConfigurationNodeMapper<ITestRootNode, TestCommunication> _rootMapper;
+    private readonly IRootConfigurationNodeMapper<TestDeviceNode, TestCommunication> _rootMapper;
     private readonly IBranchConfigurationNodeMapper<IBranchConfigurationNode> _configMapper;
     private readonly IDataPointNodeMapper<IDataPointNode> _dataPointMapper;
-    private readonly TypedNodeMapper<TestCommunication, ITestRootNode> _sut;
+    private readonly TypedNodeMapper<TestCommunication, TestDeviceNode> _sut;
 
     public TypedNodeMapperTests()
     {
-        _rootMapper = Substitute.For<IRootConfigurationNodeMapper<ITestRootNode, TestCommunication>>();
+        _rootMapper = Substitute.For<IRootConfigurationNodeMapper<TestDeviceNode, TestCommunication>>();
         _configMapper = Substitute.For<IBranchConfigurationNodeMapper<IBranchConfigurationNode>>();
         _dataPointMapper = Substitute.For<IDataPointNodeMapper<IDataPointNode>>();
 
-        _sut = new TypedNodeMapper<TestCommunication, ITestRootNode>(
+        _sut = new TypedNodeMapper<TestCommunication, TestDeviceNode>(
             _rootMapper,
             [_configMapper],
             [_dataPointMapper]);
@@ -32,7 +33,7 @@ public class TypedNodeMapperTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var rootNode = Substitute.For<ITestRootNode>();
+        var rootNode = new TestDeviceNode { OriginalCommunication = communication };
 
         _rootMapper.Validate(communication).Returns(new ValidationResult());
         _rootMapper.CreateRootNode(communication).Returns(rootNode);
@@ -76,7 +77,7 @@ public class TypedNodeMapperTests
         };
 
         var communication = new TestCommunication { Nodes = [configNode] };
-        var rootNode = Substitute.For<ITestRootNode>();
+        var rootNode = new TestDeviceNode { OriginalCommunication = communication };
 
         _rootMapper.Validate(communication).Returns(new ValidationResult());
         _rootMapper.CreateRootNode(communication).Returns(rootNode);
@@ -110,7 +111,7 @@ public class TypedNodeMapperTests
         };
 
         var communication = new TestCommunication { Nodes = [dataPointNode] };
-        var rootNode = Substitute.For<ITestRootNode>();
+        var rootNode = new TestDeviceNode { OriginalCommunication = communication };
 
         _rootMapper.Validate(communication).Returns(new ValidationResult());
         _rootMapper.CreateRootNode(communication).Returns(rootNode);
@@ -153,9 +154,7 @@ public class TypedNodeMapperTests
         };
 
         var communication = new TestCommunication { Nodes = [configNode, dataPointNode] };
-        var rootNode = Substitute.For<ITestRootNode>();
-        var mockConfigNode = Substitute.For<IBranchConfigurationNode>();
-        var mockDataPointNode = Substitute.For<IDataPointNode>();
+        var rootNode = new TestDeviceNode { OriginalCommunication = communication };
 
         _rootMapper.Validate(communication).Returns(new ValidationResult());
         _rootMapper.CreateRootNode(communication).Returns(rootNode);
@@ -163,12 +162,20 @@ public class TypedNodeMapperTests
         _configMapper.TargetLinkedNodeTypeId.Returns("TestConfig");
         _configMapper.IsTargetMapperFor(Arg.Is<LinkedNode>(static n => n.DesignId == "TestConfig")).Returns(true);
         _configMapper.Validate(Arg.Any<LinkedNode>()).Returns(new ValidationResult());
-        _configMapper.Map(Arg.Any<LinkedNode>()).Returns(mockConfigNode);
+        _configMapper.Map(Arg.Any<LinkedNode>()).Returns(callInfo =>
+        {
+            var node = callInfo.Arg<LinkedNode>();
+            return new TestBranchNode { OriginalNode = node };
+        });
 
         _dataPointMapper.TargetLinkedNodeTypeId.Returns("TestDataPoint");
         _dataPointMapper.IsTargetMapperFor(Arg.Is<LinkedNode>(static n => n.DesignId == "TestDataPoint")).Returns(true);
         _dataPointMapper.Validate(Arg.Any<LinkedNode>()).Returns(new ValidationResult());
-        _dataPointMapper.Map(Arg.Any<LinkedNode>()).Returns(mockDataPointNode);
+        _dataPointMapper.Map(Arg.Any<LinkedNode>()).Returns(callInfo =>
+        {
+            var node = callInfo.Arg<LinkedNode>();
+            return new TestDataPointNode { OriginalNode = node };
+        });
 
         // Act
         _sut.MapToTypedNodes(communication);
@@ -179,11 +186,4 @@ public class TypedNodeMapperTests
         _dataPointMapper.Received(1).Validate(Arg.Is<LinkedNode>(static n => n.DesignId == "TestDataPoint"));
     }
 
-    // Test helper classes
-#pragma warning disable CA1515 // types are used by NSubstitute and cannot be avoided
-    public record TestCommunication : DataPortCommunication;
-
-    // ReSharper disable once MemberCanBePrivate.Global
-    public interface ITestRootNode : IRootConfigurationNode<TestCommunication>;
-#pragma warning restore CA1515 // types are used by NSubstitute and cannot be avoided
 }

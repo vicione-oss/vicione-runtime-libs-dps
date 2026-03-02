@@ -14,14 +14,14 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="JunitXml.TestLogger" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="ViciOne.TreeBuilder" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="JunitXml.TestLogger" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -32,9 +32,17 @@
     <Using Include="Xunit" />
     <Using Include="AwesomeAssertions" />
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+    <!-- NSubstitute uses Castle DynamicProxy to create mock objects at runtime.
+         When mocking interfaces with internal generic type parameters (e.g., IWriteClient<TestDataPointValue>),
+         the dynamic proxy generator needs access to those internal types.
+         DynamicProxyGenAssembly2 is the assembly name used by Castle DynamicProxy for generating proxies. -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\DataPort.Extensions.Testing\DataPort.Extensions.Testing.csproj" />
     <ProjectReference Include="..\..\src\DataPort.Extensions\DataPort.Extensions.csproj" />
   </ItemGroup>
 

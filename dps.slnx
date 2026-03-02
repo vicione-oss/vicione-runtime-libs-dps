@@ -1,16 +1,20 @@
 <Solution>
     <Folder Name="/docs/DataPort.Extensions/">
         <File Path="docs/DataPort.Extensions/Exceptions.md" />
-        <File Path="docs/DataPort.Extensions/IncomingDataPort.md" />
         <File Path="docs/DataPort.Extensions/Interfaces.md" />
-        <File Path="docs/DataPort.Extensions/Logging.md" />
         <File Path="docs/DataPort.Extensions/Model.md" />
-        <File Path="docs/DataPort.Extensions/OutgoingDataPort.md" />
         <File Path="docs/DataPort.Extensions/Overview.md" />
-        <File Path="docs/DataPort.Extensions/Queue.md" />
         <File Path="docs/DataPort.Extensions/README.md" />
-        <File Path="docs/DataPort.Extensions/Resilience.md" />
-        <File Path="docs/DataPort.Extensions/ValueValidation.md" />
+        <File Path="docs/DataPort.Extensions/CHANGELOG.md" />
+    </Folder>
+    <Folder Name="/docs/DataPort.Extensions/Incoming/">
+        <File Path="docs/DataPort.Extensions/Incoming/IncomingDataPort.md" />
+    </Folder>
+    <Folder Name="/docs/DataPort.Extensions/Outgoing/">
+        <File Path="docs/DataPort.Extensions/Outgoing/OutgoingDataPort.md" />
+        <File Path="docs/DataPort.Extensions/Outgoing/Queue.md" />
+        <File Path="docs/DataPort.Extensions/Outgoing/Resilience.md" />
+        <File Path="docs/DataPort.Extensions/Outgoing/ValueValidation.md" />
     </Folder>
     <Folder Name="/samples/">
         <Project Path="samples/Benchmarks/Benchmarks.csproj" />

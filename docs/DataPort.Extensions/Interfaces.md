@@ -2,68 +2,24 @@
 
 **Namespace**: `ViciOne.Suite.DataPort.Extensions`
 
-Reference documentation for all interfaces in the DataPort Extensions package.
-
-## Overview
-
-These interfaces define the contracts for building protocol-agnostic data ports. They enable separation of concerns between the base class templates and protocol-specific implementations.
+Reference for all interfaces in the DataPort Extensions package.
 
 ## Connection Management
 
-### IConnectionManager
+### IClientLifecycleManager
 
-**Namespace**: `ViciOne.Suite.DataPort.Extensions.Incoming`
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Incoming.Client`
 
-Manages connection lifecycle for incoming data port clients.
+Manages connection lifecycle for incoming data ports. Abstracts whether connections are pooled or created fresh per acquisition.
 
-```csharp
-public interface IConnectionManager<TClient> : IAsyncDisposable
-    where TClient : class
-{
-    Task<TClient> AcquireConnectedAsync(CancellationToken cancellationToken);
-    Task ReleaseAsync(TClient client, CancellationToken cancellationToken);
-}
-```
+**Methods**: `AcquireConnectedAsync(CancellationToken)` → returns a connected client; `ReleaseAsync(TClient, CancellationToken)` → returns or disposes the client.
 
-**Purpose**: Abstracts connection patterns (pooled vs. direct connections).
+**Exceptions to throw from implementations**:
+- `ConnectionFailureException`: when a connection cannot be established
 
-**Methods**:
-
-| Method | Description |
-|--------|-------------|
-| `AcquireConnectedAsync` | Acquires a connected client instance |
-| `ReleaseAsync` | Releases the client connection |
-
-**Exceptions**:
-- `ConnectionFailureException`: Connection cannot be established
-- `OperationCanceledException`: Operation cancelled via token
-
-**Implementation Notes**:
-- Pooled connections: Return client to pool on release
-- Direct connections: Disconnect and dispose on release
-
-**Example**:
-```csharp
-public class DirectConnectionManager : IConnectionManager<MyClient>
-{
-    private readonly string _endpoint;
-
-    public async Task<MyClient> AcquireConnectedAsync(CancellationToken ct)
-    {
-        var client = new MyClient();
-        await client.ConnectAsync(_endpoint, ct);
-        return client;
-    }
-
-    public async Task ReleaseAsync(MyClient client, CancellationToken ct)
-    {
-        await client.DisconnectAsync(ct);
-        client.Dispose();
-    }
-
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-}
-```
+**Implementation notes**:
+- Pooled connections: return the client to the pool on release
+- Direct connections: disconnect and dispose on release
 
 ---
 
@@ -71,79 +27,31 @@ public class DirectConnectionManager : IConnectionManager<MyClient>
 
 ### IReadClient
 
-**Namespace**: `ViciOne.Suite.DataPort.Extensions.Incoming`
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Incoming.Client`
 
-Protocol-agnostic client for reading data points from a device.
-
-```csharp
-public interface IReadClient<in TDataPointGroup, TDataPointValue> : IDisposable
-{
-    ValueTask<IReadOnlyList<TDataPointValue>> ReadAsync(
-        TDataPointGroup dataPointGroup,
-        CancellationToken cancellationToken);
-}
-```
-
-**Purpose**: Abstracts protocol-specific read operations for use by `IncomingDataPortBase`.
-
-**Type Parameters**:
-| Parameter | Description |
-|-----------|-------------|
-| `TDataPointGroup` | Data point group type (batch of related data points) |
-| `TDataPointValue` | Read result type containing the value(s) |
-
-**Exceptions**:
-- `ConnectionFailureException`: Connection lost during read
-- `OperationCanceledException`: Operation cancelled via token
-
-**Implementation Notes**:
-- Translate protocol-specific errors to common exceptions
-- Return all values for the group in a single call
-- Handle batch reads efficiently
+Protocol-agnostic client for reading a group of data points in a single call. Translate protocol-specific errors to `DataRetrievalException` or `ConnectionFailureException`.
 
 ---
 
-### IDataPointValidator
+### IDataPointValueConverter
 
-**Namespace**: `ViciOne.Suite.DataPort.Extensions.Incoming`
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Incoming.ValueConversion`
 
-Optional validator for data points against device configuration.
+Converts a batch of `TDataPointValue` instances (as read from the device) into a flat list of `ExternalValue` instances published via the `Received` event.
 
-```csharp
-public interface IDataPointValidator<TDataPoint>
-    where TDataPoint : IDataPoint
-{
-    void Validate<TClient>(
-        TClient client,
-        IReadOnlyList<TDataPoint> dataPoints,
-        ILogger logger)
-        where TClient : class;
-}
-```
+The interface has a **default implementation** that produces one `ExternalValue` per `TransferredChannel` on each data point's `Channels`, using the data point value's `Value` and setting `Validity = 1`. Override only if you need custom per-channel value mapping or transformation.
 
-**Purpose**: Optional hook for runtime validation (e.g., validating symbolic addresses against PLC symbol tables).
+---
 
-**Exceptions**:
-- `ConnectionFailureException`: Validation fails (e.g., symbol not found)
+### IDataPointConfigurationVerifier
 
-**Default Implementation**: `NoOpDataPointValidator<TDataPoint>` - does nothing.
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Incoming.Verification`
 
-**Example**:
-```csharp
-public class SymbolValidator : IDataPointValidator<SymbolicDataPoint>
-{
-    public void Validate<TClient>(TClient client, IReadOnlyList<SymbolicDataPoint> dataPoints, ILogger logger)
-        where TClient : class
-    {
-        var symbolClient = (ISymbolClient)client;
-        foreach (var dp in dataPoints)
-        {
-            if (!symbolClient.SymbolExists(dp.SymbolName))
-                throw new ConnectionFailureException($"Symbol not found: {dp.SymbolName}");
-        }
-    }
-}
-```
+Optional hook for verifying data point configuration against the live device before polling starts (e.g., checking that symbolic addresses exist in the PLC symbol table).
+
+Return a list of `MisConfiguredDataPoint<TDataPoint>` records for any data points that failed verification; return an empty list if all are valid. `IncomingDataPortBase` logs each mismatch and aborts `ConnectAsync` if any failures are found.
+
+`MisConfiguredDataPoint<TDataPoint>` holds the data point and a `List<MisMatchingConfiguration>` with human-readable mismatch descriptions.
 
 ---
 
@@ -151,105 +59,61 @@ public class SymbolValidator : IDataPointValidator<SymbolicDataPoint>
 
 ### IWriteClient
 
-**Namespace**: `ViciOne.Suite.DataPort.Extensions.Outgoing`
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Outgoing.Client`
 
-Protocol-agnostic client for writing data point values to a device.
+Protocol-agnostic client for writing a batch of data point values in a single call.
+
+**Implementation notes**:
+- Write all values atomically if the protocol supports it
+- Throw on any failure — retry is handled by the base class
+- Do not use the `CancellationToken` during retries to avoid aborting a mid-flight write
+
+---
+
+### IExternalValueConverter
+
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Outgoing.Value.Conversion`
+
+Converts a single `ExternalValue` (already resolved to a specific `TDataPoint` by `ChannelResolver`) into a `TDataPointValue` for writing. Called once per resolved channel before validation.
 
 ```csharp
-public interface IWriteClient<TDataPointValue>
-{
-    ValueTask WriteAsync(IReadOnlyList<TDataPointValue> values, CancellationToken cancellationToken);
-}
+TDataPointValue Convert(ExternalValue externalValue, TDataPoint dataPoint);
 ```
-
-**Purpose**: Abstracts protocol-specific write operations for use by `OutgoingDataPortBase`.
-
-**Implementation Notes**:
-- Write all values in a single batch operation
-- Throw on failure (retry logic is handled by the base class)
-- Use `CancellationToken.None` during retries to avoid cancelling mid-write
 
 ---
 
 ### IRetryPolicy
 
-**Namespace**: `ViciOne.Suite.DataPort.Extensions.Outgoing`
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Outgoing.QueueProcessing.Retry`
 
-Defines retry behavior for failed write operations.
+Controls retry behaviour for failed write operations.
 
-```csharp
-public interface IRetryPolicy
-{
-    bool ShouldRetry(long retryCount);
-    void OnMaxRetriesExceeded(long retryCount, Exception exception);
-}
-```
+**Methods**: `ShouldRetry(long retryCount)` → return `true` to retry; `OnMaxRetriesExceeded(long retryCount, Exception exception)` → called when retries are exhausted (for logging or throwing).
 
-**Purpose**: Abstracts retry decision logic for write failures.
+**Built-in implementations**:
 
-**Methods**:
-| Method | Description |
-|--------|-------------|
-| `ShouldRetry` | Returns true if another retry should be attempted |
-| `OnMaxRetriesExceeded` | Called when retries are exhausted (for logging) |
-
-**Built-in Implementations**:
-
-#### BoundedRetryPolicy
-
-Retries up to a configured maximum number of attempts.
-
-```csharp
-public sealed class BoundedRetryPolicy(long maxRetryAttempts, ILogger? logger = null) : IRetryPolicy
-```
-
-Use when: You want to give up after a reasonable number of attempts.
-
-#### InfiniteRetryPolicy
-
-Never gives up retrying.
-
-```csharp
-public sealed class InfiniteRetryPolicy : IRetryPolicy
-```
-
-Use when: Writes are expected to eventually succeed (e.g., transient network issues).
+| Class | Behaviour |
+|-------|-----------|
+| `BoundedRetryPolicy(long maxRetryAttempts)` | Stops after `maxRetryAttempts` attempts |
+| `InfiniteRetryPolicy` | Retries indefinitely |
 
 ---
 
-### IDataPointValueFactory
+## Mapping Interfaces
 
-**Namespace**: `ViciOne.Suite.DataPort.Extensions.Outgoing`
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Model.Mapping`
 
-Factory for creating data point values from external values.
+### IDataPointsMapper
 
-```csharp
-public interface IDataPointValueFactory<in TDataPoint, out TDataPointValue>
-{
-    TDataPointValue Create(TDataPoint dataPoint, object? value);
-}
-```
+Maps a typed root configuration node into a flat list of data points. Used by `OutgoingDataPortBase` and as the base for `IDataPointGroupsMapper`.
 
-**Purpose**: Transforms incoming `ExternalValue` objects into protocol-specific data point values.
+Has three generic type parameters: `TDataPoint`, `TRootNode`, `TDataPortCommunication`. Implement `ToDataPoints(TRootNode deviceNode) → List<TDataPoint>`.
 
-**Implementation Notes**:
-- Map the runtime value to the appropriate protocol type
-- The created value will be validated by `DataPointValueValidator`
+### IDataPointGroupsMapper
 
-**Example**:
-```csharp
-public class MyValueFactory : IDataPointValueFactory<MyDataPoint, MyDataPointValue>
-{
-    public MyDataPointValue Create(MyDataPoint dataPoint, object? value)
-    {
-        return new MyDataPointValue
-        {
-            DataPoint = dataPoint,
-            Value = value
-        };
-    }
-}
-```
+Extends `IDataPointsMapper` with grouping for incoming data ports. Has four generic type parameters: `TDataPoint`, `TDataPointGroup`, `TRootNode`, `TDataPortCommunication`.
+
+**Only `CreateGroup(PollFrequency, ImmutableList<TDataPoint>)` requires implementation** — default methods handle the grouping logic (`Group` groups by `PollFrequency`, `ToDataPointGroups` calls both).
 
 ---
 
@@ -257,49 +121,27 @@ public class MyValueFactory : IDataPointValueFactory<MyDataPoint, MyDataPointVal
 
 ### IDataPoint
 
-**Namespace**: `ViciOne.Suite.DataPort.Extension.Model.DataPoints`
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Model.DataPoints`
 
 Base interface for all data point configurations.
 
-```csharp
-public interface IDataPoint
-{
-    Channels Channels { get; }
-    string AddressString { get; }
-    string DataTypeString { get; }
-}
-```
+**Members**:
+- `Channels Channels { get; init; }` — channel routing configuration
+- `DataPointIdentifier Identifier { get; }` — strongly-typed address wrapper (protocol-specific format; used for logging)
+- `DataTypeName DataTypeName { get; }` — strongly-typed data type name wrapper (protocol-specific; used for logging)
+- `ContainsTransferredChannel(string channel)` — default implementation; checks `Channels.TransferredChannels`
 
-See [Model.md](Model.md) for details.
+`DataPointIdentifier` and `DataTypeName` are records with a single `string Value` property, defined in the same file as `IDataPoint`.
 
 ---
 
 ### IDataPointValue
 
-**Namespace**: `ViciOne.Suite.DataPort.Extension.Model.DataPoints`
+**Namespace**: `ViciOne.Suite.DataPort.Extensions.Model.DataPoints`
 
-Interface for data point values used in write operations.
+Represents a value to be written, with validation capabilities. Required by `DataPointValueValidator`.
 
-```csharp
-public interface IDataPointValue<TDataPointType> where TDataPointType : IDataPoint
-{
-    object? Value { get; init; }
-    TDataPointType DataPoint { get; init; }
-
-    bool IsInValueRange();
-    TypeValidationResult ValidateType();
-}
-```
-
-**Purpose**: Represents a value to be written, with validation capabilities.
-
-**Methods**:
-| Method | Description |
-|--------|-------------|
-| `IsInValueRange` | Returns true if the value is within valid bounds |
-| `ValidateType` | Validates that the value type matches the data point type |
-
-See [ValueValidation.md](ValueValidation.md) for validation details.
+**Members**: `Value`, `DataPoint`, `IsInValueRange()`, `ValidateType()`. See [ValueValidation.md](Outgoing/ValueValidation.md).
 
 ---
 
@@ -307,60 +149,23 @@ See [ValueValidation.md](ValueValidation.md) for validation details.
 
 ```mermaid
 classDiagram
-    class IncomingDataPortBase {
-        <<abstract>>
-        +ConnectAsync()
-        +DisconnectAsync()
-        +Received event
-    }
+    class IncomingDataPortBase { <<abstract>> }
+    class OutgoingDataPortBase { <<abstract>> }
 
-    class IConnectionManager {
-        <<interface>>
-        +AcquireConnectedAsync()
-        +ReleaseAsync()
-    }
+    IncomingDataPortBase --> IClientLifecycleManager : uses
+    IncomingDataPortBase --> IReadClient : creates via CreateReadClient
+    IncomingDataPortBase --> IDataPointValueConverter : uses
+    IncomingDataPortBase --> IDataPointConfigurationVerifier : optional
+    IncomingDataPortBase --> IDataPointGroupsMapper : uses
 
-    class IReadClient {
-        <<interface>>
-        +ReadAsync()
-    }
+    OutgoingDataPortBase --> IWriteClient : abstract property
+    OutgoingDataPortBase --> IRetryPolicy : abstract property
+    OutgoingDataPortBase --> IExternalValueConverter : injected
+    OutgoingDataPortBase --> IDataPointsMapper : injected
 
-    class IDataPointValidator {
-        <<interface>>
-        +Validate()
-    }
-
-    IncomingDataPortBase --> IConnectionManager : uses
-    IncomingDataPortBase --> IReadClient : creates
-    IncomingDataPortBase --> IDataPointValidator : optional
-
-    class OutgoingDataPortBase {
-        <<abstract>>
-        +ConnectAsync()
-        +DisconnectAsync()
-        +SendAsync()
-    }
-
-    class IWriteClient {
-        <<interface>>
-        +WriteAsync()
-    }
-
-    class IRetryPolicy {
-        <<interface>>
-        +ShouldRetry()
-    }
-
-    class IDataPointValueFactory {
-        <<interface>>
-        +Create()
-    }
-
-    OutgoingDataPortBase --> IWriteClient : uses
-    OutgoingDataPortBase --> IRetryPolicy : uses
-    OutgoingDataPortBase --> IDataPointValueFactory : uses
+    IDataPointGroupsMapper --|> IDataPointsMapper : extends
 ```
 
 ---
 
-**Last Updated**: 2026-01-30
+**Last Updated**: 2026-02-20

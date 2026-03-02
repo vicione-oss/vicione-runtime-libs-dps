@@ -1,8 +1,8 @@
 using System.Linq;
 using FluentValidation.Results;
-using NSubstitute;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes;
-using ViciOne.Suite.DataPort.Extensions.TypedNodes.Mapping;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.TypedNodes.Mapping;
 
@@ -12,7 +12,7 @@ public class DataPointNodeMapperTests
     public void GetPropertiesDefinedInTargetNode_ExcludesBaseProperties()
     {
         // Arrange
-        IDataPointNodeMapper<ITestDataPoint> mapper = new TestDataPointMapper();
+        IDataPointNodeMapper<TestDataPointNodeWithProperties> mapper = new TestDataPointMapper();
 
         // Act
         var properties = mapper.GetPropertiesDefinedInTargetNode();
@@ -20,64 +20,54 @@ public class DataPointNodeMapperTests
         // Assert
         var propertyNames = properties.Select(p => p.Name).ToList();
         propertyNames.Should().HaveCount(2);
-        propertyNames.Should().Contain(nameof(ITestDataPoint.DataValue));
-        propertyNames.Should().Contain(nameof(ITestDataPoint.Timestamp));
+        propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.DataValue));
+        propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.Timestamp));
     }
 
     [Fact]
     public void PropertyNamesDefinedInTargetNode_ReturnsPropertyNames()
     {
         // Arrange
-        IDataPointNodeMapper<ITestDataPoint> mapper = new TestDataPointMapper();
+        IDataPointNodeMapper<TestDataPointNodeWithProperties> mapper = new TestDataPointMapper();
 
         // Act
         var propertyNames = mapper.PropertyNamesDefinedInTargetNode();
 
         // Assert
         propertyNames.Should().HaveCount(2);
-        propertyNames.Should().Contain(nameof(ITestDataPoint.DataValue));
-        propertyNames.Should().Contain(nameof(ITestDataPoint.Timestamp));
+        propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.DataValue));
+        propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.Timestamp));
     }
 
     [Fact]
     public void WithMinimalNode_ReturnsEmptyList()
     {
-        // Arrange - IMinimalDataPoint has no custom properties beyond the interface
-        IDataPointNodeMapper<IMinimalDataPoint> mapper = new MinimalDataPointMapper();
+        // Arrange - IDataPointNode has no custom properties beyond the base
+        IDataPointNodeMapper<IDataPointNode> mapper = new MinimalDataPointMapper();
 
         // Act
         var propertyNames = mapper.PropertyNamesDefinedInTargetNode();
 
-        // Assert - Should be empty since no properties beyond base interface
+        // Assert
         propertyNames.Should().BeEmpty();
-    }
-
-    // Test node implementations
-
-    private interface ITestDataPoint : IDataPointNode
-    {
-        string DataValue { get; set; }
-        long Timestamp { get; set; }
-    }
-
-    private interface IMinimalDataPoint : IDataPointNode
-    {
-        // No custom properties
     }
 
     // Test mappers
 
-    private sealed class TestDataPointMapper : IDataPointNodeMapper<ITestDataPoint>
+    private sealed class TestDataPointMapper : IDataPointNodeMapper<TestDataPointNodeWithProperties>
     {
         public string TargetLinkedNodeTypeId => "test-datapoint";
-        public ITestDataPoint Map(LinkedNode node) => Substitute.For<ITestDataPoint>();
+        public TestDataPointNodeWithProperties Map(LinkedNode node) => new TestDataPointNodeWithProperties
+        {
+            OriginalNode = node
+        };
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 
-    private sealed class MinimalDataPointMapper : IDataPointNodeMapper<IMinimalDataPoint>
+    private sealed class MinimalDataPointMapper : IDataPointNodeMapper<IDataPointNode>
     {
         public string TargetLinkedNodeTypeId => "minimal-datapoint";
-        public IMinimalDataPoint Map(LinkedNode node) => Substitute.For<IMinimalDataPoint>();
+        public IDataPointNode Map(LinkedNode node) => new TestDataPointNode { OriginalNode = node };
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 }

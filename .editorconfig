@@ -13,7 +13,7 @@ indent_size = 2
 # Code files
 [*.{cs,csx,vb,vbx,cake,json}]
 indent_size = 4
-charset = utf-8-bom
+charset = utf-8
 
 # Shell scripts
 [*.sh]
@@ -707,6 +707,7 @@ csharp_new_line_before_else = true # Place `else` statements on a new line.
 csharp_new_line_before_catch = true # Place `catch` statements on a new line.
 csharp_new_line_before_finally = true # Require `finally` statements to be on a new line after the closing brace.
 csharp_new_line_before_members_in_object_initializers = true # Require members of object initializers to be on separate lines
+resharper_csharp_wrap_object_and_collection_initializer_style = chop_always # Rider formatter: always put each initializer member on a new line
 csharp_new_line_before_members_in_anonymous_types = true # Require members of anonymous types to be on separate lines
 csharp_new_line_between_query_expression_clauses = true # Require elements of query expression clauses to be on separate lines
 

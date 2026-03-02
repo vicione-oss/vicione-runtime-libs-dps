@@ -12,8 +12,12 @@
   - Queue system: `ChannelQueue` and `PrependableChannelQueue` with configurable overflow strategies (drop oldest/newest, throw exception)
   - Resilience utilities: `RetryBackoffCalculator` for exponential/linear backoff with jitter, retry policies (`BoundedRetryPolicy`, `InfiniteRetryPolicy`)
   - Value validation: `DataPointValueValidator` with all-or-nothing semantics
-  - Data port abstractions: `IConnectionManager`, `IReadClient`, `IWriteClient`, `IDataPoint`, `IPollingDataPoint`, `IDataPointPollingGroup`, `IDataPointValue`, `IRetryPolicy`
+  - Data port abstractions: `IClientLifecycleManager`, `IReadClient`, `IWriteClient`, `IDataPoint`, `IPollingDataPoint`, `IDataPointPollingGroup`, `IDataPointValue`, `IRetryPolicy`
   - Structured exception types: `ConnectionFailureException`, `DataRetrievalException`, `DataConversionException`, `InvalidConfigurationException`, `MaxRetriesExceededException`, `QueueBackpressureException`
+  - Mapper abstractions: `IDataPointsMapper` (outgoing) and `IDataPointGroupsMapper` (incoming) for decoupled configuration-to-data-point mapping
+  - Value conversion abstractions: `IExternalValueConverter` (outgoing: `ExternalValue` → `TDataPointValue`) and `IDataPointValueConverter` (incoming: `TDataPointValue` → `ExternalValue`)
+  - Configuration verification: `IDataPointConfigurationVerifier` for async pre-poll data point validation, replacing the synchronous `IDataPointValidator`
+  - Strongly-typed value objects: `DataPointIdentifier`, `DataTypeName`, `QueueSize`
 - Introduce `ViciOne.Suite.DataPort.Extensions.Testing` package with specialized test utilities for data port development:
   - Eventual assertions: `EventualAssertions`, `EventualValue<T>`, `EventualValueAssertions<T>`
   - YAML consistency testing: `YamlConsistencyBaseTest` base class for validating consistency between YAML configuration files and C# DataPort implementations
@@ -24,6 +28,7 @@
 
 - Change MetaData names to full names
 - Make OPC UA certificate optional
+- **Breaking** (`DataPort.Extensions`): Refactored public API — `IDataPoint`, `IncomingDataPortBase`, `OutgoingDataPortBase`, `IDataPointValidator`, `IDataPointValueFactory`, `QueueConfiguration`, and all sub-namespaces changed; see [DataPort.Extensions breaking changes](docs/DataPort.Extensions/README.md#breaking-changes-in-this-release)
 
 ### Fixed
 

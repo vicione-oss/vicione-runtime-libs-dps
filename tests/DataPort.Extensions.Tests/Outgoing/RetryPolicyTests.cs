@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using ViciOne.Suite.DataPort.Extensions.Outgoing;
+using ViciOne.Suite.DataPort.Extensions.Outgoing.QueueProcessing.Retry;
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.Outgoing;
 

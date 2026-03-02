@@ -8,13 +8,7 @@
   <PropertyGroup>
     <!-- XML Documentation (generates .xml file included in package for IntelliSense) -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-
-    <!-- Separate symbol package (.snupkg) - Currently commented out as it's redundant
-         since we're already embedding sources in the PDB included in the main package.
-         TODO: Discuss with team if separate symbol packages are needed for symbol server publishing. -->
-    <!--<IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>-->
-
+    
     <!-- Include symbols and sources in main package -->
     <DebugType>portable</DebugType>
     <EmbedAllSources>true</EmbedAllSources>
