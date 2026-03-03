@@ -13,4 +13,10 @@ internal static partial class OpcUaServerDataPortLog
 
     [LoggerMessage(2, LogLevel.Error, "Cannot send values to '{Server}:{Port}'.")]
     internal static partial void LogSendFailure(this ILogger logger, string server, int port, Exception exception);
+
+    [LoggerMessage(3, LogLevel.Warning, "Account '{Username}' is locked due to too many failed login attempts. Lockout ends at {LockoutEnd} (UTC).")]
+    internal static partial void LogAccountLocked(this ILogger logger, string? username, DateTimeOffset? lockoutEnd);
+
+    [LoggerMessage(4, LogLevel.Warning, "Login attempt for '{Username}' throttled. Remaining delay: {RemainingDelay}.")]
+    internal static partial void LogLoginThrottled(this ILogger logger, string? username, TimeSpan remainingDelay);
 }

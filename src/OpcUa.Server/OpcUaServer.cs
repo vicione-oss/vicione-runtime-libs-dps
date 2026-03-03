@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,6 +17,7 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
 {
     private readonly OpcUaServerDataPortProperties _properties = new(communication);
     private readonly Dictionary<Guid, Node> _nodes = [];
+    private readonly LoginAttemptTracker _loginAttemptTracker = new();
     private DataPortNodeManager? _nodeManager;
 
     public event Action<string, DateTime, object> ReceiveValue
@@ -142,10 +144,48 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
     /// </summary>
     private RoleBasedIdentity VerifyPassword(UserNameIdentityToken userNameToken)
     {
-        var username = userNameToken.UserName;
+        var username = userNameToken.UserName ?? string.Empty;
+
+        if (_loginAttemptTracker.IsLockedOut(username))
+        {
+            logger.LogAccountLocked(username, _loginAttemptTracker.GetLockoutEnd(username));
+
+            var lockInfo = new TranslationInfo(
+                "AccountLocked",
+                "en-US",
+                "Account is locked due to too many failed login attempts.",
+                username);
+
+            throw new ServiceResultException(new ServiceResult(
+                StatusCodes.BadUserAccessDenied,
+                "AccountLocked",
+                LoadServerProperties().ProductUri,
+                new LocalizedText(lockInfo)));
+        }
+
+        var remainingDelay = _loginAttemptTracker.GetRemainingDelay(username);
+
+        if (remainingDelay > TimeSpan.Zero)
+        {
+            logger.LogLoginThrottled(username, remainingDelay);
+
+            var throttleInfo = new TranslationInfo(
+                "TooManyAttempts",
+                "en-US",
+                $"Too many login attempts. Try again later. Remaining delay: {remainingDelay.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture)}.",
+                username);
+
+            throw new ServiceResultException(new ServiceResult(
+                StatusCodes.BadUserAccessDenied,
+                "TooManyAttempts",
+                LoadServerProperties().ProductUri,
+                new LocalizedText(throttleInfo)));
+        }
 
         if (!AreCredentialsValid(_properties.User, username, _properties.Password, userNameToken.DecryptedPassword))
         {
+            _loginAttemptTracker.RecordFailure(username);
+
             // construct translation object with default text.
             var info = new TranslationInfo(
                 "InvalidPassword",
@@ -160,6 +200,8 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
                 LoadServerProperties().ProductUri,
                 new LocalizedText(info)));
         }
+
+        _loginAttemptTracker.ResetFailures(username);
 
         return new RoleBasedIdentity(new UserIdentity(userNameToken),
                [Role.AuthenticatedUser]);

@@ -24,6 +24,7 @@
   - Test helpers: `DataPortCommunicationExtensions` for reflection-based Communication analysis, `RulesetExtensions` for querying YAML rulesets
   - Centralized test logging configuration
 - Use timing-safe comparison for OPC UA server credential verification
+- Add brute-force protection to OPC UA server authentication (lockout after failed attempts with exponential delay)
 
 ### Changed
 
