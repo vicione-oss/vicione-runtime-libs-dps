@@ -23,6 +23,7 @@
   - YAML consistency testing: `YamlConsistencyBaseTest` base class for validating consistency between YAML configuration files and C# DataPort implementations
   - Test helpers: `DataPortCommunicationExtensions` for reflection-based Communication analysis, `RulesetExtensions` for querying YAML rulesets
   - Centralized test logging configuration
+- Use timing-safe comparison for OPC UA server credential verification
 
 ### Changed
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -142,7 +144,7 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
     {
         var username = userNameToken.UserName;
 
-        if (_properties.User != username || _properties.Password != userNameToken.DecryptedPassword)
+        if (!AreCredentialsValid(_properties.User, username, _properties.Password, userNameToken.DecryptedPassword))
         {
             // construct translation object with default text.
             var info = new TranslationInfo(
@@ -161,6 +163,21 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
 
         return new RoleBasedIdentity(new UserIdentity(userNameToken),
                [Role.AuthenticatedUser]);
+    }
+
+    /// <summary>
+    /// Performs a timing-safe comparison of user credentials using <see cref="CryptographicOperations.FixedTimeEquals"/>.
+    /// Uses non-short-circuit AND (&amp;) to ensure both comparisons always execute, preventing timing information leakage.
+    /// </summary>
+    internal static bool AreCredentialsValid(string? expectedUser, string? actualUser, string? expectedPassword, string? actualPassword)
+    {
+        var expectedUserBytes = Encoding.UTF8.GetBytes(expectedUser ?? string.Empty);
+        var actualUserBytes = Encoding.UTF8.GetBytes(actualUser ?? string.Empty);
+        var expectedPasswordBytes = Encoding.UTF8.GetBytes(expectedPassword ?? string.Empty);
+        var actualPasswordBytes = Encoding.UTF8.GetBytes(actualPassword ?? string.Empty);
+
+        return CryptographicOperations.FixedTimeEquals(expectedUserBytes, actualUserBytes)
+            & CryptographicOperations.FixedTimeEquals(expectedPasswordBytes, actualPasswordBytes);
     }
 
     private static async Task ValidateConfigAsync(ApplicationConfiguration configuration, CancellationToken cancellationToken)
