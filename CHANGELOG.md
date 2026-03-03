@@ -25,6 +25,9 @@
   - Centralized test logging configuration
 - Use timing-safe comparison for OPC UA server credential verification
 - Add brute-force protection to OPC UA server authentication (lockout after failed attempts with exponential delay)
+- Add audit logging for OPC UA server security events (failed/successful authentication, anonymous access, account lockout)
+- Warn on insecure OPC UA server configuration (anonymous access, auto-accept untrusted certificates) at startup
+- Enable OPC UA stack tracing for security and error events
 
 ### Changed
 

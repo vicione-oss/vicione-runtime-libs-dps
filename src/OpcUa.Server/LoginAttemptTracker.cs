@@ -54,6 +54,14 @@ internal sealed class LoginAttemptTracker(TimeProvider? timeProvider = null)
         return record.LastAttempt + TimeSpan.FromSeconds(LockoutDurationSeconds);
     }
 
+    internal int GetFailCount(string username)
+    {
+        if (_failedAttempts.TryGetValue(username, out var record))
+            return record.FailCount;
+
+        return 0;
+    }
+
     internal TimeSpan GetRemainingDelay(string username)
     {
         if (!_failedAttempts.TryGetValue(username, out var record))

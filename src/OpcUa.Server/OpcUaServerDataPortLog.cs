@@ -16,7 +16,31 @@ internal static partial class OpcUaServerDataPortLog
 
     [LoggerMessage(3, LogLevel.Warning, "Account '{Username}' is locked due to too many failed login attempts. Lockout ends at {LockoutEnd} (UTC).")]
     internal static partial void LogAccountLocked(this ILogger logger, string? username, DateTimeOffset? lockoutEnd);
+    
+    [LoggerMessage(3, LogLevel.Warning, "Failed authentication attempt for user '{User}' from session '{SessionId}'.")]
+    internal static partial void LogFailedAuthentication(this ILogger logger, string user, string sessionId);
 
-    [LoggerMessage(4, LogLevel.Warning, "Login attempt for '{Username}' throttled. Remaining delay: {RemainingDelay}.")]
+    [LoggerMessage(4, LogLevel.Information, "User '{User}' authenticated successfully from session '{SessionId}'.")]
+    internal static partial void LogSuccessfulAuthentication(this ILogger logger, string user, string sessionId);
+
+    [LoggerMessage(5, LogLevel.Warning, "Anonymous access used from session '{SessionId}'.")]
+    internal static partial void LogAnonymousAccess(this ILogger logger, string sessionId);
+
+    [LoggerMessage(6, LogLevel.Warning, "Account locked after {FailCount} failed attempts for user '{User}'.")]
+    internal static partial void LogAccountLocked(this ILogger logger, int failCount, string user);
+
+    [LoggerMessage(7, LogLevel.Warning,
+        "OPC UA Server started with anonymous access enabled. " +
+        "This does not meet IEC 62443 requirements. " +
+        "Consider setting UserAuthenticationType to 'Basic'.")]
+    internal static partial void LogAnonymousAccessEnabled(this ILogger logger);
+
+    [LoggerMessage(8, LogLevel.Warning,
+        "OPC UA Server started with AutoAcceptUntrustedCertificates=true. " +
+        "This is insecure and allows man-in-the-middle attacks. " +
+        "Do not use in production environments.")]
+    internal static partial void LogAutoAcceptUntrustedCertificates(this ILogger logger);
+
+    [LoggerMessage(12, LogLevel.Warning, "Login attempt for '{Username}' throttled. Remaining delay: {RemainingDelay}.")]
     internal static partial void LogLoginThrottled(this ILogger logger, string? username, TimeSpan remainingDelay);
 }
