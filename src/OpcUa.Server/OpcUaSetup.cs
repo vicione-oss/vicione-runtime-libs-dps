@@ -24,6 +24,10 @@ internal static class OpcUaSetup
             new() { SecurityMode = MessageSecurityMode.Sign, },
         ];
         serverConfiguration.MaxRegistrationInterval = 0; // do not register itself
+        serverConfiguration.MaxSessionCount = TransportQuotasConfiguration.MaxSessionCount;
+        serverConfiguration.MaxSubscriptionCount = TransportQuotasConfiguration.MaxSubscriptionCount;
+        serverConfiguration.MinSessionTimeout = TransportQuotasConfiguration.MinSessionTimeout;
+        serverConfiguration.MaxSessionTimeout = TransportQuotasConfiguration.MaxSessionTimeout;
 
         serverConfiguration.UserTokenPolicies =
         [
@@ -40,7 +44,7 @@ internal static class OpcUaSetup
             ApplicationName = properties.ApplicationName,
             ApplicationUri = properties.ApplicationUri,
             ApplicationType = ApplicationType.Server,
-            TransportQuotas = new TransportQuotas(),
+            TransportQuotas = properties.TransportQuotas ? CreateTransportQuotas() : null,
             ServerConfiguration = serverConfiguration,
         };
 
@@ -75,5 +79,18 @@ internal static class OpcUaSetup
         }
 
         return configuration;
+    }
+
+    private static TransportQuotas CreateTransportQuotas()
+    {
+        return new TransportQuotas
+        {
+            MaxStringLength = TransportQuotasConfiguration.MaxStringLength,
+            MaxByteStringLength = TransportQuotasConfiguration.MaxByteStringLength,
+            MaxArrayLength = TransportQuotasConfiguration.MaxArrayLength,
+            MaxMessageSize = TransportQuotasConfiguration.MaxMessageSize,
+            MaxBufferSize = TransportQuotasConfiguration.MaxBufferSize,
+            OperationTimeout = TransportQuotasConfiguration.OperationTimeout,
+        };
     }
 }

@@ -46,6 +46,7 @@ Nodes:
             Required       : true
           - Id             : Endpoint
             Required       : true
+          - Id             : TransportQuotas
       - Id                 : Authentication
         Properties         :
           - Id             : UserAuthenticationType
@@ -319,6 +320,13 @@ Properties:
     DataType    : Bool
     UiControl   : CheckBox
     DefaultValue: false
+
+  - Id          : TransportQuotas
+    Name        : "Transport Quotas"
+    Description : "Enable custom transport quotas to harden against denial-of-service attacks."
+    DataType    : Bool
+    UiControl   : CheckBox
+    DefaultValue: true
 
   - Id          : ReadOnly
     Name        : "Read only"

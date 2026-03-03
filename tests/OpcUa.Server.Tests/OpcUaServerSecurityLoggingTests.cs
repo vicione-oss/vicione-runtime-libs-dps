@@ -1,3 +1,4 @@
+using System;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Opc.Ua;
@@ -121,5 +122,25 @@ public class OpcUaServer_LogInsecureConfigurationWarnings
             e.LogLevel == LogLevel.Warning &&
             e.Message.Contains("AutoAcceptUntrustedCertificates=true") &&
             e.Message.Contains("man-in-the-middle"));
+    }
+
+    [Fact]
+    public void Logs_warning_when_transport_quotas_are_disabled()
+    {
+        TestLogger<IOpcUaServer> logger = new();
+        OpcUaServerDataPortCommunication communication = new()
+        {
+            UserAuthenticationType = 1,
+            TransportQuotas = false,
+            Nodes = [],
+        };
+        using OpcUaServer server = new(communication, logger);
+
+        server.LogInsecureConfigurationWarnings();
+
+        logger.Entries.Should().ContainSingle(e =>
+            e.LogLevel == LogLevel.Warning &&
+            e.Message.Contains("TransportQuotas disabled") &&
+            e.Message.Contains("denial-of-service"));
     }
 }

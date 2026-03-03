@@ -77,6 +77,9 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
 
         if (_properties.AutoAcceptUntrustedCertificates)
             logger.LogAutoAcceptUntrustedCertificates();
+
+        if (!_properties.TransportQuotas)
+            logger.LogTransportQuotasDisabled();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

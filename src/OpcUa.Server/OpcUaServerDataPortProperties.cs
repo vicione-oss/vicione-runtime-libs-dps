@@ -152,4 +152,10 @@ internal sealed class OpcUaServerDataPortProperties(OpcUaServerDataPortCommunica
         get => communication.AutoAcceptUntrustedCertificates;
         set => communication.AutoAcceptUntrustedCertificates = value;
     }
+
+    internal bool TransportQuotas
+    {
+        get => communication.TransportQuotas;
+        set => communication.TransportQuotas = value;
+    }
 }

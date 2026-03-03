@@ -27,6 +27,7 @@
 - Add brute-force protection to OPC UA server authentication (lockout after failed attempts with exponential delay)
 - Add audit logging for OPC UA server security events (failed/successful authentication, anonymous access, account lockout)
 - Warn on insecure OPC UA server configuration (anonymous access, auto-accept untrusted certificates) at startup
+- Configure explicit `TransportQuotas` and `ServerConfiguration` session limits for OPC UA server (max message size, max session count, operation timeout, request throttling) to harden against denial-of-service attacks
 - Enable OPC UA stack tracing for security and error events
 
 ### Changed

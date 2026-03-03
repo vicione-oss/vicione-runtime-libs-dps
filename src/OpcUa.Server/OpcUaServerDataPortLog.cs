@@ -41,6 +41,12 @@ internal static partial class OpcUaServerDataPortLog
         "Do not use in production environments.")]
     internal static partial void LogAutoAcceptUntrustedCertificates(this ILogger logger);
 
+    [LoggerMessage(9, LogLevel.Warning,
+        "OPC UA Server started with TransportQuotas disabled. " +
+        "This leaves the server without message size limits and may expose it to denial-of-service attacks. " +
+        "Do not use in production environments.")]
+    internal static partial void LogTransportQuotasDisabled(this ILogger logger);
+
     [LoggerMessage(12, LogLevel.Warning, "Login attempt for '{Username}' throttled. Remaining delay: {RemainingDelay}.")]
     internal static partial void LogLoginThrottled(this ILogger logger, string? username, TimeSpan remainingDelay);
 }

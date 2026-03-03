@@ -659,3 +659,35 @@ public class OpcUaServerDataPortProperties_AutoAcceptUntrustedCertificates
         { false },
     };
 }
+
+public class OpcUaServerDataPortProperties_TransportQuotas
+{
+    [Theory]
+    [MemberData(nameof(Conversion))]
+    public void Getter_returns_value(bool transportQuotas)
+    {
+        OpcUaServerDataPortProperties properties = new(new() { TransportQuotas = transportQuotas, });
+
+        properties.TransportQuotas.Should().Be(transportQuotas);
+    }
+
+    [Theory]
+    [MemberData(nameof(Conversion))]
+    public void Setter_sets_value(bool transportQuotas)
+    {
+        OpcUaServerDataPortCommunication communication = new();
+
+        _ = new OpcUaServerDataPortProperties(communication)
+        {
+            TransportQuotas = transportQuotas,
+        };
+
+        communication.TransportQuotas.Should().Be(transportQuotas);
+    }
+
+    public static TheoryData<bool> Conversion() => new()
+    {
+        { true },
+        { false },
+    };
+}
