@@ -47,6 +47,12 @@ internal static partial class OpcUaServerDataPortLog
         "Do not use in production environments.")]
     internal static partial void LogTransportQuotasDisabled(this ILogger logger);
 
+    [LoggerMessage(10, LogLevel.Warning,
+        "OPC UA Server started with SecurityPolicy=None (no encryption, no signature). " +
+        "Any device on the network can eavesdrop or inject data. " +
+        "This does not meet IEC 62443 requirements. Do not use in production environments.")]
+    internal static partial void LogInsecureSecurityPolicy(this ILogger logger);
+
     [LoggerMessage(12, LogLevel.Warning, "Login attempt for '{Username}' throttled. Remaining delay: {RemainingDelay}.")]
     internal static partial void LogLoginThrottled(this ILogger logger, string? username, TimeSpan remainingDelay);
 }

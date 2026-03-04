@@ -29,6 +29,7 @@
 - Warn on insecure OPC UA server configuration (anonymous access, auto-accept untrusted certificates) at startup
 - Configure explicit `TransportQuotas` and `ServerConfiguration` session limits for OPC UA server (max message size, max session count, operation timeout, request throttling) to harden against denial-of-service attacks
 - Enable OPC UA stack tracing for security and error events
+- Add configurable `SecurityPolicy` to OPC UA server (`None`, `Basic256Sha256_Sign`, `Basic256Sha256_SignAndEncrypt`, `Aes256_Sha256_RsaPss_SignAndEncrypt`); default is `Basic256Sha256_SignAndEncrypt` — `MessageSecurityMode.None` is no longer offered unless explicitly selected
 
 ### Changed
 

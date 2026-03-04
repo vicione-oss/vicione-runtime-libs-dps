@@ -16,13 +16,7 @@ internal static class OpcUaSetup
             "http://opcfoundation.org/UA-Profile/Server/DataAccess",
             "http://opcfoundation.org/UA-Profile/Server/ClientRedundancy",
         ];
-        serverConfiguration.SecurityPolicies =
-        [
-            new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, SecurityPolicyUri = SecurityPolicies.Basic256Sha256 },
-            new() { SecurityMode = MessageSecurityMode.None, SecurityPolicyUri = SecurityPolicies.None},
-            new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, },
-            new() { SecurityMode = MessageSecurityMode.Sign, },
-        ];
+        serverConfiguration.SecurityPolicies = CreateSecurityPolicies(properties.SecurityPolicy);
         serverConfiguration.MaxRegistrationInterval = 0; // do not register itself
         serverConfiguration.MaxSessionCount = TransportQuotasConfiguration.MaxSessionCount;
         serverConfiguration.MaxSubscriptionCount = TransportQuotasConfiguration.MaxSubscriptionCount;
@@ -79,6 +73,31 @@ internal static class OpcUaSetup
         }
 
         return configuration;
+    }
+
+    internal static ServerSecurityPolicyCollection CreateSecurityPolicies(ServerSecurityPolicy policy)
+    {
+        ServerSecurityPolicyCollection policies = [];
+
+        switch (policy)
+        {
+            case ServerSecurityPolicy.None:
+                policies.Add(new() { SecurityMode = MessageSecurityMode.None, SecurityPolicyUri = SecurityPolicies.None });
+                break;
+            case ServerSecurityPolicy.Basic256Sha256_Sign:
+                policies.Add(new() { SecurityMode = MessageSecurityMode.Sign, SecurityPolicyUri = SecurityPolicies.Basic256Sha256 });
+                break;
+            case ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt:
+                policies.Add(new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, SecurityPolicyUri = SecurityPolicies.Basic256Sha256 });
+                break;
+            case ServerSecurityPolicy.Aes256_Sha256_RsaPss_SignAndEncrypt:
+                policies.Add(new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, SecurityPolicyUri = SecurityPolicies.Aes256_Sha256_RsaPss });
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported security policy: {policy}");
+        }
+
+        return policies;
     }
 
     private static TransportQuotas CreateTransportQuotas()

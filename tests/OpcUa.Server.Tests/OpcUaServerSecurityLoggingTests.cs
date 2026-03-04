@@ -1,4 +1,3 @@
-using System;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Opc.Ua;
@@ -142,5 +141,43 @@ public class OpcUaServer_LogInsecureConfigurationWarnings
             e.LogLevel == LogLevel.Warning &&
             e.Message.Contains("TransportQuotas disabled") &&
             e.Message.Contains("denial-of-service"));
+    }
+
+    [Fact]
+    public void Logs_warning_when_security_policy_is_None()
+    {
+        TestLogger<IOpcUaServer> logger = new();
+        OpcUaServerDataPortCommunication communication = new()
+        {
+            UserAuthenticationType = 1,
+            SecurityPolicy = 0, // None
+            Nodes = [],
+        };
+        using OpcUaServer server = new(communication, logger);
+
+        server.LogInsecureConfigurationWarnings();
+
+        logger.Entries.Should().ContainSingle(e =>
+            e.LogLevel == LogLevel.Warning &&
+            e.Message.Contains("SecurityPolicy=None") &&
+            e.Message.Contains("IEC 62443"));
+    }
+
+    [Fact]
+    public void Does_not_log_security_policy_warning_when_policy_is_secure()
+    {
+        TestLogger<IOpcUaServer> logger = new();
+        OpcUaServerDataPortCommunication communication = new()
+        {
+            UserAuthenticationType = 1,
+            SecurityPolicy = 2, // Basic256Sha256_SignAndEncrypt (default)
+            Nodes = [],
+        };
+        using OpcUaServer server = new(communication, logger);
+
+        server.LogInsecureConfigurationWarnings();
+
+        logger.Entries.Should().NotContain(e =>
+            e.Message.Contains("SecurityPolicy=None"));
     }
 }

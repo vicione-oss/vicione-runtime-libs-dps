@@ -80,6 +80,9 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
 
         if (!_properties.TransportQuotas)
             logger.LogTransportQuotasDisabled();
+
+        if (_properties.SecurityPolicy == ServerSecurityPolicy.None)
+            logger.LogInsecureSecurityPolicy();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

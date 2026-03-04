@@ -1,6 +1,5 @@
 using System;
 using AwesomeAssertions;
-using Opc.Ua;
 using Xunit;
 
 namespace ViciOne.Suite.DataPort;

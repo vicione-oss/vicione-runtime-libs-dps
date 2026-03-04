@@ -47,6 +47,8 @@ Nodes:
           - Id             : Endpoint
             Required       : true
           - Id             : TransportQuotas
+          - Id             : SecurityPolicy
+            Required       : true
       - Id                 : Authentication
         Properties         :
           - Id             : UserAuthenticationType
@@ -327,6 +329,19 @@ Properties:
     DataType    : Bool
     UiControl   : CheckBox
     DefaultValue: true
+
+  - Id                 : SecurityPolicy
+    Name               : "Security Policy"
+    Description        : "The security policy applied to OPC-UA connections. 'None' disables encryption and signing (insecure, test/debug only)."
+    DataType           : UInt8
+    UiControl          : NumericListBox
+    DefaultValue       : 2
+    MinValue           : 0
+    MaxValue           : 3
+    Elements           : { 0: 'None',
+                           1: 'Basic256Sha256 Sign',
+                           2: 'Basic256Sha256 SignAndEncrypt',
+                           3: 'Aes256-Sha256-RsaPss SignAndEncrypt' }
 
   - Id          : ReadOnly
     Name        : "Read only"
