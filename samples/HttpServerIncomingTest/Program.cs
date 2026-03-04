@@ -68,7 +68,7 @@ internal static class Program
 
         using var httpClient = CreateHttpClient();
         using var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:5002/Value");
-        request.Content = new StringContent("{\u0022Test\u0022:{\u0022Value\u0022:0.2},\u0022$meta\u0022:{\u0022Test\u0022:{\u0022Value\u0022:\u0022System.Double, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\u0022}}}");
+        request.Content = new StringContent("{\u0022Test\u0022:{\u0022Value\u0022:0.2},\u0022$meta\u0022:{\u0022Test\u0022:{\u0022Value\u0022:\u0022System.Double, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\u0022}}}");
 
         var result = await httpClient.SendAsync(request);
 

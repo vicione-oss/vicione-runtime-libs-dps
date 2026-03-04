@@ -21,7 +21,7 @@ public class MySqlCommands_ComposeCreateTableCommandText
         CREATE TABLE `dbo`.`users` (
         `id` int AUTO_INCREMENT PRIMARY KEY NOT NULL,
         `name` text);
-        """);
+        """.ReplaceLineEndings());
     }
 }
 
@@ -69,6 +69,6 @@ public class MySqlCommands_ComposeCreateStructureCommandText
         CREATE TABLE `test3`.`table_name1` (
         `id` int,
         `name` text);
-        """);
+        """.ReplaceLineEndings());
     }
 }

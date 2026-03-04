@@ -21,7 +21,7 @@
         <Nullable>enable</Nullable>
         <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
         <!-- Allgemeine Informationen -->
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <RuntimeIdentifiers Condition="$(MSBuildProjectDirectory.Contains('src'))">linux-x64;linux-arm64;win-x64</RuntimeIdentifiers>
         <Description>-</Description>
         <Product>ViciOne</Product>
@@ -44,7 +44,7 @@
     <!-- Für Repos die Projekte enthalten die als NuGet Paket veröffentlicht werden -->
     <PropertyGroup>
         <!-- https://docs.microsoft.com/de-de/nuget/reference/msbuild-targets -->
-        <PackageProjectUrl>https://gitlab.i40.ifm-datalink.net/acx/vo-suite/dps</PackageProjectUrl>
+        <PackageProjectUrl>https://gitlab.com/vicione-oss/vicione/runtime-libs/dps</PackageProjectUrl>
         <Authors>$(Company)</Authors>
     </PropertyGroup>
 

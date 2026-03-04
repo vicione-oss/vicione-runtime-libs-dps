@@ -22,6 +22,6 @@ public class SqlServerCommands_ComposeCreateTableCommandText
         "id" int IDENTITY(1,1) PRIMARY KEY NOT NULL,
         "name" text,
         "age" int NOT NULL);
-        """);
+        """.ReplaceLineEndings());
     }
 }

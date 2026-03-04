@@ -119,12 +119,12 @@ public class InfluxDbDataPortOutgoing_PreparePointData
           },
           "$meta": {
             "apartment node": {
-              "kitchen node": "System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-              "living room node": "System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"
+              "kitchen node": "System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+              "living room node": "System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"
             }
           }
         }
-        """);
+        """.ReplaceLineEndings());
     }
 
     [Fact]

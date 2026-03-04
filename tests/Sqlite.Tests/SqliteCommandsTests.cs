@@ -38,7 +38,7 @@ public class SqliteCommands_ComposeMissingStructureCommandText
         "id" INTEGER PRIMARY KEY NOT NULL,
         "user_id" INTEGER,
         "name" TEXT);
-        """);
+        """.ReplaceLineEndings());
     }
 }
 

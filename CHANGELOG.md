@@ -29,6 +29,7 @@
 - Change MetaData names to full names
 - Make OPC UA certificate optional
 - **Breaking** (`DataPort.Extensions`): Refactored public API — `IDataPoint`, `IncomingDataPortBase`, `OutgoingDataPortBase`, `IDataPointValidator`, `IDataPointValueFactory`, `QueueConfiguration`, and all sub-namespaces changed; see [DataPort.Extensions breaking changes](docs/DataPort.Extensions/README.md#breaking-changes-in-this-release)
+- Update `.NET` to `10.0`
 
 ### Fixed
 
