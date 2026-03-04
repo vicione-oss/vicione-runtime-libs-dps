@@ -6,8 +6,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Messaging.EventHubs.Consumer;
 using AwesomeAssertions;
+using Azure.Messaging.EventHubs.Consumer;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ViciOne.ManagedEngine.Runtime;
@@ -217,7 +217,7 @@ public class AzureIotHubDataPortOutgoing_
             var value = values.Should().ContainSingle().Which;
             var data = await JsonSerializer.DeserializeAsync<JsonObject>(value.Data.EventBody.ToStream());
             data!["property"]!["value"]!.GetValue<int>().Should().Be(112);
-            value.Data.Properties["type"].Should().Be("{\"property\":{\"value\":\"System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\"}}");
+            value.Data.Properties["type"].Should().Be("{\"property\":{\"value\":\"System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\"}}");
             value.Data.Properties["timestamp"].Should().Be(timestamp.ToString("O"));
             value.Data.Properties["validity"].Should().Be("11");
         }

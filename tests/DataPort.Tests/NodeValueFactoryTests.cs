@@ -55,7 +55,7 @@ public class NodeValueFactory_CreateJsonStructure
             }
           }
         }
-        """);
+        """.ReplaceLineEndings());
         meta.ToJsonString(new() { WriteIndented = true, TypeInfoResolver = new DefaultJsonTypeInfoResolver(), }).Should().Be($$"""
         {
           "House": {
@@ -65,7 +65,7 @@ public class NodeValueFactory_CreateJsonStructure
             }
           }
         }
-        """);
+        """.ReplaceLineEndings());
     }
 
     [Fact]
@@ -99,14 +99,14 @@ public class NodeValueFactory_CreateJsonStructure
             }
           }
         }
-        """);
+        """.ReplaceLineEndings());
         meta.ToJsonString(new() { WriteIndented = true, TypeInfoResolver = new DefaultJsonTypeInfoResolver(), }).Should().Be($$"""
         {
           "House": {
             "Temperature": "{{JavaScriptEncoder.Default.Encode(typeof(MyValue).AssemblyQualifiedName!)}}"
           }
         }
-        """);
+        """.ReplaceLineEndings());
     }
 
     internal sealed class MyValue
@@ -151,7 +151,7 @@ public class NodeValueFactory_IncludeMeta
             }
           }
         }
-        """);
+        """.ReplaceLineEndings());
     }
 }
 

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "dependencies": {
-    "net9.0": {
+    "net10.0": {
       "OPCFoundation.NetStandard.Opc.Ua.Server": {
         "type": "Direct",
         "requested": "[1.5.375.457, )",
@@ -43,15 +43,7 @@
       "OPCFoundation.NetStandard.Opc.Ua.Security.Certificates": {
         "type": "Transitive",
         "resolved": "1.5.375.457",
-        "contentHash": "+kYvuS99heA4bJxtRyBqwlW2EfVuqK5e1wKG9tMP2QaEqRVJpc2L6smueDcyT04NgWMIdnQvWTiLhazoZi4ZHQ==",
-        "dependencies": {
-          "System.Formats.Asn1": "9.0.1"
-        }
-      },
-      "System.Formats.Asn1": {
-        "type": "Transitive",
-        "resolved": "9.0.1",
-        "contentHash": "efRn3TXUx2aWG4yOjD5jxTYlPy4Pz/8fiwYBtIpVb/+ySsNA9PFWFd3M3MdcRx1XjpYtj5QSXGm8XnGCeh7dSA=="
+        "contentHash": "+kYvuS99heA4bJxtRyBqwlW2EfVuqK5e1wKG9tMP2QaEqRVJpc2L6smueDcyT04NgWMIdnQvWTiLhazoZi4ZHQ=="
       },
       "ViciOne.ManagedEngine.Serialization": {
         "type": "Transitive",
@@ -66,7 +58,7 @@
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[9.0.10, )",
+        "requested": "[10.0.3, )",
         "resolved": "9.0.10",
         "contentHash": "MFUPv/nN1rAQ19w43smm6bbf0JDYN/1HEPHoiMYY50pvDMFpglzWAuoTavByDmZq7UuhjaxwrET3joU69ZHoHQ==",
         "dependencies": {
@@ -84,8 +76,8 @@
         }
       }
     },
-    "net9.0/linux-arm64": {},
-    "net9.0/linux-x64": {},
-    "net9.0/win-x64": {}
+    "net10.0/linux-arm64": {},
+    "net10.0/linux-x64": {},
+    "net10.0/win-x64": {}
   }
 }
