@@ -42,7 +42,7 @@ public class NodePropertiesExtensions_GetProperty
 
         var property = node.GetProperty("Count");
 
-        property!.Value.Should().Be(23);
+        property.Value.Should().Be(23);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class NodePropertiesExtensions_GetProperty
 
         var property = node.GetProperty("House.Kitchen");
 
-        property!.Value.Should().Be(23);
+        property.Value.Should().Be(23);
     }
 
     [Fact]

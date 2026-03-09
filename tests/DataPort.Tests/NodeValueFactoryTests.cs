@@ -175,8 +175,8 @@ public class NodeValueFactory_GetValueJsonNode
         var node = NodeValueFactory.GetValueJsonNode([groupNode, valueNode,], jObject);
 
         node.Should().NotBeNull();
-        node!.GetValue<int>().Should().Be(23);
-        node!.GetPath().Should().Be("$.group.value");
+        node.GetValue<int>().Should().Be(23);
+        node.GetPath().Should().Be("$.group.value");
     }
 
     [Fact]

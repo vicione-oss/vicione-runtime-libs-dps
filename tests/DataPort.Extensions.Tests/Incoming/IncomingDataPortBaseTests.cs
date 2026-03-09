@@ -212,7 +212,7 @@ public class IncomingDataPortBaseTests
         // Assert
         receivedEventFired.Should().BeTrue();
         receivedValues.Should().NotBeNull();
-        receivedValues!.Count.Should().Be(2); // 2 transferred channels
+        receivedValues.Count.Should().Be(2); // 2 transferred channels
 
         // Cleanup
         await sut.DisposeAsync();
@@ -263,7 +263,7 @@ public class IncomingDataPortBaseTests
 
         // Assert
         receivedValues.Should().NotBeNull();
-        var firstTimestamp = receivedValues!.First().Timestamp;
+        var firstTimestamp = receivedValues.First().Timestamp;
         receivedValues.All(v => v.Timestamp == firstTimestamp).Should().BeTrue();
 
         // Cleanup

@@ -128,7 +128,7 @@ public class OpcUaClientDataPortOutgoingBenchmark : IDisposable
         };
         _communication = new OpcUaClientDataPortOutgoing(communication, _loggerFactory);
 
-        _communication!.ConnectAsync(CancellationToken.None).Wait();
+        _communication.ConnectAsync(CancellationToken.None).Wait();
     }
 
     [GlobalCleanup]

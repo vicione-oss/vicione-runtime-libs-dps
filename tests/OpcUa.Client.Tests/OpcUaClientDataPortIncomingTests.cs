@@ -247,7 +247,7 @@ public class OpcUaClientDataPortIncoming_
         await opcUaDataport.ConnectAsync(cancellation.Token);
 
         subscribeAction.Should().NotBeNull();
-        subscribeAction!(1.4, new DateTime(2023, 10, 12, 15, 27, 30));
+        subscribeAction(1.4, new DateTime(2023, 10, 12, 15, 27, 30));
 
         await opcUaClient.Received(1).SubscribeAsync("ns=2;s=test", Arg.Any<Action<object?, DateTime>>(), cancellation.Token);
         receivedValues.Should().BeTrue();

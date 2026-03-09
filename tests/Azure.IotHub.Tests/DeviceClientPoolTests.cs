@@ -184,7 +184,7 @@ public class DeviceClientPool_InvokeDesiredPropertyUpdate
         otherClient.DesiredPropertyUpdate += (_, _) => otherClientInvoked++;
 
         callback.Should().NotBeNull();
-        await callback!(new(), new DeviceClientPool.Key("local", "my-device"));
+        await callback(new(), new DeviceClientPool.Key("local", "my-device"));
 
         clientInvoked.Should().Be(1);
         otherClientInvoked.Should().Be(1);
