@@ -195,3 +195,63 @@ public class LoginAttemptTracker_GetRemainingDelay
         tracker.GetRemainingDelay("user").Should().Be(TimeSpan.FromSeconds(30));
     }
 }
+
+public class LoginAttemptTracker_Eviction
+{
+    [Fact]
+    public void Evicts_expired_entries_when_capacity_is_exceeded()
+    {
+        FakeTimeProvider timeProvider = new();
+        LoginAttemptTracker tracker = new(timeProvider: timeProvider);
+
+        // Fill tracker with 10_000 users that will be expired
+        for (var i = 0; i < 10_000; i++)
+            tracker.RecordFailure($"old-user-{i}");
+
+        // Advance past lockout duration so all entries are expired
+        timeProvider.Advance(TimeSpan.FromSeconds(1801));
+
+        // Adding one more user should trigger eviction of all expired entries
+        tracker.RecordFailure("new-user");
+
+        tracker.GetFailCount("new-user").Should().Be(1);
+        tracker.GetFailCount("old-user-0").Should().Be(0);
+    }
+
+    [Fact]
+    public void Evicts_oldest_entries_when_all_are_still_active()
+    {
+        FakeTimeProvider timeProvider = new();
+        LoginAttemptTracker tracker = new(timeProvider: timeProvider);
+
+        // Fill tracker to capacity, advancing time slightly between entries
+        // so they have distinct timestamps
+        for (var i = 0; i < 10_000; i++)
+        {
+            tracker.RecordFailure($"user-{i}");
+            timeProvider.Advance(TimeSpan.FromMilliseconds(1));
+        }
+
+        // Adding one more exceeds the limit; oldest entries should be evicted
+        tracker.RecordFailure("newest-user");
+
+        tracker.GetFailCount("newest-user").Should().Be(1);
+        // The very first user should have been evicted as the oldest
+        tracker.GetFailCount("user-0").Should().Be(0);
+        // A recent user should still be tracked
+        tracker.GetFailCount("user-9999").Should().Be(1);
+    }
+
+    [Fact]
+    public void Does_not_evict_entries_when_below_capacity()
+    {
+        LoginAttemptTracker tracker = new();
+
+        for (var i = 0; i < 100; i++)
+            tracker.RecordFailure($"user-{i}");
+
+        // All entries should still be present
+        for (var i = 0; i < 100; i++)
+            tracker.GetFailCount($"user-{i}").Should().Be(1);
+    }
+}

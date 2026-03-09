@@ -213,6 +213,7 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
         {
             _loginAttemptTracker.RecordFailure(username);
             logger.LogFailedAuthentication(username, sessionId);
+            logger.LogAccountLocked(username, _loginAttemptTracker.GetLockoutEnd(username));
 
             // construct translation object with default text.
             var info = new TranslationInfo(

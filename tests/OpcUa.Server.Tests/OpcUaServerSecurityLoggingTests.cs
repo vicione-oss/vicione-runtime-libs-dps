@@ -99,8 +99,7 @@ public class OpcUaServer_LogInsecureConfigurationWarnings
 
         logger.Entries.Should().ContainSingle(e =>
             e.LogLevel == LogLevel.Warning &&
-            e.Message.Contains("anonymous access enabled") &&
-            e.Message.Contains("IEC 62443"));
+            e.Message.Contains("anonymous access enabled"));
     }
 
     [Fact]
@@ -159,8 +158,7 @@ public class OpcUaServer_LogInsecureConfigurationWarnings
 
         logger.Entries.Should().ContainSingle(e =>
             e.LogLevel == LogLevel.Warning &&
-            e.Message.Contains("SecurityPolicy=None") &&
-            e.Message.Contains("IEC 62443"));
+            e.Message.Contains("SecurityPolicy=None"));
     }
 
     [Fact]

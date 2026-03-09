@@ -77,27 +77,16 @@ internal static class OpcUaSetup
 
     internal static ServerSecurityPolicyCollection CreateSecurityPolicies(ServerSecurityPolicy policy)
     {
-        ServerSecurityPolicyCollection policies = [];
-
-        switch (policy)
+        var (securityMode, securityPolicyUri) = policy switch
         {
-            case ServerSecurityPolicy.None:
-                policies.Add(new() { SecurityMode = MessageSecurityMode.None, SecurityPolicyUri = SecurityPolicies.None });
-                break;
-            case ServerSecurityPolicy.Basic256Sha256_Sign:
-                policies.Add(new() { SecurityMode = MessageSecurityMode.Sign, SecurityPolicyUri = SecurityPolicies.Basic256Sha256 });
-                break;
-            case ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt:
-                policies.Add(new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, SecurityPolicyUri = SecurityPolicies.Basic256Sha256 });
-                break;
-            case ServerSecurityPolicy.Aes256_Sha256_RsaPss_SignAndEncrypt:
-                policies.Add(new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, SecurityPolicyUri = SecurityPolicies.Aes256_Sha256_RsaPss });
-                break;
-            default:
-                throw new InvalidOperationException($"Unsupported security policy: {policy}");
-        }
+            ServerSecurityPolicy.None => (MessageSecurityMode.None, SecurityPolicies.None),
+            ServerSecurityPolicy.Basic256Sha256_Sign => (MessageSecurityMode.Sign, SecurityPolicies.Basic256Sha256),
+            ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt => (MessageSecurityMode.SignAndEncrypt, SecurityPolicies.Basic256Sha256),
+            ServerSecurityPolicy.Aes256_Sha256_RsaPss_SignAndEncrypt => (MessageSecurityMode.SignAndEncrypt, SecurityPolicies.Aes256_Sha256_RsaPss),
+            _ => throw new InvalidOperationException($"Unsupported security policy: {policy}"),
+        };
 
-        return policies;
+        return [new() { SecurityMode = securityMode, SecurityPolicyUri = securityPolicyUri }];
     }
 
     private static TransportQuotas CreateTransportQuotas()
