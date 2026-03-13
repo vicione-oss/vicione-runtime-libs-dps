@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -14,6 +17,7 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
 {
     private readonly OpcUaServerDataPortProperties _properties = new(communication);
     private readonly Dictionary<Guid, Node> _nodes = [];
+    private readonly LoginAttemptTracker _loginAttemptTracker = new();
     private DataPortNodeManager? _nodeManager;
 
     public event Action<string, DateTime, object> ReceiveValue
@@ -56,12 +60,29 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
     {
         var configuration = OpcUaSetup.CreateConfiguration(_properties);
 
+        LogInsecureConfigurationWarnings();
+
         Utils.SetLogger(logger);
         await ValidateConfigAsync(configuration, cancellationToken);
         Start(configuration);
 
         if (_nodeManager is null)
             throw new InvalidOperationException("Server did not initialize correctly.");
+    }
+
+    internal void LogInsecureConfigurationWarnings()
+    {
+        if (_properties.UserAuthenticationType == UserAuthenticationType.Anonymous)
+            logger.LogAnonymousAccessEnabled();
+
+        if (_properties.AutoAcceptUntrustedCertificates)
+            logger.LogAutoAcceptUntrustedCertificates();
+
+        if (!_properties.TransportQuotas)
+            logger.LogTransportQuotasDisabled();
+
+        if (_properties.SecurityPolicy == ServerSecurityPolicy.None)
+            logger.LogInsecureSecurityPolicy();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -128,22 +149,72 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
     /// Parts of the method are copied from the reference implementation of the OPC UA server. <see cref="https://github.com/OPCFoundation/UA-.NETStandard/blob/master/Applications/Quickstarts.Servers/ReferenceServer/ReferenceServer.cs"/>
     /// </summary>
     private void ImpersonateUser(Session session, ImpersonateEventArgs args)
-        => args.Identity = args.NewIdentity switch
+    {
+        var sessionId = session?.Id?.ToString() ?? "unknown";
+
+        args.Identity = args.NewIdentity switch
         {
-            UserNameIdentityToken userNameToken => VerifyPassword(userNameToken),
-            AnonymousIdentityToken => new RoleBasedIdentity(new UserIdentity(), [Role.Anonymous]),
+            UserNameIdentityToken userNameToken => VerifyPassword(userNameToken, sessionId),
+            AnonymousIdentityToken => HandleAnonymousAccess(sessionId),
             _ => throw ServiceResultException.Create(StatusCodes.BadIdentityTokenInvalid, "Not supported user token type: {0}.", args.NewIdentity),
         };
+    }
+
+    internal RoleBasedIdentity HandleAnonymousAccess(string sessionId)
+    {
+        logger.LogAnonymousAccess(sessionId);
+        return new RoleBasedIdentity(new UserIdentity(), [Role.Anonymous]);
+    }
 
     /// <summary>
     /// Parts of the method are copied from the reference implementation of the OPC UA server. <see cref="https://github.com/OPCFoundation/UA-.NETStandard/blob/master/Applications/Quickstarts.Servers/ReferenceServer/ReferenceServer.cs"/>
     /// </summary>
-    private RoleBasedIdentity VerifyPassword(UserNameIdentityToken userNameToken)
+    internal RoleBasedIdentity VerifyPassword(UserNameIdentityToken userNameToken, string sessionId)
     {
-        var username = userNameToken.UserName;
+        var username = userNameToken.UserName ?? string.Empty;
 
-        if (_properties.User != username || _properties.Password != userNameToken.DecryptedPassword)
+        if (_loginAttemptTracker.IsLockedOut(username))
         {
+            logger.LogAccountLocked(username, _loginAttemptTracker.GetLockoutEnd(username));
+
+            var lockInfo = new TranslationInfo(
+                "AccountLocked",
+                "en-US",
+                "Account is locked due to too many failed login attempts.",
+                username);
+
+            throw new ServiceResultException(new ServiceResult(
+                StatusCodes.BadUserAccessDenied,
+                "AccountLocked",
+                LoadServerProperties().ProductUri,
+                new LocalizedText(lockInfo)));
+        }
+
+        var remainingDelay = _loginAttemptTracker.GetRemainingDelay(username);
+
+        if (remainingDelay > TimeSpan.Zero)
+        {
+            logger.LogLoginThrottled(username, remainingDelay);
+
+            var throttleInfo = new TranslationInfo(
+                "TooManyAttempts",
+                "en-US",
+                $"Too many login attempts. Try again later. Remaining delay: {remainingDelay.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture)}.",
+                username);
+
+            throw new ServiceResultException(new ServiceResult(
+                StatusCodes.BadUserAccessDenied,
+                "TooManyAttempts",
+                LoadServerProperties().ProductUri,
+                new LocalizedText(throttleInfo)));
+        }
+
+        if (!AreCredentialsValid(_properties.User, username, _properties.Password, userNameToken.DecryptedPassword))
+        {
+            _loginAttemptTracker.RecordFailure(username);
+            logger.LogFailedAuthentication(username, sessionId);
+            logger.LogAccountLocked(username, _loginAttemptTracker.GetLockoutEnd(username));
+
             // construct translation object with default text.
             var info = new TranslationInfo(
                 "InvalidPassword",
@@ -159,8 +230,26 @@ internal sealed class OpcUaServer(OpcUaServerDataPortCommunication communication
                 new LocalizedText(info)));
         }
 
+        _loginAttemptTracker.ResetFailures(username);
+        logger.LogSuccessfulAuthentication(username, sessionId);
+
         return new RoleBasedIdentity(new UserIdentity(userNameToken),
                [Role.AuthenticatedUser]);
+    }
+
+    /// <summary>
+    /// Performs a timing-safe comparison of user credentials using <see cref="CryptographicOperations.FixedTimeEquals"/>.
+    /// Uses non-short-circuit AND (&amp;) to ensure both comparisons always execute, preventing timing information leakage.
+    /// </summary>
+    internal static bool AreCredentialsValid(string? expectedUser, string? actualUser, string? expectedPassword, string? actualPassword)
+    {
+        var expectedUserBytes = Encoding.UTF8.GetBytes(expectedUser ?? string.Empty);
+        var actualUserBytes = Encoding.UTF8.GetBytes(actualUser ?? string.Empty);
+        var expectedPasswordBytes = Encoding.UTF8.GetBytes(expectedPassword ?? string.Empty);
+        var actualPasswordBytes = Encoding.UTF8.GetBytes(actualPassword ?? string.Empty);
+
+        return CryptographicOperations.FixedTimeEquals(expectedUserBytes, actualUserBytes)
+            & CryptographicOperations.FixedTimeEquals(expectedPasswordBytes, actualPasswordBytes);
     }
 
     private static async Task ValidateConfigAsync(ApplicationConfiguration configuration, CancellationToken cancellationToken)

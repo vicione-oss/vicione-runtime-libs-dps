@@ -23,6 +23,13 @@
   - YAML consistency testing: `YamlConsistencyBaseTest` base class for validating consistency between YAML configuration files and C# DataPort implementations
   - Test helpers: `DataPortCommunicationExtensions` for reflection-based Communication analysis, `RulesetExtensions` for querying YAML rulesets
   - Centralized test logging configuration
+- Use timing-safe comparison for OPC UA server credential verification
+- Add brute-force protection to OPC UA server authentication (lockout after failed attempts with exponential delay)
+- Add audit logging for OPC UA server security events (failed/successful authentication, anonymous access, account lockout)
+- Warn on insecure OPC UA server configuration (anonymous access, auto-accept untrusted certificates) at startup
+- Configure explicit `TransportQuotas` and `ServerConfiguration` session limits for OPC UA server (max message size, max session count, operation timeout, request throttling) to harden against denial-of-service attacks
+- Enable OPC UA stack tracing for security and error events
+- Add configurable `SecurityPolicy` to OPC UA server (`None`, `Basic256Sha256_Sign`, `Basic256Sha256_SignAndEncrypt`, `Aes256_Sha256_RsaPss_SignAndEncrypt`); default is `Basic256Sha256_SignAndEncrypt` — `MessageSecurityMode.None` is no longer offered unless explicitly selected
 
 ### Changed
 

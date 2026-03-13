@@ -161,6 +161,8 @@ public class OpcUaServerDataPortCommunicationEqualityComparer_Equals
             { CreateDefaultCommunication(), CreateDefaultCommunication(c => c.TrustedIssuerCertificatesStoreType = 1) },
             { CreateDefaultCommunication(), CreateDefaultCommunication(c => c.TrustedIssuerCertificatesStorePath = "different") },
             { CreateDefaultCommunication(), CreateDefaultCommunication(c => c.AutoAcceptUntrustedCertificates = false) },
+            { CreateDefaultCommunication(), CreateDefaultCommunication(c => c.TransportQuotas = false) },
+            { CreateDefaultCommunication(), CreateDefaultCommunication(c => c.SecurityPolicy = 1) },
         };
 
     private static OpcUaServerDataPortCommunication CreateDefaultCommunication(Action<OpcUaServerDataPortCommunication>? modify = null)
@@ -184,6 +186,7 @@ public class OpcUaServerDataPortCommunicationEqualityComparer_Equals
             TrustedIssuerCertificatesStoreType = 0,
             TrustedIssuerCertificatesStorePath = "StorePath",
             AutoAcceptUntrustedCertificates = true,
+            TransportQuotas = true,
         };
 
         modify?.Invoke(communication);

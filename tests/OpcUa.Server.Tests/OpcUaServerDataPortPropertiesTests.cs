@@ -659,3 +659,96 @@ public class OpcUaServerDataPortProperties_AutoAcceptUntrustedCertificates
         { false },
     };
 }
+
+public class OpcUaServerDataPortProperties_TransportQuotas
+{
+    [Theory]
+    [MemberData(nameof(Conversion))]
+    public void Getter_returns_value(bool transportQuotas)
+    {
+        OpcUaServerDataPortProperties properties = new(new() { TransportQuotas = transportQuotas, });
+
+        properties.TransportQuotas.Should().Be(transportQuotas);
+    }
+
+    [Theory]
+    [MemberData(nameof(Conversion))]
+    public void Setter_sets_value(bool transportQuotas)
+    {
+        OpcUaServerDataPortCommunication communication = new();
+
+        _ = new OpcUaServerDataPortProperties(communication)
+        {
+            TransportQuotas = transportQuotas,
+        };
+
+        communication.TransportQuotas.Should().Be(transportQuotas);
+    }
+
+    public static TheoryData<bool> Conversion() => new()
+    {
+        { true },
+        { false },
+    };
+}
+
+public class OpcUaServerDataPortProperties_SecurityPolicy
+{
+    [Theory]
+    [MemberData(nameof(Conversion))]
+    public void Getter_returns_value(byte securityPolicy, ServerSecurityPolicy policy)
+    {
+        OpcUaServerDataPortCommunication communication = new() { SecurityPolicy = securityPolicy, };
+
+        OpcUaServerDataPortProperties properties = new(communication);
+
+        properties.SecurityPolicy.Should().Be(policy);
+    }
+
+    [Theory]
+    [MemberData(nameof(Conversion))]
+    public void Setter_sets_value(byte securityPolicy, ServerSecurityPolicy policy)
+    {
+        OpcUaServerDataPortCommunication communication = new();
+
+        _ = new OpcUaServerDataPortProperties(communication)
+        {
+            SecurityPolicy = policy,
+        };
+
+        communication.SecurityPolicy.Should().Be(securityPolicy);
+    }
+
+    [Fact]
+    public void Setter_throws_for_invalid_value()
+    {
+        OpcUaServerDataPortCommunication communication = new();
+
+        OpcUaServerDataPortProperties properties = new(communication);
+
+        properties.Invoking(p => p.SecurityPolicy = (ServerSecurityPolicy)99)
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("Invalid security policy.");
+    }
+
+    [Fact]
+    public void Getter_throws_for_invalid_value()
+    {
+        OpcUaServerDataPortCommunication communication = new() { SecurityPolicy = 99, };
+
+        OpcUaServerDataPortProperties properties = new(communication);
+
+        properties.Invoking(p => _ = p.SecurityPolicy)
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("Invalid security policy.");
+    }
+
+    public static TheoryData<byte, ServerSecurityPolicy> Conversion()
+        => new()
+        {
+            { 0, ServerSecurityPolicy.None },
+            { 1, ServerSecurityPolicy.Basic256Sha256_Sign },
+            { 2, ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt },
+            { 3, ServerSecurityPolicy.Aes256_Sha256_RsaPss_SignAndEncrypt },
+        };
+}

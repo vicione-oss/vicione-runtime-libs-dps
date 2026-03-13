@@ -33,4 +33,8 @@ public sealed record class OpcUaServerDataPortCommunication : DataPortCommunicat
     public string? TrustedIssuerCertificatesStorePath { get; set; }
 
     public bool AutoAcceptUntrustedCertificates { get; set; }
+
+    public bool TransportQuotas { get; set; } = true;
+
+    public byte SecurityPolicy { get; set; } = 2;
 }

@@ -16,14 +16,12 @@ internal static class OpcUaSetup
             "http://opcfoundation.org/UA-Profile/Server/DataAccess",
             "http://opcfoundation.org/UA-Profile/Server/ClientRedundancy",
         ];
-        serverConfiguration.SecurityPolicies =
-        [
-            new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, SecurityPolicyUri = SecurityPolicies.Basic256Sha256 },
-            new() { SecurityMode = MessageSecurityMode.None, SecurityPolicyUri = SecurityPolicies.None},
-            new() { SecurityMode = MessageSecurityMode.SignAndEncrypt, },
-            new() { SecurityMode = MessageSecurityMode.Sign, },
-        ];
+        serverConfiguration.SecurityPolicies = CreateSecurityPolicies(properties.SecurityPolicy);
         serverConfiguration.MaxRegistrationInterval = 0; // do not register itself
+        serverConfiguration.MaxSessionCount = TransportQuotasConfiguration.MaxSessionCount;
+        serverConfiguration.MaxSubscriptionCount = TransportQuotasConfiguration.MaxSubscriptionCount;
+        serverConfiguration.MinSessionTimeout = TransportQuotasConfiguration.MinSessionTimeout;
+        serverConfiguration.MaxSessionTimeout = TransportQuotasConfiguration.MaxSessionTimeout;
 
         serverConfiguration.UserTokenPolicies =
         [
@@ -40,7 +38,7 @@ internal static class OpcUaSetup
             ApplicationName = properties.ApplicationName,
             ApplicationUri = properties.ApplicationUri,
             ApplicationType = ApplicationType.Server,
-            TransportQuotas = new TransportQuotas(),
+            TransportQuotas = properties.TransportQuotas ? CreateTransportQuotas() : null,
             ServerConfiguration = serverConfiguration,
         };
 
@@ -75,5 +73,32 @@ internal static class OpcUaSetup
         }
 
         return configuration;
+    }
+
+    internal static ServerSecurityPolicyCollection CreateSecurityPolicies(ServerSecurityPolicy policy)
+    {
+        var (securityMode, securityPolicyUri) = policy switch
+        {
+            ServerSecurityPolicy.None => (MessageSecurityMode.None, SecurityPolicies.None),
+            ServerSecurityPolicy.Basic256Sha256_Sign => (MessageSecurityMode.Sign, SecurityPolicies.Basic256Sha256),
+            ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt => (MessageSecurityMode.SignAndEncrypt, SecurityPolicies.Basic256Sha256),
+            ServerSecurityPolicy.Aes256_Sha256_RsaPss_SignAndEncrypt => (MessageSecurityMode.SignAndEncrypt, SecurityPolicies.Aes256_Sha256_RsaPss),
+            _ => throw new InvalidOperationException($"Unsupported security policy: {policy}"),
+        };
+
+        return [new() { SecurityMode = securityMode, SecurityPolicyUri = securityPolicyUri }];
+    }
+
+    private static TransportQuotas CreateTransportQuotas()
+    {
+        return new TransportQuotas
+        {
+            MaxStringLength = TransportQuotasConfiguration.MaxStringLength,
+            MaxByteStringLength = TransportQuotasConfiguration.MaxByteStringLength,
+            MaxArrayLength = TransportQuotasConfiguration.MaxArrayLength,
+            MaxMessageSize = TransportQuotasConfiguration.MaxMessageSize,
+            MaxBufferSize = TransportQuotasConfiguration.MaxBufferSize,
+            OperationTimeout = TransportQuotasConfiguration.OperationTimeout,
+        };
     }
 }

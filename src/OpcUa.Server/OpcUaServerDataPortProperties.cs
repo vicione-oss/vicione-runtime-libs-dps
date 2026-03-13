@@ -152,4 +152,30 @@ internal sealed class OpcUaServerDataPortProperties(OpcUaServerDataPortCommunica
         get => communication.AutoAcceptUntrustedCertificates;
         set => communication.AutoAcceptUntrustedCertificates = value;
     }
+
+    internal bool TransportQuotas
+    {
+        get => communication.TransportQuotas;
+        set => communication.TransportQuotas = value;
+    }
+
+    internal ServerSecurityPolicy SecurityPolicy
+    {
+        get => communication.SecurityPolicy switch
+        {
+            0 => ServerSecurityPolicy.None,
+            1 => ServerSecurityPolicy.Basic256Sha256_Sign,
+            2 => ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt,
+            3 => ServerSecurityPolicy.Aes256_Sha256_RsaPss_SignAndEncrypt,
+            _ => throw new InvalidOperationException("Invalid security policy.")
+        };
+        set => communication.SecurityPolicy = value switch
+        {
+            ServerSecurityPolicy.None => 0,
+            ServerSecurityPolicy.Basic256Sha256_Sign => 1,
+            ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt => 2,
+            ServerSecurityPolicy.Aes256_Sha256_RsaPss_SignAndEncrypt => 3,
+            _ => throw new InvalidOperationException("Invalid security policy.")
+        };
+    }
 }

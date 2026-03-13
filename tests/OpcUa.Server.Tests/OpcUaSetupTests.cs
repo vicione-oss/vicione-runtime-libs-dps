@@ -4,6 +4,83 @@ using Xunit;
 
 namespace ViciOne.Suite.DataPort;
 
+public class OpcUaSetup_CreateSecurityPolicies
+{
+    [Fact]
+    public void Default_policy_does_not_contain_None()
+    {
+        var policies = OpcUaSetup.CreateSecurityPolicies(ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt);
+
+        policies.Should().NotContain(p => p.SecurityMode == MessageSecurityMode.None);
+    }
+
+    [Fact]
+    public void None_policy_contains_only_None()
+    {
+        var policies = OpcUaSetup.CreateSecurityPolicies(ServerSecurityPolicy.None);
+
+        policies.Should().ContainSingle()
+            .Which.SecurityMode.Should().Be(MessageSecurityMode.None);
+    }
+
+    [Fact]
+    public void Basic256Sha256_Sign_returns_Sign_with_Basic256Sha256()
+    {
+        var policies = OpcUaSetup.CreateSecurityPolicies(ServerSecurityPolicy.Basic256Sha256_Sign);
+
+        var policy = policies.Should().ContainSingle().Which;
+        policy.SecurityMode.Should().Be(MessageSecurityMode.Sign);
+        policy.SecurityPolicyUri.Should().Be(SecurityPolicies.Basic256Sha256);
+    }
+
+    [Fact]
+    public void Basic256Sha256_SignAndEncrypt_returns_SignAndEncrypt_with_Basic256Sha256()
+    {
+        var policies = OpcUaSetup.CreateSecurityPolicies(ServerSecurityPolicy.Basic256Sha256_SignAndEncrypt);
+
+        var policy = policies.Should().ContainSingle().Which;
+        policy.SecurityMode.Should().Be(MessageSecurityMode.SignAndEncrypt);
+        policy.SecurityPolicyUri.Should().Be(SecurityPolicies.Basic256Sha256);
+    }
+
+    [Fact]
+    public void Aes256_Sha256_RsaPss_SignAndEncrypt_returns_SignAndEncrypt_with_Aes256_Sha256_RsaPss()
+    {
+        var policies = OpcUaSetup.CreateSecurityPolicies(ServerSecurityPolicy.Aes256_Sha256_RsaPss_SignAndEncrypt);
+
+        var policy = policies.Should().ContainSingle().Which;
+        policy.SecurityMode.Should().Be(MessageSecurityMode.SignAndEncrypt);
+        policy.SecurityPolicyUri.Should().Be(SecurityPolicies.Aes256_Sha256_RsaPss);
+    }
+}
+
+public class OpcUaSetup_CreateConfiguration_SecurityPolicies
+{
+    [Fact]
+    public void Default_communication_does_not_include_None_security_mode()
+    {
+        OpcUaServerDataPortCommunication communication = new();
+        OpcUaServerDataPortProperties properties = new(communication);
+
+        var configuration = OpcUaSetup.CreateConfiguration(properties);
+
+        configuration.ServerConfiguration.SecurityPolicies
+            .Should().NotContain(p => p.SecurityMode == MessageSecurityMode.None);
+    }
+
+    [Fact]
+    public void None_security_policy_includes_None_security_mode()
+    {
+        OpcUaServerDataPortCommunication communication = new() { SecurityPolicy = 0 };
+        OpcUaServerDataPortProperties properties = new(communication);
+
+        var configuration = OpcUaSetup.CreateConfiguration(properties);
+
+        configuration.ServerConfiguration.SecurityPolicies
+            .Should().Contain(p => p.SecurityMode == MessageSecurityMode.None);
+    }
+}
+
 public class OpcUaSetup_CreateConfiguration_TrustedPeerCertificates
 {
     [Fact]
