@@ -68,10 +68,11 @@
       },
       "ViciOne.TreeBuilder": {
         "type": "Direct",
-        "requested": "[0.6.0, )",
-        "resolved": "0.6.0",
-        "contentHash": "r0jgDi3GrA+Pc56Q0Jzoxjplb0TCVBH/3wTptVCSQW9rACY9S2G3aSIlfajoXofMvAT6IwAkLEZZ97KQxlpCdQ==",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "znDqOsG+1n4639f7cc+4VXuLJb+ufolfyEctjqNUHIkeaYZ1v9Mz8g8/sLad42fC0dASkg/ttg76zXeavT3d9g==",
         "dependencies": {
+          "HtmlSanitizer": "9.0.892",
           "YamlDotNet": "16.3.0"
         }
       },
@@ -90,12 +91,34 @@
           "xunit.v3.mtp-v1": "[3.2.2]"
         }
       },
+      "AngleSharp": {
+        "type": "Transitive",
+        "resolved": "0.17.1",
+        "contentHash": "5MPI4bbixlwxb0W/smOMeIR+QlxMy5/5jD+WnIAw4pBC+7AhLPe5bS3cLgQMJyvd6q0A48sG+uYOt/ep406GLA=="
+      },
+      "AngleSharp.Css": {
+        "type": "Transitive",
+        "resolved": "0.17.0",
+        "contentHash": "bg0AcugmX6BFEi/DHG61QrwRU8iuiX4H8LZehdIzYdqOM/dgb3BsCTzNIcc1XADn4+xfQEdVwJYTSwUxroL4vg==",
+        "dependencies": {
+          "AngleSharp": "[0.17.0, 0.18.0)"
+        }
+      },
       "Castle.Core": {
         "type": "Transitive",
         "resolved": "5.1.1",
         "contentHash": "rpYtIczkzGpf+EkZgDr9CClTdemhsrwA/W5hMoPjLkRFnXzH44zDLoovXeKtmxb1ykXK9aJVODSpiJml8CTw2g==",
         "dependencies": {
           "System.Diagnostics.EventLog": "6.0.0"
+        }
+      },
+      "HtmlSanitizer": {
+        "type": "Transitive",
+        "resolved": "9.0.892",
+        "contentHash": "zdkMmpNCjTkxna8Y+jmPIFm2st+HjHrf32yNElFYwe7L4GmDm+mdKR6TzDyf6ewJ0RUUz84D4IkHNgrwGi4VbQ==",
+        "dependencies": {
+          "AngleSharp": "[0.17.1]",
+          "AngleSharp.Css": "[0.17.0]"
         }
       },
       "Microsoft.ApplicationInsights": {
@@ -353,7 +376,7 @@
           "Microsoft.Extensions.Logging.Console": "[10.0.3, )",
           "ViciOne.Suite.DataPort": "[0.30.0, )",
           "ViciOne.Suite.DataPort.Extensions": "[0.30.0, )",
-          "ViciOne.TreeBuilder": "[0.6.0, )",
+          "ViciOne.TreeBuilder": "[1.0.0, )",
           "xunit.v3.extensibility.core": "[3.2.2, )"
         }
       },
