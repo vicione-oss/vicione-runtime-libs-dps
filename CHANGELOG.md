@@ -45,6 +45,7 @@
 - Update `Microsoft.Azure.Devices` to `1.41.0`
 - Update `Microsoft.Data.Sqlite` to `10.0.5`
 - Update `Npgsql` to `10.0.2`
+- Update `MySqlConnector` to `2.5.0`
 
 ### Fixed
 

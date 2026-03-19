@@ -432,7 +432,7 @@
       "ViciOne.Suite.DataPort.MySql": {
         "type": "Project",
         "dependencies": {
-          "MySqlConnector": "[2.4.0, )",
+          "MySqlConnector": "[2.5.0, )",
           "ViciOne.Suite.DataPort.RelationalDatabase": "[0.30.0, )"
         }
       },
@@ -453,9 +453,9 @@
       },
       "MySqlConnector": {
         "type": "CentralTransitive",
-        "requested": "[2.4.0, )",
-        "resolved": "2.4.0",
-        "contentHash": "78M+gVOjbdZEDIyXQqcA7EYlCGS3tpbUELHvn6638A2w0pkPI625ixnzsa5staAd3N9/xFmPJtkKDYwsXpFi/w==",
+        "requested": "[2.5.0, )",
+        "resolved": "2.5.0",
+        "contentHash": "hoAwfHHF8DlRRqwHOhN3u1KLi+XbX/4LPS7Anfa+SYC97vRyIfdEOEEfj1L50q01Ik8aDNvmDrNmu/VPFiAiaQ==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
           "Microsoft.Extensions.Logging.Abstractions": "8.0.2"
