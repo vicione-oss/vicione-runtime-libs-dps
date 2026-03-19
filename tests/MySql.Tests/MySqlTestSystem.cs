@@ -9,7 +9,7 @@ namespace ViciOne.Suite.DataPort;
 [SuppressMessage("Maintainability", "CA1515:Erwägen Sie, öffentliche Typen intern zu machen.")]
 public sealed class MySqlTestSystem : IAsyncLifetime
 {
-    private readonly MySqlContainer _container = new MySqlBuilder().WithUsername("root").Build();
+    private readonly MySqlContainer _container = new MySqlBuilder("mysql:8.0").WithUsername("root").Build();
 
     internal MySqlDataPortCommunication Communication { get; } = new();
 

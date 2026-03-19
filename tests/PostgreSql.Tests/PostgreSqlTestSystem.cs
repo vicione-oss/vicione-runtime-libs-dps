@@ -9,7 +9,7 @@ namespace ViciOne.Suite.DataPort;
 [SuppressMessage("Maintainability", "CA1515:Erwägen Sie, öffentliche Typen intern zu machen.")]
 public sealed class PostgreSqlTestSystem : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder().Build();
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:15.1").Build();
 
     internal PostgreSqlDataPortCommunication Communication { get; } = new();
 

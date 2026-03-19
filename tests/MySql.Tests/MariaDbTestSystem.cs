@@ -9,7 +9,7 @@ namespace ViciOne.Suite.DataPort;
 [SuppressMessage("Maintainability", "CA1515:Erwägen Sie, öffentliche Typen intern zu machen.")]
 public sealed class MariaDbTestSystem : IAsyncLifetime
 {
-    private readonly MariaDbContainer _container = new MariaDbBuilder().WithUsername("root").Build();
+    private readonly MariaDbContainer _container = new MariaDbBuilder("mariadb:10.10").WithUsername("root").Build();
 
     internal MySqlDataPortCommunication Communication { get; } = new();
 

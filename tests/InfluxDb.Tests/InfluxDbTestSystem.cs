@@ -9,7 +9,7 @@ namespace ViciOne.Suite.DataPort;
 public sealed class InfluxDbTestSystem : IAsyncLifetime
 {
     private const string Token = nameof(InfluxDbTestSystem);
-    private readonly InfluxDbContainer _container = new InfluxDbBuilder().WithAdminToken(Token).Build();
+    private readonly InfluxDbContainer _container = new InfluxDbBuilder("influxdb:2.7").WithAdminToken(Token).Build();
 
     internal InfluxDbDataPortCommunication Communication { get; } = new();
 
