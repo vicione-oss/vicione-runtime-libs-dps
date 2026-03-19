@@ -47,6 +47,7 @@
 - Update `Npgsql` to `10.0.2`
 - Update `MySqlConnector` to `2.5.0`
 - Update `Microsoft.Data.SqlClient` to `7.0.0`
+- Update `InfluxDB.Client` to `5.0.0`
 
 ### Fixed
 
