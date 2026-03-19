@@ -41,6 +41,7 @@
 - Implement new icons
 - Update `.yaml` files format to `1.0.0` (`ViciOne.TreeBuilder`)
 - Update `ViciOne.ManagedEngine.Contracts` to `1.0.0`
+- Update `AWSSDK.IoT` to `4.0.6.9`
 
 ### Fixed
 

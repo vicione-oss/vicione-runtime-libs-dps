@@ -4,17 +4,17 @@
     "net10.0": {
       "AWSSDK.IoT": {
         "type": "Direct",
-        "requested": "[4.0.0.13, )",
-        "resolved": "4.0.0.13",
-        "contentHash": "ngrCxZtopE/IkhAg1LSGrTRX/qPV7glJb5WKuFEI/vs5IljwVt9H8IPzVcq8uFnA/5ECOV+j0n7S2SMeUmWsWA==",
+        "requested": "[4.0.6.9, )",
+        "resolved": "4.0.6.9",
+        "contentHash": "Ybr5FgmEm7HCnZ457ZaGyuEG4WvuF6ewwEd57mTLOUW690QCQwl2S8GTjfeR9WJCKiiAGQw6N9o0migUU7Uksg==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.0.15, 5.0.0)"
+          "AWSSDK.Core": "[4.0.3.19, 5.0.0)"
         }
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.0.0.15",
-        "contentHash": "nt0pgf20/wt8NEH/Kw97CS9mlIivg3lROW1E2piFJZPmwZIDVKVEGSvCztGWedMByQYMVpxGbVmn7oC0p1vmkw=="
+        "resolved": "4.0.3.19",
+        "contentHash": "8zIzN59+J6arYSyFuhnSxPepr8ff4p6li+MxKUUnqCgwZqQ+icEGJK/23c1USIEALqZZ5gdiITuH2sOZWQom+Q=="
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",

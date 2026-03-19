@@ -16,11 +16,11 @@
       },
       "AWSSDK.IotData": {
         "type": "Direct",
-        "requested": "[4.0.0.13, )",
-        "resolved": "4.0.0.13",
-        "contentHash": "eWFb6z7T0tdG/B8v7ZUbJ8yMx8dGj9N3/tMNdoDCNF5sVL0t0kxS/ikFHfCaC3dhhKSo/E3GCsn80/sh9+RFwg==",
+        "requested": "[4.0.2.19, )",
+        "resolved": "4.0.2.19",
+        "contentHash": "KRnmiJzB0fJqUaxgX0PItfxKmGpdjMbsz43AfPAdbUl7Xhp6SO01fwHb//8/2ebpi8XZ2DqD/pr2OiemW6bPuw==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.0.15, 5.0.0)"
+          "AWSSDK.Core": "[4.0.3.19, 5.0.0)"
         }
       },
       "coverlet.collector": {
@@ -109,8 +109,8 @@
       },
       "AWSSDK.Core": {
         "type": "Transitive",
-        "resolved": "4.0.0.15",
-        "contentHash": "nt0pgf20/wt8NEH/Kw97CS9mlIivg3lROW1E2piFJZPmwZIDVKVEGSvCztGWedMByQYMVpxGbVmn7oC0p1vmkw=="
+        "resolved": "4.0.3.19",
+        "contentHash": "8zIzN59+J6arYSyFuhnSxPepr8ff4p6li+MxKUUnqCgwZqQ+icEGJK/23c1USIEALqZZ5gdiITuH2sOZWQom+Q=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -374,7 +374,7 @@
       "ViciOne.Suite.DataPort.Aws.Iot": {
         "type": "Project",
         "dependencies": {
-          "AWSSDK.IoT": "[4.0.0.13, )",
+          "AWSSDK.IoT": "[4.0.6.9, )",
           "ViciOne.Suite.DataPort.Mqtt": "[0.30.0, )"
         }
       },
@@ -387,11 +387,11 @@
       },
       "AWSSDK.IoT": {
         "type": "CentralTransitive",
-        "requested": "[4.0.0.13, )",
-        "resolved": "4.0.0.13",
-        "contentHash": "ngrCxZtopE/IkhAg1LSGrTRX/qPV7glJb5WKuFEI/vs5IljwVt9H8IPzVcq8uFnA/5ECOV+j0n7S2SMeUmWsWA==",
+        "requested": "[4.0.6.9, )",
+        "resolved": "4.0.6.9",
+        "contentHash": "Ybr5FgmEm7HCnZ457ZaGyuEG4WvuF6ewwEd57mTLOUW690QCQwl2S8GTjfeR9WJCKiiAGQw6N9o0migUU7Uksg==",
         "dependencies": {
-          "AWSSDK.Core": "[4.0.0.15, 5.0.0)"
+          "AWSSDK.Core": "[4.0.3.19, 5.0.0)"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
