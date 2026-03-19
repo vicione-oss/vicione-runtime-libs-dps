@@ -44,6 +44,7 @@
 - Update `AWSSDK.IoT` to `4.0.6.9`
 - Update `Microsoft.Azure.Devices` to `1.41.0`
 - Update `Microsoft.Data.Sqlite` to `10.0.5`
+- Update `Npgsql` to `10.0.2`
 
 ### Fixed
 

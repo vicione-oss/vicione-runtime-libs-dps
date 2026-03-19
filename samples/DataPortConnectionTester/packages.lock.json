@@ -521,7 +521,7 @@
       "ViciOne.Suite.DataPort.PostgreSql": {
         "type": "Project",
         "dependencies": {
-          "Npgsql": "[9.0.3, )",
+          "Npgsql": "[10.0.2, )",
           "ViciOne.Suite.DataPort.RelationalDatabase": "[0.30.0, )"
         }
       },
@@ -656,11 +656,11 @@
       },
       "Npgsql": {
         "type": "CentralTransitive",
-        "requested": "[9.0.3, )",
-        "resolved": "9.0.3",
-        "contentHash": "tPvY61CxOAWxNsKLEBg+oR646X4Bc8UmyQ/tJszL/7mEmIXQnnBhVJZrZEEUv0Bstu0mEsHZD5At3EO8zQRAYw==",
+        "requested": "[10.0.2, )",
+        "resolved": "10.0.2",
+        "contentHash": "q5RfBI+wywJSFUNDE1L4ZbHEHCFTblo8Uf6A6oe4feOUFYiUQXyAf9GBh5qEZpvJaHiEbpBPkQumjEhXCJxdrg==",
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.2"
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
         }
       },
       "OPCFoundation.NetStandard.Opc.Ua.Client": {
