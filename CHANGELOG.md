@@ -40,6 +40,7 @@
 - Update `.NET` to `10.0`
 - Implement new icons
 - Update `.yaml` files format to `1.0.0` (`ViciOne.TreeBuilder`)
+- Update `ViciOne.ManagedEngine.Contracts` to `1.0.0`
 
 ### Fixed
 
