@@ -101,7 +101,11 @@ public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
             while (!_forCancelling.IsCancellationRequested &&
                    await _timer.Value.WaitForNextTickAsync(_forCancelling.Token).ConfigureAwait(false))
             {
-                // do not await here to allow overlapping executions
+                // Fire-and-forget to allow overlapping executions when a job takes longer than the interval.
+                // Parallelism is bounded by the resilience pipeline (timeout at 110% of interval by default).
+                // Note: StopPeriodicExecution awaits the timer loop but not these in-flight tasks.
+                // In-flight iterations will terminate via cancellation token propagation, but callers
+                // should be aware that output callbacks may still fire briefly after stop returns.
                 _ = ExecuteJobIteration();
             }
         }
@@ -150,8 +154,14 @@ public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
     }
 
     /// <summary>
-    /// Stops the periodic execution of the job and waits for any in-progress iteration to complete.
+    /// Stops the periodic execution of the job by cancelling the timer loop.
     /// </summary>
+    /// <remarks>
+    /// Awaits the timer loop task, but does not await any iterations that were already
+    /// fire-and-forgotten before cancellation was requested. Those iterations will terminate
+    /// on their own via the cancellation token; see the inline comment in
+    /// <see cref="StartPeriodExecutionLoop"/> for details.
+    /// </remarks>
     /// <returns>A task that represents the asynchronous stop operation.</returns>
     public async Task StopPeriodicExecution()
     {

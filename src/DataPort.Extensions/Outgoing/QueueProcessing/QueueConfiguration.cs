@@ -27,4 +27,4 @@ public enum QueueStrategy
 
 /// <summary>The maximum number of items an outgoing data port queue can hold.</summary>
 /// <param name="Value">The capacity value.</param>
-public record QueueSize(int Value);
+public readonly record struct QueueSize(int Value);

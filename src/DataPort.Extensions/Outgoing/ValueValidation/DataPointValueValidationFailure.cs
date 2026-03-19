@@ -9,7 +9,7 @@ namespace ViciOne.Suite.DataPort.Extensions.Outgoing.ValueValidation;
 /// <param name="ActualValue">The runtime value that failed validation.</param>
 /// <param name="Reason">The specific reason for the validation failure.</param>
 /// <param name="Details">Human-readable details about the failure (e.g., expected vs actual types).</param>
-public record DataPointValueValidationFailure<TDataPointType>(
+public readonly record struct DataPointValueValidationFailure<TDataPointType>(
     TDataPointType DataPoint,
     object? ActualValue,
     ValidationFailureReason Reason,

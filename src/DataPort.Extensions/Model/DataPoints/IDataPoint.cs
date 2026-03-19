@@ -47,10 +47,10 @@ public interface IDataPoint
 /// A strongly-typed identifier for a data point.
 /// </summary>
 /// <param name="Value">The raw string value of the identifier.</param>
-public record DataPointIdentifier(string Value);
+public readonly record struct DataPointIdentifier(string Value);
 
 /// <summary>
 /// A strongly-typed name for a data point's data type.
 /// </summary>
 /// <param name="Value">The raw string representation of the data type name.</param>
-public record DataTypeName(string Value);
+public readonly record struct DataTypeName(string Value);
