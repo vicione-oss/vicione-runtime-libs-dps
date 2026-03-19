@@ -43,6 +43,7 @@
 - Update `ViciOne.ManagedEngine.Contracts` to `1.0.0`
 - Update `AWSSDK.IoT` to `4.0.6.9`
 - Update `Microsoft.Azure.Devices` to `1.41.0`
+- Update `Microsoft.Data.Sqlite` to `10.0.5`
 
 ### Fixed
 
