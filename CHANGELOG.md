@@ -46,6 +46,7 @@
 - Update `Microsoft.Data.Sqlite` to `10.0.5`
 - Update `Npgsql` to `10.0.2`
 - Update `MySqlConnector` to `2.5.0`
+- Update `Microsoft.Data.SqlClient` to `7.0.0`
 
 ### Fixed
 
