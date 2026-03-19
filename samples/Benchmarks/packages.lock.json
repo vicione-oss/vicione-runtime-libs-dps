@@ -660,7 +660,7 @@
       "ViciOne.Suite.DataPort.Azure.IotHub": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Azure.Devices": "[1.40.0, )",
+          "Microsoft.Azure.Devices": "[1.41.0, )",
           "Microsoft.Azure.Devices.Client": "[1.42.3, )",
           "ViciOne.Suite.DataPort": "[0.30.0, )"
         }
@@ -751,9 +751,9 @@
       },
       "Microsoft.Azure.Devices": {
         "type": "CentralTransitive",
-        "requested": "[1.40.0, )",
-        "resolved": "1.40.0",
-        "contentHash": "O1ZTJIv+ns/llFM/3DRyFVBcgFzNl0HEB6Q88qpjOq5f4UvL+kQvTv56YWa33KJ4SQyqXkz09RwLwj2Pf6s6uA==",
+        "requested": "[1.41.0, )",
+        "resolved": "1.41.0",
+        "contentHash": "J3tr63fgQOeCLMJQt67TXmx7HG2ZhH9TyTgm699pmcCR1tAsUaJrsKWX/IJYB+5SfwRGaXVFzy2aSbabzFS+/Q==",
         "dependencies": {
           "Azure.Core": "1.44.1",
           "Microsoft.Azure.Amqp": "2.6.9",
