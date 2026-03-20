@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Azure.Devices.Shared;
@@ -47,7 +46,7 @@ public class ReportedPropertyHandler_
                 Value = 23,
                 Timestamp = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             },
-        ], CancellationToken.None);
+        ], TestContext.Current.CancellationToken);
 
         var (deviceId, collection) = values.Should().ContainSingle().Which;
         deviceId.Should().Be(deviceNode.Id);

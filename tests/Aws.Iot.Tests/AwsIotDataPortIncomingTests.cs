@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 using System.Text.Json.Nodes;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -102,12 +101,12 @@ public class AwsIotDataPortIncoming_
                 foreach (var value in v)
                     externalValues.Add(value);
             };
-            await incoming.ConnectAsync(CancellationToken.None);
+            await incoming.ConnectAsync(TestContext.Current.CancellationToken);
             var start = DateTime.UtcNow;
 
             try
             {
-                await Task.Delay(1_000);
+                await Task.Delay(1_000, TestContext.Current.CancellationToken);
                 await system.UpdateShadow(thingName, new()
                 {
                     ["desired"] = new JsonObject
@@ -118,11 +117,11 @@ public class AwsIotDataPortIncoming_
                         },
                     },
                 }, shadowName);
-                await Task.Delay(1_000);
+                await Task.Delay(1_000, TestContext.Current.CancellationToken);
             }
             finally
             {
-                await incoming.DisconnectAsync(CancellationToken.None);
+                await incoming.DisconnectAsync(TestContext.Current.CancellationToken);
                 await system.DetachPrincipals(thingName);
                 await system.DeleteThing(thingName);
             }

@@ -9,11 +9,11 @@ namespace ViciOne.Suite.DataPort;
 [SuppressMessage("Maintainability", "CA1515:Erwägen Sie, öffentliche Typen intern zu machen.")]
 public sealed class SqlServerTestSystem : IAsyncLifetime
 {
-    private readonly MsSqlContainer _container = new MsSqlBuilder().Build();
+    private readonly MsSqlContainer _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04").Build();
 
     internal SqlServerDataPortCommunication Communication { get; } = new();
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await _container.StartAsync();
         SqlConnectionStringBuilder connectionString = new(_container.GetConnectionString());
@@ -23,5 +23,5 @@ public sealed class SqlServerTestSystem : IAsyncLifetime
         Communication.Password = connectionString.Password;
     }
 
-    public Task DisposeAsync() => _container.DisposeAsync().AsTask();
+    public ValueTask DisposeAsync() => _container.DisposeAsync();
 }

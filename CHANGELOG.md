@@ -40,6 +40,14 @@
 - Update `.NET` to `10.0`
 - Implement new icons
 - Update `.yaml` files format to `1.0.0` (`ViciOne.TreeBuilder`)
+- Update `ViciOne.ManagedEngine.Contracts` to `1.0.0`
+- Update `AWSSDK.IoT` to `4.0.6.9`
+- Update `Microsoft.Azure.Devices` to `1.41.0`
+- Update `Microsoft.Data.Sqlite` to `10.0.5`
+- Update `Npgsql` to `10.0.2`
+- Update `MySqlConnector` to `2.5.0`
+- Update `Microsoft.Data.SqlClient` to `7.0.0`
+- Update `InfluxDB.Client` to `5.0.0`
 
 ### Fixed
 

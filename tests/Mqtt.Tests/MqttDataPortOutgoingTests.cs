@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Runtime.Loader;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -93,7 +92,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should().HaveCount(2);
         messages.Should().SatisfyRespectively(
@@ -191,7 +190,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         var message = messages.Should().ContainSingle().Which;
         message.Topic.Should().Be("group");
@@ -249,7 +248,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should().ContainSingle().Which.QualityOfServiceLevel.Should().Be(MqttQualityOfServiceLevel.ExactlyOnce);
     }
@@ -286,7 +285,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should().ContainSingle().Which.Retain.Should().BeTrue();
     }
@@ -324,7 +323,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         logger.Calls.Should().Be(1);
         logger.Exception.Should().BeOfType<InvalidOperationException>();
@@ -366,7 +365,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should().ContainSingle().Which.UserProperties.Should().SatisfyRespectively(
             ts => FluentActions.Invoking(() => DateTime.Parse(ts.Value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)).Should().NotThrow().Which.Should().Be(timestamp),
@@ -409,7 +408,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should().ContainSingle().Which.UserProperties.Should().BeNull();
     }
@@ -449,7 +448,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should()
             .ContainSingle()
@@ -484,7 +483,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should()
             .ContainSingle()
@@ -526,7 +525,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should()
             .ContainSingle()
@@ -572,7 +571,7 @@ public class MqttDataPortOutgoing_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         var json = messages.Should().ContainSingle().Which.UserProperties.Find(p => p.Name == MqttUserProperties.Type)!.Value;
         JsonNode.Parse(json)!["myValue"]!.GetValue<string>().Should().Be(typeof(JsonObject).AssemblyQualifiedName!);

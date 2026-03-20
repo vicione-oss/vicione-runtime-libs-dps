@@ -90,7 +90,7 @@ public class AzureIotHubDataPortOutgoing_
 
             await using AzureIotHubDataPortOutgoing outgoing = new(system.Communication with { Nodes = nodes, }, Substitute.For<ILogger<AzureIotHubDataPortOutgoing>>());
 
-            await outgoing.ConnectAsync(CancellationToken.None);
+            await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
 
             try
             {
@@ -107,7 +107,7 @@ public class AzureIotHubDataPortOutgoing_
                             Channel = "value",
                             Value = 112,
                         },
-                    ], CancellationToken.None);
+                    ], TestContext.Current.CancellationToken);
 
                 (await system.GetDeviceTwin(deviceName))
                     ["properties"]!
@@ -119,7 +119,7 @@ public class AzureIotHubDataPortOutgoing_
             }
             finally
             {
-                await outgoing.DisconnectAsync(CancellationToken.None);
+                await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
                 await system.DeleteDevice(deviceName);
             }
         }
@@ -182,14 +182,14 @@ public class AzureIotHubDataPortOutgoing_
                     if (@event.Data.EnqueuedTime > start)
                         values.Add(@event);
                 }
-            });
+            }, TestContext.Current.CancellationToken);
             DateTime timestamp = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-            await outgoing.ConnectAsync(CancellationToken.None);
+            await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
 
             try
             {
-                await Task.Delay(1_000);
+                await Task.Delay(1_000, TestContext.Current.CancellationToken);
                 await outgoing.SendAsync(1, [
                         new()
                         {
@@ -198,12 +198,12 @@ public class AzureIotHubDataPortOutgoing_
                             Validity = 11,
                             Timestamp = timestamp,
                         },
-                    ], CancellationToken.None);
-                await Task.Delay(1_000);
+                    ], TestContext.Current.CancellationToken);
+                await Task.Delay(1_000, TestContext.Current.CancellationToken);
             }
             finally
             {
-                await outgoing.DisconnectAsync(CancellationToken.None);
+                await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
                 await system.DeleteDevice(deviceName);
                 await readCancellationTokenSource.CancelAsync();
                 try
@@ -215,7 +215,7 @@ public class AzureIotHubDataPortOutgoing_
             }
 
             var value = values.Should().ContainSingle().Which;
-            var data = await JsonSerializer.DeserializeAsync<JsonObject>(value.Data.EventBody.ToStream());
+            var data = await JsonSerializer.DeserializeAsync<JsonObject>(value.Data.EventBody.ToStream(), cancellationToken: TestContext.Current.CancellationToken);
             data!["property"]!["value"]!.GetValue<int>().Should().Be(112);
             value.Data.Properties["type"].Should().Be("{\"property\":{\"value\":\"System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\"}}");
             value.Data.Properties["timestamp"].Should().Be(timestamp.ToString("O"));

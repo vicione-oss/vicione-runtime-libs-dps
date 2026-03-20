@@ -1,4 +1,4 @@
-﻿using AwesomeAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace ViciOne.Suite.DataPort;
@@ -129,7 +129,7 @@ public class MySqlDataPortProperties_UserId
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "user" },
     };
@@ -162,7 +162,7 @@ public class MySqlDataPortProperties_Password
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "pass" },
     };

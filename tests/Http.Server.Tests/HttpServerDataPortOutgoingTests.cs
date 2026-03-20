@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Loader;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -80,7 +79,7 @@ public class HttpServerDataPortOutgoing_
 
         var outgoing = new HttpServerDataPortOutgoing(communication, logger, manager);
 
-        await outgoing.ConnectAsync(CancellationToken.None);
+        await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
 
         manager.GetEndpoints.Should().ContainSingle().Which.Should().Be("data");
     }
@@ -148,7 +147,7 @@ public class HttpServerDataPortOutgoing_
 
         var incoming = new HttpServerDataPortOutgoing(communication, logger, manager);
 
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
 
         manager.GetEndpoints.Should().ContainSingle().Which.Should().Be("endpoint");
     }

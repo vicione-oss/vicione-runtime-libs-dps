@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security.Authentication;
 using AwesomeAssertions;
 using MQTTnet.Formatter;
@@ -35,7 +35,7 @@ public class MqttDataPortProperties_ClientId
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "user" },
     };
@@ -76,7 +76,7 @@ public class MqttDataPortProperties_WillTopic
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "will" },
     };
@@ -117,7 +117,7 @@ public class MqttDataPortProperties_WillMessage
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "message" },
     };
@@ -158,7 +158,7 @@ public class MqttDataPortProperties_WillRetain
 
     public static TheoryData<bool?> Conversion() => new()
     {
-        { null },
+        { null! },
         { false },
         { true },
     };
@@ -391,7 +391,7 @@ public class MqttDataPortProperties_Username
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "user" },
     };
@@ -432,7 +432,7 @@ public class MqttDataPortProperties_Password
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "pass" },
     };
@@ -556,7 +556,7 @@ public class MqttDataPortProperties_CertificateFile
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "cert" },
     };
@@ -597,7 +597,7 @@ public class MqttDataPortProperties_CertificateFilePassword
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "certpass" },
     };
@@ -638,7 +638,7 @@ public class MqttDataPortProperties_CertificatePrivateKeyFile
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "certkey" },
     };
@@ -745,7 +745,7 @@ public class MqttDataPortProperties_DisableCertificateValidation
 
     public static TheoryData<bool?> Conversion() => new()
     {
-        { null },
+        { null! },
         { false },
         { true },
     };
@@ -786,7 +786,7 @@ public class MqttDataPortProperties_CleanSession
 
     public static TheoryData<bool?> Conversion() => new()
     {
-        { null },
+        { null! },
         { false },
         { true },
     };
@@ -827,7 +827,7 @@ public class MqttDataPortProperties_SessionExpiryInterval
 
     public static TheoryData<uint?> Conversion() => new()
     {
-        { null },
+        { null! },
         { 0 },
         { 1 },
     };

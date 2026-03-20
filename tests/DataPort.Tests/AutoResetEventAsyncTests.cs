@@ -14,7 +14,7 @@ public class AutoResetEventAsync_
         using AutoResetEventAsync autoResetEvent = new();
 
         autoResetEvent.Set();
-        await autoResetEvent.WaitAsync();
+        await autoResetEvent.WaitAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -26,10 +26,10 @@ public class AutoResetEventAsync_
         var task = Task.Run(async () =>
         {
             taskStartedSemaphore.Release();
-            await autoResetEvent.WaitAsync();
-        });
+            await autoResetEvent.WaitAsync(TestContext.Current.CancellationToken);
+        }, TestContext.Current.CancellationToken);
 
-        await taskStartedSemaphore.WaitAsync(1_000);
+        await taskStartedSemaphore.WaitAsync(1_000, TestContext.Current.CancellationToken);
         task.Status.Should().NotBe(TaskStatus.RanToCompletion);
         autoResetEvent.Set();
         var awaitFunc = async () => await task;
@@ -42,15 +42,15 @@ public class AutoResetEventAsync_
         using AutoResetEventAsync autoResetEvent = new();
 
         autoResetEvent.Set();
-        await autoResetEvent.WaitAsync();
+        await autoResetEvent.WaitAsync(TestContext.Current.CancellationToken);
 
         using SemaphoreSlim taskStartedSemaphore = new(0, 1);
         var task = Task.Run(async () =>
         {
             taskStartedSemaphore.Release();
-            await autoResetEvent.WaitAsync();
-        });
-        await taskStartedSemaphore.WaitAsync(1_000);
+            await autoResetEvent.WaitAsync(TestContext.Current.CancellationToken);
+        }, TestContext.Current.CancellationToken);
+        await taskStartedSemaphore.WaitAsync(1_000, TestContext.Current.CancellationToken);
         task.Status.Should().NotBe(TaskStatus.RanToCompletion);
         autoResetEvent.Set();
         var awaitFunc = async () => await task;
@@ -73,7 +73,7 @@ public class AutoResetEventAsync_
         using AutoResetEventAsync autoResetEvent = new();
         using CancellationTokenSource tokenSource = new();
 
-        var task = Task.Run(async () => await autoResetEvent.WaitAsync(tokenSource.Token));
+        var task = Task.Run(async () => await autoResetEvent.WaitAsync(tokenSource.Token), TestContext.Current.CancellationToken);
         await tokenSource.CancelAsync();
 
         await task;

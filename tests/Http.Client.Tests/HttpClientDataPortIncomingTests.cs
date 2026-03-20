@@ -83,12 +83,12 @@ public class HttpClientDataPortIncoming_
 
         using var incoming = new HttpClientDataPortIncoming(communication, logger, AssemblyLoadContext.Default, () => new(messageHandler), timeProvider);
 
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
         timeProvider.Advance(500.Milliseconds());
-        await semaphore.WaitAsync(100);
+        await semaphore.WaitAsync(100, TestContext.Current.CancellationToken);
         timeProvider.Advance(500.Milliseconds());
-        await semaphore.WaitAsync(100);
-        await incoming.DisconnectAsync(CancellationToken.None);
+        await semaphore.WaitAsync(100, TestContext.Current.CancellationToken);
+        await incoming.DisconnectAsync(TestContext.Current.CancellationToken);
 
         count.Should().Be(2);
         logger.Calls.Should().Be(0);

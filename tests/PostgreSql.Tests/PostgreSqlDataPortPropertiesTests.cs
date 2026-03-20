@@ -1,4 +1,4 @@
-﻿using AwesomeAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace ViciOne.Suite.DataPort;
@@ -95,7 +95,7 @@ public class PostgreSqlDataPortProperties_Database
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { new(string.Empty) },
         { new("db") },
     };
@@ -129,7 +129,7 @@ public class PostgreSqlDataPortProperties_UserId
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "user" },
     };
@@ -162,7 +162,7 @@ public class PostgreSqlDataPortProperties_Password
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "pass" },
     };

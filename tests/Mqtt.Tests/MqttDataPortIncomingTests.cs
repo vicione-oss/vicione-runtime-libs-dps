@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -79,12 +78,12 @@ public class MqttDataPortIncoming_
         var client = Substitute.For<IVirtualMqttClient>();
         using MqttDataPortIncoming incoming = new(communication, client, Substitute.For<ILogger<MqttDataPortIncoming>>(), AssemblyLoadContext.Default, TimeProvider.System);
 
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
         await client.Received(1).Connect();
         await client.Received(1).Subscribe("group/value1", MqttQualityOfServiceLevel.AtLeastOnce, false);
         await client.Received(1).Subscribe("group/value2", MqttQualityOfServiceLevel.AtLeastOnce, false);
 
-        await incoming.DisconnectAsync(CancellationToken.None);
+        await incoming.DisconnectAsync(TestContext.Current.CancellationToken);
         await client.Received(1).Disconnect();
         await client.Received(1).Unsubscribe("group/value1");
         await client.Received(1).Unsubscribe("group/value2");
@@ -125,7 +124,7 @@ public class MqttDataPortIncoming_
 
         var client = Substitute.For<IVirtualMqttClient>();
         using MqttDataPortIncoming incoming = new(communication, client, Substitute.For<ILogger<MqttDataPortIncoming>>(), AssemblyLoadContext.Default, TimeProvider.System);
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
         List<ExternalValue> messages = [];
         incoming.Received += messages.AddRange;
 
@@ -190,7 +189,7 @@ public class MqttDataPortIncoming_
 
         var client = Substitute.For<IVirtualMqttClient>();
         using MqttDataPortIncoming incoming = new(communication, client, Substitute.For<ILogger<MqttDataPortIncoming>>(), AssemblyLoadContext.Default, TimeProvider.System);
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
         List<ExternalValue> messages = [];
         incoming.Received += messages.AddRange;
 
@@ -246,7 +245,7 @@ public class MqttDataPortIncoming_
 
         var client = Substitute.For<IVirtualMqttClient>();
         using MqttDataPortIncoming incoming = new(communication, client, Substitute.For<ILogger<MqttDataPortIncoming>>(), AssemblyLoadContext.Default, TimeProvider.System);
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
         List<ExternalValue> messages = [];
         incoming.Received += messages.AddRange;
 
@@ -286,7 +285,7 @@ public class MqttDataPortIncoming_
 
         var client = Substitute.For<IVirtualMqttClient>();
         using MqttDataPortIncoming incoming = new(communication, client, Substitute.For<ILogger<MqttDataPortIncoming>>(), AssemblyLoadContext.Default, new FakeTimeProvider(new(2023, 1, 1, 0, 0, 0, TimeSpan.Zero)));
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
         List<ExternalValue> messages = [];
         incoming.Received += messages.AddRange;
 
@@ -459,7 +458,7 @@ public class MqttDataPortIncoming_
         var client = Substitute.For<IVirtualMqttClient>();
         TestLogger<MqttDataPortIncoming> logger = new();
         using MqttDataPortIncoming incoming = new(communication, client, logger, AssemblyLoadContext.Default, TimeProvider.System);
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
         incoming.Received += _ => throw new InvalidOperationException();
 
         var message = new MqttApplicationMessageBuilder()
