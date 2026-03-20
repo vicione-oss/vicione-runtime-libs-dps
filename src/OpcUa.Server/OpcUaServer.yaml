@@ -1,7 +1,7 @@
 Common:
   Target       : DataPort                                                                          # required: Id String to identify the target of the file
   ContentType  : Rules                                                                             # required: Id String to identify the content of the file
-  Version      : 1.0.0                                                                             # required: Version of the file
+  Version      : 0.30.0                                                                            # required: Version of the file
   Date         : 2026-03-20                                                                        # required: Date of the file
   Description  : "OPC-UA Server DataPort"                                                          # required: Description of the file
   Author       : "ifm software gmbh"                                                               # required: Author of the file
@@ -12,7 +12,7 @@ Root:
   Id                       : "OpcUaServerDataPort"                                                 # required: Id String to identify the root of the DataPort
   Name                     : "OPC-UA Server"                                                       # required: display name of the DataPort
   Description              : "Server DataPort for OPC-UA"                                          # required: display description of the DataPort
-  Icon                     : opcua-server                                                      # required: just one Icon for the DataPort
+  Icon                     : opcua-server                                                          # required: just one Icon for the DataPort
   ChildNodes               :
     - Id                   : OPCUA-Server
       MaxDepth             : 64

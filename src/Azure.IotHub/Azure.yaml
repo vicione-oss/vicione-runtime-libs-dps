@@ -1,18 +1,18 @@
 Common:
   Target       : DataPort                                                                          # required: Id String to identify the target of the file
   ContentType  : Rules                                                                             # required: Id String to identify the content of the file
-  Version      : 1.0.0                                                                             # required: Version of the file
+  Version      : 0.30.0                                                                            # required: Version of the file
   Date         : 2026-03-20                                                                        # required: Date of the file
   Description  : "Azure IoT Hub DataPort"                                                          # required: Description of the file
   Author       : "ifm software gmbh"                                                               # required: Author of the file
   MetadataType : YAML                                                                              # required: Metadata type of the file (YAML, JSON, XML, Text, Binary, ...)
-  Namespace    : "ViciOne.DataPort.Azure.IotHub"                                                  # required: Namespace of the DataPort
+  Namespace    : "ViciOne.DataPort.Azure.IotHub"                                                   # required: Namespace of the DataPort
 
 Root:
   Id                       : "AzureIotHubDataPort"                                                 # required: Id String to identify the root of the DataPort
   Name                     : "Azure IoT Hub"                                                       # required: display name of the DataPort
   Description              : "DataPort for Azure IoT Hub"                                          # required: display description of the DataPort
-  Icon                     : azure-iot-hub                                                     # required: just one Icon for the DataPort
+  Icon                     : azure-iot-hub                                                         # required: just one Icon for the DataPort
   ChildNodes               :
     - Id                   : AzureIotInstance
       MaxInstances         : 16

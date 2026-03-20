@@ -9,7 +9,7 @@
 Common:
   Target       : DataPort                                                                          # required: Id String to identify the target of the file
   ContentType  : Rules                                                                             # required: Id String to identify the content of the file
-  Version      : 1.0.0                                                                             # required: Version of the file
+  Version      : 0.30.0                                                                            # required: Version of the file
   Date         : 2026-03-20                                                                        # required: Date of the file
   Description  : "HTTP Server DataPort"                                                            # required: Description of the file
   Author       : "ifm software gmbh"                                                               # required: Author of the file
@@ -20,7 +20,7 @@ Root:
   Id                       : "HttpServerDataPort"                                                  # required: Id String to identify the root of the DataPort
   Name                     : "HTTP Server"                                                         # required: display name of the DataPort
   Description              : "DataPort for HTTP Server"                                            # required: display description of the DataPort
-  Icon                     : http                                                              # required: just one Icon for the DataPort
+  Icon                     : http                                                                  # required: just one Icon for the DataPort
   ChildNodes               :
     - Id                   : HttpServer
 
