@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -94,7 +93,7 @@ public class AwsIotDataPortOutgoing_
 
             using AwsIotDataPortOutgoing outgoing = new(system.Communication with { Nodes = nodes, }, Substitute.For<ILoggerFactory>());
 
-            await outgoing.ConnectAsync(CancellationToken.None);
+            await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
 
             try
             {
@@ -104,8 +103,8 @@ public class AwsIotDataPortOutgoing_
                             Channel = "value",
                             Value = 112,
                         },
-                    ], CancellationToken.None);
-                await Task.Delay(1_000);
+                    ], TestContext.Current.CancellationToken);
+                await Task.Delay(1_000, TestContext.Current.CancellationToken);
                 (await system.GetShadow(thingName, shadowName))
                     ["state"]!
                     ["reported"]!
@@ -116,7 +115,7 @@ public class AwsIotDataPortOutgoing_
             }
             finally
             {
-                await outgoing.DisconnectAsync(CancellationToken.None);
+                await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
                 await system.DetachPrincipals(thingName);
                 await system.DeleteThing(thingName);
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -22,7 +22,7 @@ public class RelationalDatabase_
         using TestDatabase database = new();
         database.ValuesPublished += d => data = d;
 
-        await database.ConnectAsync(CancellationToken.None);
+        await database.ConnectAsync(TestContext.Current.CancellationToken);
         database.Send(
         [
             new()
@@ -36,7 +36,7 @@ public class RelationalDatabase_
                 Value = 23,
             },
         ]);
-        await database.DisconnectAsync(CancellationToken.None);
+        await database.DisconnectAsync(TestContext.Current.CancellationToken);
 
         data.Should().ContainSingle().Which.Columns.Should().HaveCount(2).And.SatisfyRespectively(
             c =>

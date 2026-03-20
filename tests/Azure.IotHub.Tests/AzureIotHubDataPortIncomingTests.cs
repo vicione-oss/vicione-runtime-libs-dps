@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 using System.Text.Json.Nodes;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -95,7 +94,7 @@ public class AzureIotHubDataPortIncoming_
                 foreach (var value in v)
                     externalValues.Add(value);
             };
-            await incoming.ConnectAsync(CancellationToken.None);
+            await incoming.ConnectAsync(TestContext.Current.CancellationToken);
             var start = DateTime.UtcNow;
 
             try
@@ -110,7 +109,7 @@ public class AzureIotHubDataPortIncoming_
             }
             finally
             {
-                await incoming.DisconnectAsync(CancellationToken.None);
+                await incoming.DisconnectAsync(TestContext.Current.CancellationToken);
                 await system.DeleteDevice(deviceName);
             }
 

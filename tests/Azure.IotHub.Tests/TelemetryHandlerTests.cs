@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Azure.Devices.Client;
@@ -45,7 +44,7 @@ public class TelemetryHandler_
                 Channel = telemetryValueNode.Id.ToString(),
                 Value = 23,
             },
-        ], CancellationToken.None);
+        ], TestContext.Current.CancellationToken);
 
         var (deviceId, message) = values.Should().ContainSingle().Which;
         deviceId.Should().Be(deviceNode.Id);

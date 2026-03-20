@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +22,8 @@ public class DeviceClientPool_Register
             return client;
         });
 
-        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
-        var otherClient = await pool.Register("local", "my-other-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
+        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
+        var otherClient = await pool.Register("local", "my-other-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
 
         client.Should().NotBeNull();
         otherClient.Should().NotBeNull();
@@ -43,8 +43,8 @@ public class DeviceClientPool_Register
             return client;
         });
 
-        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
-        var otherClient = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
+        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
+        var otherClient = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
 
         client.Should().NotBeNull();
         otherClient.Should().NotBeNull();
@@ -61,9 +61,9 @@ public class DeviceClientPool_Connect
     {
         var internalClient = Substitute.For<IDeviceClient>();
         using DeviceClientPool pool = new((_, __) => internalClient);
-        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
+        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
 
-        await pool.Connect(client, CancellationToken.None);
+        await pool.Connect(client, TestContext.Current.CancellationToken);
 
         await internalClient.Received(1).OpenAsync(Arg.Any<CancellationToken>());
     }
@@ -73,10 +73,10 @@ public class DeviceClientPool_Connect
     {
         var internalClient = Substitute.For<IDeviceClient>();
         using DeviceClientPool pool = new((_, __) => internalClient);
-        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
+        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
 
-        await pool.Connect(client, CancellationToken.None);
-        await pool.Connect(client, CancellationToken.None);
+        await pool.Connect(client, TestContext.Current.CancellationToken);
+        await pool.Connect(client, TestContext.Current.CancellationToken);
 
         await internalClient.Received(1).OpenAsync(Arg.Any<CancellationToken>());
     }
@@ -88,7 +88,7 @@ public class DeviceClientPool_Connect
         using DeviceClientPool pool = new();
         await using VirtualDeviceClient client = new("my-device", Substitute.For<IDeviceClient>(), pool);
 
-        var act = FluentActions.Invoking(() => pool.Connect(client, CancellationToken.None));
+        var act = FluentActions.Invoking(() => pool.Connect(client, TestContext.Current.CancellationToken));
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*not*registered*");
     }
@@ -101,10 +101,10 @@ public class DeviceClientPool_Disconnect
     {
         var internalClient = Substitute.For<IDeviceClient>();
         using DeviceClientPool pool = new((_, __) => internalClient);
-        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
-        await pool.Connect(client, CancellationToken.None);
+        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
+        await pool.Connect(client, TestContext.Current.CancellationToken);
 
-        await pool.Disconnect(client, CancellationToken.None);
+        await pool.Disconnect(client, TestContext.Current.CancellationToken);
 
         await internalClient.Received(1).CloseAsync(Arg.Any<CancellationToken>());
     }
@@ -114,11 +114,11 @@ public class DeviceClientPool_Disconnect
     {
         var internalClient = Substitute.For<IDeviceClient>();
         using DeviceClientPool pool = new((_, __) => internalClient);
-        await using var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
-        await pool.Connect(client, CancellationToken.None);
+        await using var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
+        await pool.Connect(client, TestContext.Current.CancellationToken);
 
-        await pool.Disconnect(client, CancellationToken.None);
-        await pool.Disconnect(client, CancellationToken.None);
+        await pool.Disconnect(client, TestContext.Current.CancellationToken);
+        await pool.Disconnect(client, TestContext.Current.CancellationToken);
 
         await internalClient.Received(1).CloseAsync(Arg.Any<CancellationToken>());
     }
@@ -129,7 +129,7 @@ public class DeviceClientPool_Disconnect
         using DeviceClientPool pool = new();
         await using VirtualDeviceClient client = new("my-device", Substitute.For<IDeviceClient>(), pool);
 
-        var act = FluentActions.Invoking(() => pool.Disconnect(client, CancellationToken.None));
+        var act = FluentActions.Invoking(() => pool.Disconnect(client, TestContext.Current.CancellationToken));
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*not*registered*");
     }
@@ -142,7 +142,7 @@ public class DeviceClientPool_Unregister
     {
         var internalClient = Substitute.For<IDeviceClient>();
         using DeviceClientPool pool = new((_, __) => internalClient);
-        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
+        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
 
         await pool.Unregister(client);
 
@@ -154,7 +154,7 @@ public class DeviceClientPool_Unregister
     {
         var internalClient = Substitute.For<IDeviceClient>();
         using DeviceClientPool pool = new((_, __) => internalClient);
-        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
+        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
 
         await pool.Unregister(client);
         await pool.Unregister(client);
@@ -177,8 +177,8 @@ public class DeviceClientPool_InvokeDesiredPropertyUpdate
 
         var clientInvoked = 0;
         var otherClientInvoked = 0;
-        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
-        var otherClient = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), CancellationToken.None);
+        var client = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
+        var otherClient = await pool.Register("local", "my-device", Substitute.For<IAuthenticationMethod>(), TestContext.Current.CancellationToken);
 
         client.DesiredPropertyUpdate += (_, _) => clientInvoked++;
         otherClient.DesiredPropertyUpdate += (_, _) => otherClientInvoked++;

@@ -13,7 +13,7 @@ public sealed class InfluxDbTestSystem : IAsyncLifetime
 
     internal InfluxDbDataPortCommunication Communication { get; } = new();
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await _container.StartAsync();
         Communication.Organization = InfluxDbBuilder.DefaultOrganization;
@@ -21,5 +21,5 @@ public sealed class InfluxDbTestSystem : IAsyncLifetime
         Communication.Url = _container.GetAddress();
     }
 
-    public Task DisposeAsync() => _container.DisposeAsync().AsTask();
+    public ValueTask DisposeAsync() => _container.DisposeAsync();
 }

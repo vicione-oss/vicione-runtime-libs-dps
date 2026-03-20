@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -71,9 +71,9 @@ public class HttpClientDataPortOutgoing_
 
         using var outgoing = new HttpClientDataPortOutgoing(communication, logger, () => new(messageHandler));
 
-        await outgoing.ConnectAsync(CancellationToken.None);
-        await outgoing.SendAsync(0, [new() { Channel = "v1", Value = 23, }], CancellationToken.None);
-        await outgoing.DisconnectAsync(CancellationToken.None);
+        await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+        await outgoing.SendAsync(0, [new() { Channel = "v1", Value = 23, }], TestContext.Current.CancellationToken);
+        await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
         logger.Calls.Should().Be(0);
         requestMessage!.RequestUri.Should().Be("http://local/data");

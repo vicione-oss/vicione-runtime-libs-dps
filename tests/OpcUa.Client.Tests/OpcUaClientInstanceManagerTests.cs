@@ -85,15 +85,15 @@ public class OpcUaClientInstanceManager_
         var instanceHandle = new object();
         using CancellationTokenSource cancellation = new();
 
-        var client1 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication, instanceHandle, _logger, default);
+        var client1 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication, instanceHandle, _logger, TestContext.Current.CancellationToken);
 
         await instanceManager.ReleaseOpcUaClientAsync(communication, instanceHandle, cancellation.Token);
 
-        var client2 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication, instanceHandle, _logger, default);
+        var client2 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication, instanceHandle, _logger, TestContext.Current.CancellationToken);
 
         client1.Should().NotBeSameAs(client2);
         await client1.Received(1).DisconnectAsync(Arg.Is(cancellation.Token));
-        await client2.DidNotReceiveWithAnyArgs().DisconnectAsync(default);
+        await client2.DidNotReceiveWithAnyArgs().DisconnectAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -110,13 +110,13 @@ public class OpcUaClientInstanceManager_
         var instanceHandle = new object();
         using CancellationTokenSource cancellation = new();
 
-        var client1 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication1, instanceHandle, _logger, default);
-        var client2 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication2, instanceHandle, _logger, default);
+        var client1 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication1, instanceHandle, _logger, TestContext.Current.CancellationToken);
+        var client2 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication2, instanceHandle, _logger, TestContext.Current.CancellationToken);
 
         await instanceManager.ReleaseOpcUaClientAsync(communication1, instanceHandle, cancellation.Token);
 
-        var client3 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication1, instanceHandle, _logger, default);
-        var client4 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication2, instanceHandle, _logger, default);
+        var client3 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication1, instanceHandle, _logger, TestContext.Current.CancellationToken);
+        var client4 = await instanceManager.GetOrRegisterOpcUaClientAsync(communication2, instanceHandle, _logger, TestContext.Current.CancellationToken);
 
         client1.Should().NotBeNull();
         client2.Should().NotBeNull();
@@ -125,8 +125,8 @@ public class OpcUaClientInstanceManager_
         client1.Should().NotBeSameAs(client3);
         client2.Should().BeSameAs(client4);
         await client1.Received(1).DisconnectAsync(Arg.Is(cancellation.Token));
-        await client2.DidNotReceiveWithAnyArgs().DisconnectAsync(default);
-        await client3.DidNotReceiveWithAnyArgs().DisconnectAsync(default);
-        await client4.DidNotReceiveWithAnyArgs().DisconnectAsync(default);
+        await client2.DidNotReceiveWithAnyArgs().DisconnectAsync(TestContext.Current.CancellationToken);
+        await client3.DidNotReceiveWithAnyArgs().DisconnectAsync(TestContext.Current.CancellationToken);
+        await client4.DidNotReceiveWithAnyArgs().DisconnectAsync(TestContext.Current.CancellationToken);
     }
 }

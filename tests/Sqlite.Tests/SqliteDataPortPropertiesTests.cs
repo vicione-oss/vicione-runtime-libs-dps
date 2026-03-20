@@ -1,4 +1,4 @@
-﻿using AwesomeAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace ViciOne.Suite.DataPort;
@@ -63,7 +63,7 @@ public class SqliteDataPortProperties_Password
 
     public static TheoryData<string?> Conversion() => new()
     {
-        { null },
+        { null! },
         { string.Empty },
         { "pass" },
     };
@@ -96,7 +96,7 @@ public class SqliteDataPortProperties_Pooling
 
     public static TheoryData<bool?> Conversion() => new()
     {
-        { null },
+        { null! },
         { true },
         { false },
     };

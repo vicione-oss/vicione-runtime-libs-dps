@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Loader;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -54,7 +53,7 @@ public class MqttDataPort_
 
         using MqttDataPortOutgoing outgoing = new(communication, client, Substitute.For<ILogger<MqttDataPortOutgoing>>());
         using MqttDataPortIncoming incoming = new(communication, client, Substitute.For<ILogger<MqttDataPortIncoming>>(), AssemblyLoadContext.Default, TimeProvider.System);
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
 
         List<ExternalValue> messages = [];
         incoming.Received += messages.AddRange;
@@ -78,7 +77,7 @@ public class MqttDataPort_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should().HaveCount(2);
         messages.Should().BeEquivalentTo(values);
@@ -123,7 +122,7 @@ public class MqttDataPort_
 
         using MqttDataPortOutgoing outgoing = new(communication, client, Substitute.For<ILogger<MqttDataPortOutgoing>>());
         using MqttDataPortIncoming incoming = new(communication, client, Substitute.For<ILogger<MqttDataPortIncoming>>(), AssemblyLoadContext.Default, TimeProvider.System);
-        await incoming.ConnectAsync(CancellationToken.None);
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
 
         List<ExternalValue> messages = [];
         incoming.Received += messages.AddRange;
@@ -140,7 +139,7 @@ public class MqttDataPort_
             },
         ];
 
-        await outgoing.SendAsync(0, values, CancellationToken.None);
+        await outgoing.SendAsync(0, values, TestContext.Current.CancellationToken);
 
         messages.Should().ContainSingle();
         messages.Should().BeEquivalentTo(values);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading.Tasks;
 using Opc.Ua;
@@ -10,7 +9,7 @@ using Xunit;
 namespace ViciOne.Suite.DataPort;
 
 [SuppressMessage("Maintainability", "CA1515:Erwägen Sie, öffentliche Typen intern zu machen.")]
-public sealed class OpcUaTestSystem : IAsyncLifetime, IDisposable
+public sealed class OpcUaTestSystem : IAsyncLifetime
 {
     private readonly StandardServer _server = new();
 
@@ -25,7 +24,7 @@ public sealed class OpcUaTestSystem : IAsyncLifetime, IDisposable
         Communication.Endpoint = "ua/dataport/test";
     }
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         ServerConfiguration serverConfiguration = new();
         serverConfiguration.BaseAddresses.Add($"opc.tcp://0.0.0.0:{Communication.Port.ToString(CultureInfo.InvariantCulture)}/{Communication.Endpoint}");
@@ -62,11 +61,10 @@ public sealed class OpcUaTestSystem : IAsyncLifetime, IDisposable
         _server.Start(appConfiguration);
     }
 
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         _server.Stop();
-        return Task.CompletedTask;
+        _server.Dispose();
+        return ValueTask.CompletedTask;
     }
-
-    public void Dispose() => _server.Dispose();
 }

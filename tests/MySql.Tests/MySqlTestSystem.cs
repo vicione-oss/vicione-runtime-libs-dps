@@ -13,7 +13,7 @@ public sealed class MySqlTestSystem : IAsyncLifetime
 
     internal MySqlDataPortCommunication Communication { get; } = new();
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await _container.StartAsync();
         MySqlConnectionStringBuilder connectionString = new(_container.GetConnectionString());
@@ -24,5 +24,5 @@ public sealed class MySqlTestSystem : IAsyncLifetime
         Communication.Password = connectionString.Password;
     }
 
-    public Task DisposeAsync() => _container.DisposeAsync().AsTask();
+    public ValueTask DisposeAsync() => _container.DisposeAsync();
 }

@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.Loader;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Data.Sqlite;
@@ -60,8 +59,8 @@ public class SqliteDataPortOutgoing_
             .Create();
         using var outgoing = new SqliteDataPortOutgoing(new() { Filename = filename, Nodes = tree }, Substitute.For<ILogger<SqliteDataPortOutgoing>>());
 
-        await outgoing.ConnectAsync(CancellationToken.None);
-        await outgoing.DisconnectAsync(CancellationToken.None);
+        await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+        await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
         SqliteConnectionStringBuilder builder = new()
         {
@@ -70,22 +69,22 @@ public class SqliteDataPortOutgoing_
         };
 
         using var connection = new SqliteConnection(builder.ConnectionString);
-        await connection.OpenAsync();
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
 
         using var command = new SqliteCommand(SelectAllSchemasWithInformation, connection);
-        var reader = await command.ExecuteReaderAsync(CancellationToken.None);
+        var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
         var result = new List<TablesWithColumnsResult>();
 
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(TestContext.Current.CancellationToken))
         {
-            var datatype = await reader.IsDBNullAsync(3) ? null : await reader.GetFieldValueAsync<string>(3);
+            var datatype = await reader.IsDBNullAsync(3, TestContext.Current.CancellationToken) ? null : await reader.GetFieldValueAsync<string>(3, TestContext.Current.CancellationToken);
 
             result.Add(new(
-                await reader.GetFieldValueAsync<string>(0),
-                await reader.GetFieldValueAsync<string>(1),
-                await reader.GetFieldValueAsync<string>(2),
-                await reader.GetFieldValueAsync<bool>(3),
-                await reader.GetFieldValueAsync<bool>(4)));
+                await reader.GetFieldValueAsync<string>(0, TestContext.Current.CancellationToken),
+                await reader.GetFieldValueAsync<string>(1, TestContext.Current.CancellationToken),
+                await reader.GetFieldValueAsync<string>(2, TestContext.Current.CancellationToken),
+                await reader.GetFieldValueAsync<bool>(3, TestContext.Current.CancellationToken),
+                await reader.GetFieldValueAsync<bool>(4, TestContext.Current.CancellationToken)));
         }
 
         result.Should()
@@ -114,8 +113,8 @@ public class SqliteDataPortOutgoing_
             .Create();
         using var outgoing = new SqliteDataPortOutgoing(new() { Filename = filename, Nodes = tree }, Substitute.For<ILogger<SqliteDataPortOutgoing>>());
 
-        await outgoing.ConnectAsync(CancellationToken.None);
-        await outgoing.DisconnectAsync(CancellationToken.None);
+        await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+        await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
         SqliteConnectionStringBuilder builder = new()
         {
@@ -124,22 +123,22 @@ public class SqliteDataPortOutgoing_
         };
 
         using var connection = new SqliteConnection(builder.ConnectionString);
-        await connection.OpenAsync();
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
 
         using var command = new SqliteCommand(SelectAllSchemasWithInformation, connection);
-        var reader = await command.ExecuteReaderAsync(CancellationToken.None);
+        var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
         var result = new List<TablesWithColumnsResult>();
 
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(TestContext.Current.CancellationToken))
         {
-            var datatype = await reader.IsDBNullAsync(3) ? null : await reader.GetFieldValueAsync<string>(3);
+            var datatype = await reader.IsDBNullAsync(3, TestContext.Current.CancellationToken) ? null : await reader.GetFieldValueAsync<string>(3, TestContext.Current.CancellationToken);
 
             result.Add(new(
-                await reader.GetFieldValueAsync<string>(0),
-                await reader.GetFieldValueAsync<string>(1),
-                await reader.GetFieldValueAsync<string>(2),
-                await reader.GetFieldValueAsync<bool>(3),
-                await reader.GetFieldValueAsync<bool>(4)));
+                await reader.GetFieldValueAsync<string>(0, TestContext.Current.CancellationToken),
+                await reader.GetFieldValueAsync<string>(1, TestContext.Current.CancellationToken),
+                await reader.GetFieldValueAsync<string>(2, TestContext.Current.CancellationToken),
+                await reader.GetFieldValueAsync<bool>(3, TestContext.Current.CancellationToken),
+                await reader.GetFieldValueAsync<bool>(4, TestContext.Current.CancellationToken)));
         }
 
         result.Should()
@@ -168,9 +167,9 @@ public class SqliteDataPortOutgoing_
         var data = RelationalDatabaseTestHelper.CreateTestData(tree, value, type);
         using var outgoing = new SqliteDataPortOutgoing(new() { Filename = filename, Nodes = tree }, Substitute.For<ILogger<SqliteDataPortOutgoing>>());
 
-        await outgoing.ConnectAsync(CancellationToken.None);
-        await outgoing.SendAsync(0, data, CancellationToken.None);
-        await outgoing.DisconnectAsync(CancellationToken.None);
+        await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+        await outgoing.SendAsync(0, data, TestContext.Current.CancellationToken);
+        await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
         SqliteConnectionStringBuilder builder = new()
         {
@@ -179,12 +178,12 @@ public class SqliteDataPortOutgoing_
         };
 
         using var connection = new SqliteConnection(builder.ConnectionString);
-        await connection.OpenAsync();
-        var query = RelationalDatabaseTestHelper.ComposeSelectTableQuery('\"',
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        var query = RelationalDatabaseTestHelper.ComposeSelectTableQuery('"',
             tree.First(e => e.DesignId == RelationalDatabaseNodeDesignId.TableNodeId).Name);
         using var command = new SqliteCommand(query, connection);
 
-        (await command.ExecuteScalarAsync()).Should().BeEquivalentTo(expectedValue);
+        (await command.ExecuteScalarAsync(TestContext.Current.CancellationToken)).Should().BeEquivalentTo(expectedValue);
         await connection.CloseAsync();
     }
 
@@ -208,9 +207,9 @@ public class SqliteDataPortOutgoing_
         var logger = new TestLogger<SqliteDataPortOutgoing>();
         using var outgoing = new SqliteDataPortOutgoing(new() { Filename = filename, Nodes = tree }, logger);
 
-        await outgoing.ConnectAsync(CancellationToken.None);
-        await outgoing.SendAsync(0, data, CancellationToken.None);
-        await outgoing.DisconnectAsync(CancellationToken.None);
+        await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+        await outgoing.SendAsync(0, data, TestContext.Current.CancellationToken);
+        await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
         logger.Message.Should().Contain("Cannot");
         logger.EventId.Should().Be(new EventId(1, "LogPublishWithCompletedQueueFailed"));

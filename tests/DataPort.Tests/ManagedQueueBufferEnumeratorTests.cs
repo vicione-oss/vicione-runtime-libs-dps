@@ -13,7 +13,7 @@ public class ManagedQueueBufferEnumerator_
     public async Task Returns_next_buffer_chunk_by_count_Async()
     {
         using ManagedQueue<int> queue = new();
-        await using var enumerator = queue.GetBufferEnumerator(2);
+        await using var enumerator = queue.GetBufferEnumerator(2, cancellationToken: TestContext.Current.CancellationToken);
 
         queue.Append(1);
         queue.Append(2);
@@ -41,7 +41,7 @@ public class ManagedQueueBufferEnumerator_
     public async Task Waits_for_next_value_Async()
     {
         using ManagedQueue<int> queue = new();
-        await using var enumerator = queue.GetBufferEnumerator(1);
+        await using var enumerator = queue.GetBufferEnumerator(1, cancellationToken: TestContext.Current.CancellationToken);
         var moveNextTask = Task.Run(enumerator.MoveNextAsync);
 
         queue.Append(1);
@@ -56,7 +56,7 @@ public class ManagedQueueBufferEnumerator_
     {
         using ManagedQueue<int> queue = new();
         queue.Append(1);
-        await using var enumerator = queue.GetBufferEnumerator(1);
+        await using var enumerator = queue.GetBufferEnumerator(1, cancellationToken: TestContext.Current.CancellationToken);
         var act = async () => await enumerator.MoveNextAsync();
 
         act.ExecutionTime().Should().BeLessThan(1.Seconds());

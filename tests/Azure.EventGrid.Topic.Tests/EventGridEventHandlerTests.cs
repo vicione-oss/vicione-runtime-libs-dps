@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using Azure.Messaging.EventGrid;
 using AwesomeAssertions;
+using Azure.Messaging.EventGrid;
 using ViciOne.ManagedEngine.ExternalCommunication;
 using Xunit;
 
@@ -52,7 +51,7 @@ public class EventGridEventHandler_
             }
         ];
 
-        await handler.Process(values, CancellationToken.None);
+        await handler.Process(values, TestContext.Current.CancellationToken);
 
         var result = events.Should().ContainSingle().Which;
         result.Subject.Should().Be("Test");

@@ -18,7 +18,7 @@ public sealed class AzureIotHubTestSystem : IAsyncLifetime
     internal AzureIotHubDataPortCommunication Communication { get; } = new();
     internal string EventHubConnectionString { get; } = string.Empty;
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         Communication.Hostname = "my.azure-devices.net";
         Communication.SharedAccessSignatureKeyName = "iothubowner";
@@ -26,13 +26,13 @@ public sealed class AzureIotHubTestSystem : IAsyncLifetime
 
         _registryManager = CreateRegistryManager(Communication);
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         _registryManager?.Dispose();
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     private static RegistryManager CreateRegistryManager(AzureIotHubDataPortCommunication communication)

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Loader;
-using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -56,25 +55,25 @@ public class PostgreSqlDataPortOutgoing_
             var communication = sqlServer.Communication with { Nodes = tree, };
             using var outgoing = new PostgreSqlDataPortOutgoing(communication, Substitute.For<ILogger<PostgreSqlDataPortOutgoing>>());
 
-            await outgoing.ConnectAsync(CancellationToken.None);
-            await outgoing.DisconnectAsync(CancellationToken.None);
+            await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+            await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
             using var connection = new NpgsqlConnection(sqlServer.Communication.ToConnectionString());
-            await connection.OpenAsync();
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
             using var command = new NpgsqlCommand(ComposeSelectSchemaCommand("StructureSchema"), connection);
-            var reader = await command.ExecuteReaderAsync(CancellationToken.None);
+            var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
             var result = new List<SchemaInfo>();
 
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync(TestContext.Current.CancellationToken))
             {
                 result.Add(new(
-                    await reader.GetFieldValueAsync<string>(0),
-                    await reader.IsDBNullAsync(1) ? null : await reader.GetFieldValueAsync<string>(1),
-                    await reader.IsDBNullAsync(2) ? null : await reader.GetFieldValueAsync<string>(2),
-                    await reader.IsDBNullAsync(3) ? null : await reader.GetFieldValueAsync<string>(3),
-                    await reader.GetFieldValueAsync<bool>(4),
-                    await reader.GetFieldValueAsync<bool>(5),
-                    await reader.GetFieldValueAsync<bool>(6)));
+                    await reader.GetFieldValueAsync<string>(0, TestContext.Current.CancellationToken),
+                    await reader.IsDBNullAsync(1, TestContext.Current.CancellationToken) ? null : await reader.GetFieldValueAsync<string>(1, TestContext.Current.CancellationToken),
+                    await reader.IsDBNullAsync(2, TestContext.Current.CancellationToken) ? null : await reader.GetFieldValueAsync<string>(2, TestContext.Current.CancellationToken),
+                    await reader.IsDBNullAsync(3, TestContext.Current.CancellationToken) ? null : await reader.GetFieldValueAsync<string>(3, TestContext.Current.CancellationToken),
+                    await reader.GetFieldValueAsync<bool>(4, TestContext.Current.CancellationToken),
+                    await reader.GetFieldValueAsync<bool>(5, TestContext.Current.CancellationToken),
+                    await reader.GetFieldValueAsync<bool>(6, TestContext.Current.CancellationToken)));
             }
 
             result.Should()
@@ -105,25 +104,25 @@ public class PostgreSqlDataPortOutgoing_
             var communication = sqlServer.Communication with { Nodes = tree, };
             using var outgoing = new PostgreSqlDataPortOutgoing(communication, Substitute.For<ILogger<PostgreSqlDataPortOutgoing>>());
 
-            await outgoing.ConnectAsync(CancellationToken.None);
-            await outgoing.DisconnectAsync(CancellationToken.None);
+            await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+            await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
             using var connection = new NpgsqlConnection(sqlServer.Communication.ToConnectionString());
-            await connection.OpenAsync();
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
             using var command = new NpgsqlCommand(ComposeSelectSchemaCommand("ConstrainsSchema"), connection);
-            var reader = await command.ExecuteReaderAsync(CancellationToken.None);
+            var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
             var result = new List<SchemaInfo>();
 
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync(TestContext.Current.CancellationToken))
             {
                 result.Add(new(
-                    await reader.GetFieldValueAsync<string>(0),
-                    await reader.IsDBNullAsync(1) ? null : await reader.GetFieldValueAsync<string>(1),
-                    await reader.IsDBNullAsync(2) ? null : await reader.GetFieldValueAsync<string>(2),
-                    await reader.IsDBNullAsync(3) ? null : await reader.GetFieldValueAsync<string>(3),
-                    await reader.GetFieldValueAsync<bool>(4),
-                    await reader.GetFieldValueAsync<bool>(5),
-                    await reader.GetFieldValueAsync<bool>(6)));
+                    await reader.GetFieldValueAsync<string>(0, TestContext.Current.CancellationToken),
+                    await reader.IsDBNullAsync(1, TestContext.Current.CancellationToken) ? null : await reader.GetFieldValueAsync<string>(1, TestContext.Current.CancellationToken),
+                    await reader.IsDBNullAsync(2, TestContext.Current.CancellationToken) ? null : await reader.GetFieldValueAsync<string>(2, TestContext.Current.CancellationToken),
+                    await reader.IsDBNullAsync(3, TestContext.Current.CancellationToken) ? null : await reader.GetFieldValueAsync<string>(3, TestContext.Current.CancellationToken),
+                    await reader.GetFieldValueAsync<bool>(4, TestContext.Current.CancellationToken),
+                    await reader.GetFieldValueAsync<bool>(5, TestContext.Current.CancellationToken),
+                    await reader.GetFieldValueAsync<bool>(6, TestContext.Current.CancellationToken)));
             }
 
             result.Should()
@@ -151,18 +150,18 @@ public class PostgreSqlDataPortOutgoing_
             var communication = sqlServer.Communication with { Nodes = tree, };
             using var outgoing = new PostgreSqlDataPortOutgoing(communication, Substitute.For<ILogger<PostgreSqlDataPortOutgoing>>());
 
-            await outgoing.ConnectAsync(CancellationToken.None);
-            await outgoing.SendAsync(0, data, CancellationToken.None);
-            await outgoing.DisconnectAsync(CancellationToken.None);
+            await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+            await outgoing.SendAsync(0, data, TestContext.Current.CancellationToken);
+            await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
             using var connection = new NpgsqlConnection(sqlServer.Communication.ToConnectionString());
-            await connection.OpenAsync();
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
             var query = RelationalDatabaseTestHelper.ComposeSelectTableQuery('"',
                 tree.First(t => t.DesignId == RelationalDatabaseNodeDesignId.TableNodeId).Name,
                 tree.First(t => t.DesignId == RelationalDatabaseNodeDesignId.SchemaNodeId).Name);
             using var command = new NpgsqlCommand(query, connection);
 
-            (await command.ExecuteScalarAsync()).Should().BeEquivalentTo(value);
+            (await command.ExecuteScalarAsync(TestContext.Current.CancellationToken)).Should().BeEquivalentTo(value);
             await connection.CloseAsync();
         }
 
@@ -184,9 +183,9 @@ public class PostgreSqlDataPortOutgoing_
             var logger = new TestLogger<PostgreSqlDataPortOutgoing>();
             using var outgoing = new PostgreSqlDataPortOutgoing(communication, logger);
 
-            await outgoing.ConnectAsync(CancellationToken.None);
-            await outgoing.SendAsync(0, data, CancellationToken.None);
-            await outgoing.DisconnectAsync(CancellationToken.None);
+            await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+            await outgoing.SendAsync(0, data, TestContext.Current.CancellationToken);
+            await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
             logger.Message.Should().Contain("Cannot");
             logger.EventId.Should().Be(new EventId(1, "LogPublishWithCompletedQueueFailed"));
@@ -210,18 +209,18 @@ public class PostgreSqlDataPortOutgoing_
             var communication = sqlServer.Communication with { Nodes = tree, };
             using var outgoing = new PostgreSqlDataPortOutgoing(communication, Substitute.For<ILogger<PostgreSqlDataPortOutgoing>>());
 
-            await outgoing.ConnectAsync(CancellationToken.None);
-            await outgoing.SendAsync(0, data, CancellationToken.None);
-            await outgoing.DisconnectAsync(CancellationToken.None);
+            await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+            await outgoing.SendAsync(0, data, TestContext.Current.CancellationToken);
+            await outgoing.DisconnectAsync(TestContext.Current.CancellationToken);
 
             using var connection = new NpgsqlConnection(sqlServer.Communication.ToConnectionString());
-            await connection.OpenAsync();
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
             var query = RelationalDatabaseTestHelper.ComposeSelectTableQuery('"',
                 tree.First(t => t.DesignId == RelationalDatabaseNodeDesignId.TableNodeId).Name,
                 tree.First(t => t.DesignId == RelationalDatabaseNodeDesignId.SchemaNodeId).Name);
             using var command = new NpgsqlCommand(query, connection);
 
-            (await command.ExecuteScalarAsync()).Should().BeEquivalentTo(1);
+            (await command.ExecuteScalarAsync(TestContext.Current.CancellationToken)).Should().BeEquivalentTo(1);
             await connection.CloseAsync();
         }
 

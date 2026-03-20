@@ -13,7 +13,7 @@ public sealed class SqlServerTestSystem : IAsyncLifetime
 
     internal SqlServerDataPortCommunication Communication { get; } = new();
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await _container.StartAsync();
         SqlConnectionStringBuilder connectionString = new(_container.GetConnectionString());
@@ -23,5 +23,5 @@ public sealed class SqlServerTestSystem : IAsyncLifetime
         Communication.Password = connectionString.Password;
     }
 
-    public Task DisposeAsync() => _container.DisposeAsync().AsTask();
+    public ValueTask DisposeAsync() => _container.DisposeAsync();
 }

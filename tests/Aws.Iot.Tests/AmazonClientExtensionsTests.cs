@@ -18,7 +18,7 @@ public class AmazonClientExtensions_GetEndpointAddress
             EndpointAddress = null,
         };
 
-        var endpointAddress = await amazonClient.GetEndpointAddress(properties, CancellationToken.None);
+        var endpointAddress = await amazonClient.GetEndpointAddress(properties, TestContext.Current.CancellationToken);
 
         endpointAddress.Should().Be("amazon");
     }
@@ -33,7 +33,7 @@ public class AmazonClientExtensions_GetEndpointAddress
             EndpointAddress = "local",
         };
 
-        var endpointAddress = await amazonClient.GetEndpointAddress(properties, CancellationToken.None);
+        var endpointAddress = await amazonClient.GetEndpointAddress(properties, TestContext.Current.CancellationToken);
 
         endpointAddress.Should().Be("local");
     }
@@ -58,7 +58,7 @@ public class AmazonClientExtensions_EnsureThings
         var amazonClient = Substitute.For<IAmazonClient>();
         amazonClient.GetCertificateArn("1234", Arg.Any<CancellationToken>()).Returns("arn:certificate-123");
 
-        await amazonClient.EnsureThings(communication.Nodes, "1234", CancellationToken.None);
+        await amazonClient.EnsureThings(communication.Nodes, "1234", TestContext.Current.CancellationToken);
 
         await amazonClient.Received().CreateThing("thing1", Arg.Any<CancellationToken>());
         await amazonClient.Received().AttachCertificateToThing("thing1", "arn:certificate-123", Arg.Any<CancellationToken>());
@@ -82,7 +82,7 @@ public class AmazonClientExtensions_EnsureThings
         amazonClient.GetCertificateArn("1234", Arg.Any<CancellationToken>()).Returns("arn:certificate-123");
         amazonClient.GetThings(Arg.Any<CancellationToken>()).Returns(["thing1"]);
 
-        await amazonClient.EnsureThings(communication.Nodes, "1234", CancellationToken.None);
+        await amazonClient.EnsureThings(communication.Nodes, "1234", TestContext.Current.CancellationToken);
 
         await amazonClient.DidNotReceive().CreateThing("thing1", Arg.Any<CancellationToken>());
         await amazonClient.Received().AttachCertificateToThing("thing1", "arn:certificate-123", Arg.Any<CancellationToken>());
@@ -107,7 +107,7 @@ public class AmazonClientExtensions_EnsureThings
         amazonClient.GetThings(Arg.Any<CancellationToken>()).Returns(["thing1"]);
         amazonClient.GetCertificateThings("arn:certificate-123", Arg.Any<CancellationToken>()).Returns(["thing1"]);
 
-        await amazonClient.EnsureThings(communication.Nodes, "1234", CancellationToken.None);
+        await amazonClient.EnsureThings(communication.Nodes, "1234", TestContext.Current.CancellationToken);
 
         await amazonClient.DidNotReceive().CreateThing("thing1", Arg.Any<CancellationToken>());
         await amazonClient.DidNotReceive().AttachCertificateToThing("thing1", "arn:certificate-123", Arg.Any<CancellationToken>());

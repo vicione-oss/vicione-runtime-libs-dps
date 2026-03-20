@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using System.Text.Json;
@@ -13,7 +12,7 @@ using Xunit;
 namespace ViciOne.Suite.DataPort;
 
 [SuppressMessage("Maintainability", "CA1515:Erwägen Sie, öffentliche Typen intern zu machen.")]
-public sealed class AwsIotTestSystem : IAsyncLifetime, IDisposable
+public sealed class AwsIotTestSystem : IAsyncLifetime
 {
     private AmazonIotDataClient? _amazonIotDataClient;
     private AmazonIoTClient? _amazonIoTClient;
@@ -21,7 +20,7 @@ public sealed class AwsIotTestSystem : IAsyncLifetime, IDisposable
     internal AwsIotDataPortCommunication Communication { get; } = new();
     internal string ServiceUrl { get; } = "";
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         Communication.AccessKey = "";
         Communication.SecretAccessKey = "";
@@ -31,20 +30,14 @@ public sealed class AwsIotTestSystem : IAsyncLifetime, IDisposable
         _amazonIotDataClient = new(Communication.AccessKey, Communication.SecretAccessKey, ServiceUrl);
         _amazonIoTClient = new(Communication.AccessKey, Communication.SecretAccessKey, new AwsIotDataPortProperties(Communication).Region);
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    public void Dispose()
+    public ValueTask DisposeAsync()
     {
         _amazonIotDataClient?.Dispose();
         _amazonIoTClient?.Dispose();
-    }
-
-    public Task DisposeAsync()
-    {
-        _amazonIotDataClient?.Dispose();
-        _amazonIoTClient?.Dispose();
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     internal async Task<JsonObject> GetShadow(string thing, string? shadowName = null)

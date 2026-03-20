@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AwesomeAssertions;
 using Xunit;
 
@@ -15,7 +14,7 @@ public class TaskPipeline_ExecuteAsync
             count => System.TimeSpan.Zero,
             false);
 
-        var result = await taskPipeline.ExecuteAsync((cancellation) => new ValueTask<bool>(false), CancellationToken.None);
+        var result = await taskPipeline.ExecuteAsync((cancellation) => new ValueTask<bool>(false), TestContext.Current.CancellationToken);
 
         result.Should().BeFalse();
     }
@@ -28,7 +27,7 @@ public class TaskPipeline_ExecuteAsync
             count => System.TimeSpan.Zero,
             false);
 
-        var result = await taskPipeline.ExecuteAsync((cancellation) => new ValueTask<bool>(true), CancellationToken.None);
+        var result = await taskPipeline.ExecuteAsync((cancellation) => new ValueTask<bool>(true), TestContext.Current.CancellationToken);
 
         result.Should().BeTrue();
     }

@@ -11,7 +11,7 @@ public class SqliteConnectionTester_TestConnectionAsync
     public async Task Can_connect_to_server()
     {
         using SqliteConnection connection = new($"Data Source={nameof(Can_connect_to_server)}");
-        await connection.OpenAsync();
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
         await connection.CloseAsync();
 
         SqliteDataPortCommunication communication = new()
