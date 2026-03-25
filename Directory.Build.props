@@ -44,9 +44,13 @@
     <!-- Für Repos die Projekte enthalten die als NuGet Paket veröffentlicht werden -->
     <PropertyGroup>
         <!-- https://docs.microsoft.com/de-de/nuget/reference/msbuild-targets -->
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
         <PackageProjectUrl>https://gitlab.com/vicione-oss/vicione/runtime-libs/dps</PackageProjectUrl>
         <Authors>$(Company)</Authors>
     </PropertyGroup>
+    <ItemGroup>
+        <None Include="$(MsBuildThisFileDirectory)\LICENSE.txt" Pack="true" PackagePath="" />
+    </ItemGroup>
 
     <!-- Testprojekten Zugriff auf intern sichtbaren Quellcode geben -->
     <ItemGroup Condition="$(MSBuildProjectDirectory.Contains('src'))">
