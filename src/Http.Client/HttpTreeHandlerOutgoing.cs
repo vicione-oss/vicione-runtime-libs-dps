@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -47,7 +49,7 @@ internal sealed class HttpTreeHandlerOutgoing(HttpClientDataPortCommunication co
     {
         var (address, httpMethod, headers) = _addressConfiguration[node.Id];
         HttpRequestMessage request = new(httpMethod, address);
-        StringContent content = new(json);
+        StringContent content = new(json, Encoding.UTF8, MediaTypeNames.Application.Json);
         request.Content = content;
         request.AddHeaders(headers);
         return request;

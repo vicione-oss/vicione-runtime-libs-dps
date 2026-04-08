@@ -80,7 +80,7 @@ public class HttpClientDataPortOutgoing_
         requestMessage.Headers.Should().ContainSingle().And.ContainKey("Test").WhoseValue.Should().Contain("test");
         requestMessage.Content.Should().NotBeNull();
         requestMessage.Content.Headers.ContentType.Should().NotBeNull();
-        requestMessage.Content.Headers.ContentType.MediaType.Should().Be("text/plain");
+        requestMessage.Content.Headers.ContentType.MediaType.Should().Be("application/json");
         payload.Should().NotBeNull();
         payload.Should().Be("""{"Channel":"v1","Timestamp":"0001-01-01T00:00:00","Validity":0,"Value":{"Type":"System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e","Value":"23"}}""");
     }
@@ -135,7 +135,7 @@ public class HttpClientDataPortOutgoing_
         requestMessage.Headers.Should().BeEmpty();
         requestMessage.Content.Should().NotBeNull();
         requestMessage.Content.Headers.ContentType.Should().NotBeNull();
-        requestMessage.Content.Headers.ContentType.MediaType.Should().Be("text/plain");
+        requestMessage.Content.Headers.ContentType.MediaType.Should().Be("application/json");
         payload.Should().NotBeNull();
         payload.Should().Be("""{"value":23,"$meta":{"value":"System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"}}""");
     }
