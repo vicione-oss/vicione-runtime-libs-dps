@@ -32,7 +32,7 @@ internal sealed class HttpTreeHandlerOutgoing(HttpClientDataPortCommunication co
 
     protected override HttpRequestMessage HandleGroupNode(INode node, JsonObject data, JsonObject meta, IReadOnlyCollection<ExternalValue> values)
     {
-        var json = JsonSerializer.Serialize(NodeValueFactory.CreateJsonStructure(ChannelJsonNodeRoutes, values).IncludeMeta());
+        var json = JsonSerializer.Serialize((data, meta).IncludeMeta());
         return CreateRequest(node, json);
     }
 
