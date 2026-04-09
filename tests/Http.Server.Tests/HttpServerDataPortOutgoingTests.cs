@@ -50,7 +50,7 @@ public class HttpServerDataPortOutgoing_
             {
                 Id = endopoint,
                 ParentId = part,
-                Name = "post",
+                Name = "get",
                 DesignId = HttpServerNodeDesignId.HttpGetEndpoint,
             },
             new()
@@ -103,7 +103,7 @@ public class HttpServerDataPortOutgoing_
             {
                 Id = endpoint,
                 ParentId = part,
-                Name = "post",
+                Name = "get",
                 DesignId = HttpServerNodeDesignId.HttpGetEndpoint,
             },
             new()
