@@ -27,7 +27,7 @@ Nodes:
     Name                   : "Database"
     Description            : "Database"
     MetadataLength         : 0
-    Icon                   : schema
+    Icon                   : database
     TransferDirections     : [ Outbound ]
     ChildNodes             :
       - Id                 : Schema
@@ -55,7 +55,7 @@ Nodes:
     Type                   : DataPortTreeNode
     Name                   : "Schema"
     Description            : "Database schema"
-    Icon                   : folder
+    Icon                   : schema
     TransferModes          : [ None, OnChange, Periodic ]
     ChildNodes             :
       - Id                 : Table

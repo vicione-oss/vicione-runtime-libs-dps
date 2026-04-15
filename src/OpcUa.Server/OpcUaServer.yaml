@@ -27,7 +27,7 @@ Nodes:
     Name                   : "Server"
     Description            : "Server"
     MetadataLength         : 0
-    Icon                   : folder
+    Icon                   : server
     TransferDirections     : [ Outbound, Inbound ]
     ChildNodes             :
       - Id                 : Folder
