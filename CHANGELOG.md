@@ -5,6 +5,8 @@
 ### Fixed
 
 - Set HTTP content type according to content
+- Swap and fix PostgeSql schema and database icon
+- Fix OPC UA server icon
 
 ## 0.30.0 - 2026-03-20
 
