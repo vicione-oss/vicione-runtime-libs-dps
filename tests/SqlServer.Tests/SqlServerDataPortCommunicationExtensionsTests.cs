@@ -27,6 +27,18 @@ public class SqlServerDataPortCommunicationExtensions_ToConnectionString
     public void Sets_Password_if_available()
         => CreateCommunication(c => c.Password = "pw").ToConnectionString().Should().Contain("Password=pw");
 
+    [Fact]
+    public void ConnectTimeout_defaults_to_30()
+        => new SqlServerDataPortCommunication().ConnectTimeout.Should().Be(30);
+
+    [Fact]
+    public void ConnectTimeout_is_included_in_connection_string()
+        => CreateCommunication(c => c.ConnectTimeout = 60).ToConnectionString().Should().Contain("Connect Timeout=60");
+
+    [Fact]
+    public void Sets_ConnectTimeout_default_in_connection_string()
+        => CreateCommunication().ToConnectionString().Should().Contain("Connect Timeout=30");
+
     private static SqlServerDataPortCommunication CreateCommunication(Action<SqlServerDataPortCommunication>? configure = default)
     {
         SqlServerDataPortCommunication communication = new() { Host = "host", Database = "db", };

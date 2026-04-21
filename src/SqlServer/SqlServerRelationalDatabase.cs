@@ -13,13 +13,31 @@ namespace ViciOne.Suite.DataPort;
 
 internal sealed class SqlServerRelationalDatabase(SqlServerDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger)
 {
+    internal const string SingleDatabaseInstanceNodeId = "SqlServer-SingleDatabaseInstance";
+
     private readonly SqlServerDataPortCommunication _communication = communication;
     private readonly ILogger _logger = logger;
     private SqlConnection? _connection;
     private readonly Dictionary<TableInfo, DataTable> _tables = [];
 
+    private bool IsSingleDatabaseMode => _communication.DesignId == SingleDatabaseInstanceNodeId;
+
     protected override async Task OpenConnectionAsync(IReadOnlyCollection<ColumnInfo> columnInfos, CancellationToken cancellationToken)
     {
+        if (IsSingleDatabaseMode)
+        {
+            var databases = columnInfos.Select(c => c.TableInfo.Database).Distinct().ToList();
+
+            if (databases.Count > 1)
+            {
+                throw new InvalidOperationException(
+                    $"More than one database detected but SingleDatabaseInstance node is active — only one database can be managed. Detected databases: {string.Join(", ", databases)}.");
+            }
+
+            if (databases.Count == 1)
+                _communication.Database = databases[0];
+        }
+
         FillTablesCache();
         await ConnectAsync().ConfigureAwait(false);
 
@@ -38,7 +56,8 @@ internal sealed class SqlServerRelationalDatabase(SqlServerDataPortCommunication
 
     private static DataTable CreateDataTableTemplate(TableInfo tableInfo, IEnumerable<ColumnInfo> columnInfos)
     {
-        DataTable dataTable = new(SqlServerCommands.ComposeTableName(tableInfo));
+        var tableName = SqlServerCommands.ComposeTableNameTwoPart(tableInfo);
+        DataTable dataTable = new(tableName);
 
         foreach (var columnInfo in columnInfos)
         {
@@ -56,6 +75,7 @@ internal sealed class SqlServerRelationalDatabase(SqlServerDataPortCommunication
         if (_connection is not null)
         {
             await _connection.CloseAsync().ConfigureAwait(false);
+            SqlConnection.ClearPool(_connection);
             await _connection.DisposeAsync().ConfigureAwait(false);
             _connection = null;
         }
@@ -72,28 +92,51 @@ internal sealed class SqlServerRelationalDatabase(SqlServerDataPortCommunication
         await AdoDotNetFunctions.EnsureConnectionAsync(_connection, cancellationToken).ConfigureAwait(false);
         using var command = _connection.CreateCommand();
 
-        if (missingDatabases.Count != 0)
+        if (IsSingleDatabaseMode)
         {
-            command.CommandText = SqlServerCommands.ComposeCreateDatabasesCommandText(missingDatabases);
-            await AdoDotNetFunctions.ExecuteAsync(command, cancellationToken).ConfigureAwait(false);
-        }
+            if (missingDatabases.Count != 0)
+                _logger.LogWarning("SingleDatabaseInstance node is active – automatic database creation is not supported. Ensure the database already exists before connecting.");
 
-        foreach (var database in missingSchemas)
-        {
-            command.CommandText = SqlServerCommands.ComposeUseDatabaseCommandText(database);
-            await AdoDotNetFunctions.ExecuteAsync(command, cancellationToken).ConfigureAwait(false);
-
-            foreach (var schema in database.Schemas)
+            foreach (var database in missingSchemas)
             {
-                command.CommandText = SqlServerCommands.ComposeCreateSchemaCommandText(schema);
+                foreach (var schema in database.Schemas)
+                {
+                    command.CommandText = SqlServerCommands.ComposeCreateSchemaCommandText(schema);
+                    await AdoDotNetFunctions.ExecuteTransactionAsync(command, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (missingTables.Count != 0)
+            {
+                command.CommandText = SqlServerCommands.ComposeCreateTablesCommandText(missingTables, singleDatabase: true);
                 await AdoDotNetFunctions.ExecuteTransactionAsync(command, cancellationToken).ConfigureAwait(false);
             }
         }
-
-        if (missingTables.Count != 0)
+        else
         {
-            command.CommandText = SqlServerCommands.ComposeCreateTablesCommandText(missingTables);
-            await AdoDotNetFunctions.ExecuteTransactionAsync(command, cancellationToken).ConfigureAwait(false);
+            if (missingDatabases.Count != 0)
+            {
+                command.CommandText = SqlServerCommands.ComposeCreateDatabasesCommandText(missingDatabases);
+                await AdoDotNetFunctions.ExecuteAsync(command, cancellationToken).ConfigureAwait(false);
+            }
+
+            foreach (var database in missingSchemas)
+            {
+                command.CommandText = SqlServerCommands.ComposeUseDatabaseCommandText(database);
+                await AdoDotNetFunctions.ExecuteAsync(command, cancellationToken).ConfigureAwait(false);
+
+                foreach (var schema in database.Schemas)
+                {
+                    command.CommandText = SqlServerCommands.ComposeCreateSchemaCommandText(schema);
+                    await AdoDotNetFunctions.ExecuteTransactionAsync(command, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (missingTables.Count != 0)
+            {
+                command.CommandText = SqlServerCommands.ComposeCreateTablesCommandText(missingTables);
+                await AdoDotNetFunctions.ExecuteTransactionAsync(command, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -102,6 +145,14 @@ internal sealed class SqlServerRelationalDatabase(SqlServerDataPortCommunication
     {
         await AdoDotNetFunctions.EnsureConnectionAsync(_connection, cancellationToken).ConfigureAwait(false);
         using var command = _connection.CreateCommand();
+
+        if (IsSingleDatabaseMode)
+        {
+            command.CommandText = SqlServerCommands.SelectAllSchemasWithInformation;
+            var result = await AdoDotNetFunctions.ExecuteReaderAsync(command, SqlServerCommands.ReadSchemaInfo, cancellationToken).ConfigureAwait(false);
+            return [new Database(_communication.Database, result.ToSchemas())];
+        }
+
         command.CommandText = SqlServerCommands.SelectAllDatabases;
         var databaseNames = await AdoDotNetFunctions.ExecuteReaderAsync(command, SqlServerCommands.ReadDatabase, cancellationToken).ConfigureAwait(false);
         List<Database> databases = [];
@@ -150,12 +201,17 @@ internal sealed class SqlServerRelationalDatabase(SqlServerDataPortCommunication
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
         using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, (SqlTransaction)transaction);
 
-        foreach (var rowData in data.GroupBy(d => d.TableInfo))
+        foreach (var dbGroup in data.GroupBy(d => d.TableInfo.Database))
         {
-            var dataTable = _tables[rowData.Key];
-            var rows = CreateDataRowsFromTemplate(dataTable, rowData).ToArray();
-            bulkCopy.DestinationTableName = dataTable.TableName;
-            await bulkCopy.WriteToServerAsync(rows, cancellationToken).ConfigureAwait(false);
+            await connection.ChangeDatabaseAsync(dbGroup.Key, cancellationToken).ConfigureAwait(false);
+
+            foreach (var rowData in dbGroup.GroupBy(d => d.TableInfo))
+            {
+                var dataTable = _tables[rowData.Key];
+                var rows = CreateDataRowsFromTemplate(dataTable, rowData).ToArray();
+                bulkCopy.DestinationTableName = dataTable.TableName;
+                await bulkCopy.WriteToServerAsync(rows, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);

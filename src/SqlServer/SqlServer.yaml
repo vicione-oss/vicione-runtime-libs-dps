@@ -17,6 +17,9 @@ Root:
     - Id                   : SqlServer-Instance
       MaxDepth             : 64
       MaxInstances         : 8
+    - Id                   : SqlServer-SingleDatabaseInstance
+      MaxDepth             : 64
+      MaxInstances         : 8
 
 Nodes:
 
@@ -24,8 +27,8 @@ Nodes:
 
   - Id                     : SqlServer-Instance
     Type                   : DataPortNode
-    Name                   : "Instance"
-    Description            : "Instance"
+    Name                   : "Connection"
+    Description            : "Connection"
     MetadataLength         : 0
     Icon                   : server
     TransferDirections     : [ Outbound ]
@@ -37,6 +40,37 @@ Nodes:
           - Id             : Host
             Required       : true
           - Id             : Port
+          - Id             : ConnectTimeout
+      - Id                 : Authentication
+        Properties         :
+          - Id             : UserID
+          - Id             : Password
+      - Id                 : Other
+        Properties         :
+          - Id             : BulkSize
+          - Id             : MinimumPublishIntervalInMs
+          - Id             : DisableStructureValidation
+
+  # -------------------- SingleDatabaseInstance ---------------------------
+
+  - Id                     : SqlServer-SingleDatabaseInstance
+    MappingId              : SingleDatabaseInstance
+    Type                   : DataPortNode
+    Name                   : "Single Database Connection"
+    Description            : "Single Database Connection"
+    MetadataLength         : 0
+    Icon                   : server
+    TransferDirections     : [ Outbound ]
+    ChildNodes             :
+      - Id                 : Database
+        MaxInstances       : 1
+    PropertyCategories     :
+      - Id                 : Connection
+        Properties         :
+          - Id             : Host
+            Required       : true
+          - Id             : Port
+          - Id             : ConnectTimeout
       - Id                 : Authentication
         Properties         :
           - Id             : UserID
@@ -285,6 +319,14 @@ Properties:
     UiControl   : NumericUpDown
     MinValue    : 100
     DefaultValue: 1000
+
+  - Id          : ConnectTimeout
+    Name        : "Connect timeout"
+    Description : "The time in seconds to wait for a connection to open. Increase this value when connecting to slow or remote servers such as Azure SQL Database."
+    DataType    : Int32
+    UiControl   : NumericUpDown
+    MinValue    : 1
+    DefaultValue: 30
 
   - Id          : DisableStructureValidation
     Name        : "Disable structure validation"
