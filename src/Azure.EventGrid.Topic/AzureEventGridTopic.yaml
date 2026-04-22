@@ -1,8 +1,8 @@
 Common:
   Target       : DataPort
   ContentType  : Rules
-  Version      : 0.30.0
-  Date         : 2026-03-20
+  Version      : 0.31.0
+  Date         : 2026-04-22
   Description  : "Azure EventGrid Topic DataPort"
   Author       : "ifm software gmbh"
   MetadataType : YAML

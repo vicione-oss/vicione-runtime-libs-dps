@@ -437,14 +437,14 @@
         "type": "Project",
         "dependencies": {
           "AWSSDK.IoT": "[4.0.6.9, )",
-          "ViciOne.Suite.DataPort.Mqtt": "[0.30.0, )"
+          "ViciOne.Suite.DataPort.Mqtt": "[0.31.0, )"
         }
       },
       "ViciOne.Suite.DataPort.Mqtt": {
         "type": "Project",
         "dependencies": {
           "MQTTnet.Extensions": "[0.21.0, )",
-          "ViciOne.Suite.DataPort": "[0.30.0, )"
+          "ViciOne.Suite.DataPort": "[0.31.0, )"
         }
       },
       "AWSSDK.IoT": {
