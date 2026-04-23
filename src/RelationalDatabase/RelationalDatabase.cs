@@ -91,6 +91,9 @@ public abstract class RelationalDatabase : IDisposable
 
     private async Task EnsureStructureAsync(IReadOnlyCollection<Database> expected, IReadOnlyCollection<Database> current, CancellationToken cancellationToken)
     {
+        if (_dataPortCommunication.DisableStructureValidation)
+            return;
+
         if (DatabaseComparer.TryGetMissingStructure(current, expected, out var missingTables, out var missingDatabases, out var missingSchemas))
             await CreateMissingStructureAsync(missingTables, missingDatabases, missingSchemas, cancellationToken).ConfigureAwait(false);
 
