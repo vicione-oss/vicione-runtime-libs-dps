@@ -588,7 +588,7 @@
         "dependencies": {
           "Microsoft.Azure.Devices": "[1.41.0, )",
           "Microsoft.Azure.Devices.Client": "[1.42.3, )",
-          "ViciOne.Suite.DataPort": "[0.30.0, )"
+          "ViciOne.Suite.DataPort": "[0.31.0, )"
         }
       },
       "Microsoft.Azure.Devices": {

@@ -550,7 +550,7 @@
         "type": "Project",
         "dependencies": {
           "InfluxDB.Client": "[5.0.0, )",
-          "ViciOne.Suite.DataPort": "[0.30.0, )"
+          "ViciOne.Suite.DataPort": "[0.31.0, )"
         }
       },
       "InfluxDB.Client": {
