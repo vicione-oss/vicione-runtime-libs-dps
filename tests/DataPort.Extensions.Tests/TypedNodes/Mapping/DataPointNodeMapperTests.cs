@@ -52,6 +52,22 @@ public class DataPointNodeMapperTests
         propertyNames.Should().BeEmpty();
     }
 
+    [Fact]
+    public void GetPropertiesDefinedInTargetNode_ExcludesPropertiesMarkedWithExcludeFromMapping()
+    {
+        // Arrange
+        IDataPointNodeMapper<TestDataPointNodeWithExcludedProperty> mapper = new ExcludedPropertyDataPointMapper();
+
+        // Act
+        var properties = mapper.GetPropertiesDefinedInTargetNode();
+
+        // Assert
+        var propertyNames = properties.Select(p => p.Name).ToList();
+        propertyNames.Should().HaveCount(1);
+        propertyNames.Should().Contain(nameof(TestDataPointNodeWithExcludedProperty.MappedProperty));
+        propertyNames.Should().NotContain(nameof(TestDataPointNodeWithExcludedProperty.ComputedProperty));
+    }
+
     // Test mappers
 
     private sealed class TestDataPointMapper : IDataPointNodeMapper<TestDataPointNodeWithProperties>
@@ -65,6 +81,13 @@ public class DataPointNodeMapperTests
     {
         public string TargetLinkedNodeTypeId => "minimal-datapoint";
         public IDataPointNode Map(LinkedNode node) => new TestDataPointNode(node);
+        public ValidationResult Validate(LinkedNode linkedNode) => new();
+    }
+
+    private sealed class ExcludedPropertyDataPointMapper : IDataPointNodeMapper<TestDataPointNodeWithExcludedProperty>
+    {
+        public string TargetLinkedNodeTypeId => "excluded-property-datapoint";
+        public TestDataPointNodeWithExcludedProperty Map(LinkedNode node) => new(node);
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 }

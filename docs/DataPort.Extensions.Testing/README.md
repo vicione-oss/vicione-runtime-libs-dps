@@ -107,7 +107,39 @@ public class MyYamlConsistencyTests
 }
 ```
 
-**Test Methods Provided:**
+No additional test methods are needed. The base class provides all twelve checks as xUnit `[Theory]` test cases with dynamically generated test case data.
+
+### Excluding node properties from mapper ↔ YAML checks
+
+The YAML consistency tests compare properties declared in YAML nodes against the properties reported by each mapper's `PropertyNamesDefinedInTargetNode()`. If a typed node has C# properties that are not backed by a YAML property (e.g. computed or runtime-only properties), the consistency check will fail because it expects a 1:1 match.
+
+To handle this, use `ExcludedConfigurationNodeProperties` or `ExcludedDataPointNodeProperties` on the test config. They map the typed node `Type` to a set of property names to exclude from the check.
+
+```csharp
+public class MyYamlTestConfig : IYamlTestingConfig<MyCommunication, MyRootConfigurationNode>
+{
+    public static string YamlFileName => "my-device.yaml";
+
+    public static TypedNodeMapper<MyCommunication, MyRootConfigurationNode> Mapper =>
+        MyTypedNodeMapper.Instance;
+
+    public static HashSet<string> ExcludedCommunicationProperties => [];
+
+    public static Dictionary<Type, HashSet<string>> ExcludedConfigurationNodeProperties => new()
+    {
+        [typeof(MyConfigNode)] = [nameof(MyConfigNode.ComputedFullPath)],
+    };
+
+    public static Dictionary<Type, HashSet<string>> ExcludedDataPointNodeProperties => new()
+    {
+        [typeof(MyDataPointNode)] = [nameof(MyDataPointNode.RuntimeTimestamp)],
+    };
+}
+```
+
+This is similar to `ExcludedCommunicationProperties` (which excludes properties on the `DataPortCommunication` subclass) but applies to individual typed nodes, keyed by their node type.
+
+### Test methods
 
 The base class provides the following xUnit test methods:
 

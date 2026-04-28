@@ -66,6 +66,22 @@ public class BranchConfigurationNodeMapperTests
         properties.Should().OnlyContain(p => p.DeclaringType == typeof(TestBranchNodeWithProperties));
     }
 
+    [Fact]
+    public void GetPropertiesDefinedInTargetNode_ExcludesPropertiesMarkedWithExcludeFromMapping()
+    {
+        // Arrange
+        IBranchConfigurationNodeMapper<TestBranchNodeWithExcludedProperty> mapper = new ExcludedPropertyBranchMapper();
+
+        // Act
+        var properties = mapper.GetPropertiesDefinedInTargetNode();
+
+        // Assert
+        var propertyNames = properties.Select(p => p.Name).ToList();
+        propertyNames.Should().HaveCount(1);
+        propertyNames.Should().Contain(nameof(TestBranchNodeWithExcludedProperty.MappedProperty));
+        propertyNames.Should().NotContain(nameof(TestBranchNodeWithExcludedProperty.ComputedProperty));
+    }
+
     // Test mappers
 
     private sealed class TestBranchMapper : IBranchConfigurationNodeMapper<TestBranchNodeWithProperties>
@@ -82,6 +98,16 @@ public class BranchConfigurationNodeMapperTests
     {
         public string TargetLinkedNodeTypeId => "minimal-branch";
         public TestBranchNode Map(LinkedNode node) => new TestBranchNode
+        {
+            OriginalNode = node
+        };
+        public ValidationResult Validate(LinkedNode linkedNode) => new();
+    }
+
+    private sealed class ExcludedPropertyBranchMapper : IBranchConfigurationNodeMapper<TestBranchNodeWithExcludedProperty>
+    {
+        public string TargetLinkedNodeTypeId => "excluded-property-branch";
+        public TestBranchNodeWithExcludedProperty Map(LinkedNode node) => new TestBranchNodeWithExcludedProperty
         {
             OriginalNode = node
         };

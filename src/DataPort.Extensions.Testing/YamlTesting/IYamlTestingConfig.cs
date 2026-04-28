@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
@@ -27,5 +28,17 @@ public interface IYamlTestingConfig<TCommunication, TRootConfigurationNode>
     /// C# properties on Communication class that don't map to YAML (internal computed properties).
     /// Default: empty set.
     /// </summary>
-    static abstract HashSet<string> ExcludedCommunicationProperties { get; }
+    static virtual HashSet<string> ExcludedCommunicationProperties => [];
+
+    /// <summary>
+    /// C# properties on configuration nodes that don't map to YAML, keyed by the node type.
+    /// Default: empty dictionary.
+    /// </summary>
+    static virtual Dictionary<Type, HashSet<string>> ExcludedConfigurationNodeProperties => [];
+
+    /// <summary>
+    /// C# properties on data point nodes that don't map to YAML, keyed by the node type.
+    /// Default: empty dictionary.
+    /// </summary>
+    static virtual Dictionary<Type, HashSet<string>> ExcludedDataPointNodeProperties => [];
 }
