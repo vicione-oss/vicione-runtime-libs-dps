@@ -322,7 +322,7 @@ Properties:
 
   - Id          : ConnectTimeout
     Name        : "Connect timeout"
-    Description : "The time in seconds to wait for a connection to open. Increase this value when connecting to slow or remote servers such as Azure SQL Database."
+    Description : "The time in seconds to wait for a connection to open. Increase this value when connecting to slow or remote servers."
     DataType    : Int32
     UiControl   : NumericUpDown
     MinValue    : 1

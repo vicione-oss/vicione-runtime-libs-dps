@@ -52,9 +52,11 @@ internal static class SqlServerCommands
             _ => dataType,
         };
 
-    /// <summary>Returns "schema"."table" — used when connected to a single database.</summary>
     internal static string ComposeTableNameTwoPart(TableInfo tableInfo)
-        => $"\"{tableInfo.Schema}\".\"{tableInfo.Table}\"";
+        => ComposeTableNameTwoPart(tableInfo.Schema, tableInfo.Table);
+
+    internal static string ComposeTableNameTwoPart(string schema, string table)
+        => $"\"{schema}\".\"{table}\"";
 
     internal static string ComposeSelectStructureCommandText(string database)
     {
@@ -109,8 +111,8 @@ internal static class SqlServerCommands
     {
         StringBuilder command = new();
 
-        var tableName = $"\"{schema.Name}\".\"{table.Name}\"";
-        
+        var tableName = ComposeTableNameTwoPart(schema.Name, table.Name);
+
         command.AppendFormat(CultureInfo.InvariantCulture, "CREATE TABLE {0} (", tableName);
         command.AppendLine();
 
