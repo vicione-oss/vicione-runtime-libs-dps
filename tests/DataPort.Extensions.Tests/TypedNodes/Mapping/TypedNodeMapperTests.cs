@@ -33,7 +33,10 @@ public class TypedNodeMapperTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var rootNode = new TestDeviceNode { OriginalCommunication = communication };
+        var rootNode = new TestDeviceNode
+        {
+            OriginalCommunication = communication
+        };
 
         _rootMapper.Validate(communication).Returns(new ValidationResult());
         _rootMapper.CreateRootNode(communication).Returns(rootNode);
@@ -50,7 +53,10 @@ public class TypedNodeMapperTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var validationFailures = new List<ValidationFailure> { new("Host", "Host is required") };
+        var validationFailures = new List<ValidationFailure>
+        {
+            new("Host", "Host is required")
+        };
         var validationResult = new ValidationResult(validationFailures);
 
         _rootMapper.Validate(communication).Returns(validationResult);
@@ -76,15 +82,24 @@ public class TypedNodeMapperTests
             Properties = []
         };
 
-        var communication = new TestCommunication { Nodes = [configNode] };
-        var rootNode = new TestDeviceNode { OriginalCommunication = communication };
+        var communication = new TestCommunication
+        {
+            Nodes = [configNode]
+        };
+        var rootNode = new TestDeviceNode
+        {
+            OriginalCommunication = communication
+        };
 
         _rootMapper.Validate(communication).Returns(new ValidationResult());
         _rootMapper.CreateRootNode(communication).Returns(rootNode);
         _configMapper.TargetLinkedNodeTypeId.Returns("TestConfig");
         _configMapper.IsTargetMapperFor(Arg.Any<LinkedNode>()).Returns(true);
 
-        var validationFailures = new List<ValidationFailure> { new("SomeProperty", "Some property is invalid") };
+        var validationFailures = new List<ValidationFailure>
+        {
+            new("SomeProperty", "Some property is invalid")
+        };
         _configMapper.Validate(Arg.Any<LinkedNode>()).Returns(new ValidationResult(validationFailures));
 
         // Act
@@ -110,15 +125,24 @@ public class TypedNodeMapperTests
             Properties = []
         };
 
-        var communication = new TestCommunication { Nodes = [dataPointNode] };
-        var rootNode = new TestDeviceNode { OriginalCommunication = communication };
+        var communication = new TestCommunication
+        {
+            Nodes = [dataPointNode]
+        };
+        var rootNode = new TestDeviceNode
+        {
+            OriginalCommunication = communication
+        };
 
         _rootMapper.Validate(communication).Returns(new ValidationResult());
         _rootMapper.CreateRootNode(communication).Returns(rootNode);
         _dataPointMapper.TargetLinkedNodeTypeId.Returns("TestDataPoint");
         _dataPointMapper.IsTargetMapperFor(Arg.Any<LinkedNode>()).Returns(true);
 
-        var validationFailures = new List<ValidationFailure> { new("ByteNumber", "ByteNumber must be non-negative") };
+        var validationFailures = new List<ValidationFailure>
+        {
+            new("ByteNumber", "ByteNumber must be non-negative")
+        };
         _dataPointMapper.Validate(Arg.Any<LinkedNode>()).Returns(new ValidationResult(validationFailures));
 
         // Act
@@ -153,8 +177,14 @@ public class TypedNodeMapperTests
             Properties = []
         };
 
-        var communication = new TestCommunication { Nodes = [configNode, dataPointNode] };
-        var rootNode = new TestDeviceNode { OriginalCommunication = communication };
+        var communication = new TestCommunication
+        {
+            Nodes = [configNode, dataPointNode]
+        };
+        var rootNode = new TestDeviceNode
+        {
+            OriginalCommunication = communication
+        };
 
         _rootMapper.Validate(communication).Returns(new ValidationResult());
         _rootMapper.CreateRootNode(communication).Returns(rootNode);
@@ -165,7 +195,10 @@ public class TypedNodeMapperTests
         _configMapper.Map(Arg.Any<LinkedNode>()).Returns(callInfo =>
         {
             var node = callInfo.Arg<LinkedNode>();
-            return new TestBranchNode { OriginalNode = node };
+            return new TestBranchNode
+            {
+                OriginalNode = node
+            };
         });
 
         _dataPointMapper.TargetLinkedNodeTypeId.Returns("TestDataPoint");
@@ -174,7 +207,7 @@ public class TypedNodeMapperTests
         _dataPointMapper.Map(Arg.Any<LinkedNode>()).Returns(callInfo =>
         {
             var node = callInfo.Arg<LinkedNode>();
-            return new TestDataPointNode { OriginalNode = node };
+            return new TestDataPointNode(node);
         });
 
         // Act
@@ -185,5 +218,4 @@ public class TypedNodeMapperTests
         _configMapper.Received(1).Validate(Arg.Is<LinkedNode>(static n => n.DesignId == "TestConfig"));
         _dataPointMapper.Received(1).Validate(Arg.Is<LinkedNode>(static n => n.DesignId == "TestDataPoint"));
     }
-
 }

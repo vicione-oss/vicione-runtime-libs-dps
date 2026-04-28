@@ -48,10 +48,10 @@ Key components:
 ## Typed node mapping
 
 `TypedNodeMapper<TCommunication, TRootNode>` converts raw configuration into a strongly-typed tree:
-1. Validate via FluentValidation
-2. Create root node via `IRootConfigurationNodeMapper`
-3. Walk nodes as `LinkedNode` (establishes parent links)
-4. Map to typed nodes via `IBranchConfigurationNodeMapper` / `IDataPointNodeMapper`
+1. Validate root communication via `IRootConfigurationNodeMapper.Validate`; fail fast if invalid
+2. Create root node via `IRootConfigurationNodeMapper.CreateRootNode`
+3. Build `LinkedNode` tree from flat nodes (establishes parent links)
+4. Walk the tree recursively — for each node: validate via its mapper, then map to a typed node. Validation and mapping are interleaved per node, not separate passes
 
 Related files live in `Model/TypedNodes/Mapping/` and its `Properties/` subfolder.
 

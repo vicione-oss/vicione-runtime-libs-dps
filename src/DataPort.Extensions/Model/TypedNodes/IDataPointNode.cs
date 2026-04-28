@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 
 namespace ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
 
@@ -17,4 +18,9 @@ public interface IDataPointNode : ITypedNode
     /// Gets the original untyped node that this typed data point node was created from.
     /// </summary>
     LinkedNode OriginalNode { get; }
+
+    /// <summary>
+    /// Gets the typed version of the OriginalNodes channel-properties as a single object.
+    /// </summary>
+    Channels Channels { get; }
 }

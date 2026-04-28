@@ -7,7 +7,7 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 /// </summary>
 /// <param name="AffectedChannels">The collection of channels that are affected by this data point's operations.</param>
 /// <param name="TransferredChannels">The collection of channels through which data is actively transferred.</param>
-public record Channels(
+public record struct Channels(
     IReadOnlyList<AffectedChannel> AffectedChannels,
     IReadOnlyList<TransferredChannel> TransferredChannels);
 

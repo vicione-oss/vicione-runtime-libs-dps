@@ -77,7 +77,10 @@ public class IncomingDataPortBaseTests
             new TestDataPoint(),
             [new MismatchingConfiguration("Test mismatch")]);
 
-        var verifier = new TestDataPointConfigurationVerifier { VerifyResult = [misConfiguredDataPoint] };
+        var verifier = new TestDataPointConfigurationVerifier
+        {
+            VerifyResult = [misConfiguredDataPoint]
+        };
 
         var sut = new TestIncomingDataPort(
             communication,
@@ -376,11 +379,13 @@ public class IncomingDataPortBaseTests
 
         for (var i = 0; i < count; i++)
         {
-            dataPointNodes.Add(new TestDataPointNode
+            var originalNode = new LinkedNode(
+                new Node
+                {
+                    TransferredChannels = [$"Channel{i}"]
+                });
+            dataPointNodes.Add(new TestDataPointNode(originalNode)
             {
-                Channels = new Channels(
-                    [],
-                    [new TransferredChannel($"Channel{i}")]),
                 PollFrequency = frequency
             });
         }

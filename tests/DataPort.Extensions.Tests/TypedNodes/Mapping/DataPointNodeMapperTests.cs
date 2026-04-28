@@ -57,17 +57,14 @@ public class DataPointNodeMapperTests
     private sealed class TestDataPointMapper : IDataPointNodeMapper<TestDataPointNodeWithProperties>
     {
         public string TargetLinkedNodeTypeId => "test-datapoint";
-        public TestDataPointNodeWithProperties Map(LinkedNode node) => new TestDataPointNodeWithProperties
-        {
-            OriginalNode = node
-        };
+        public TestDataPointNodeWithProperties Map(LinkedNode node) => new(node);
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 
     private sealed class MinimalDataPointMapper : IDataPointNodeMapper<IDataPointNode>
     {
         public string TargetLinkedNodeTypeId => "minimal-datapoint";
-        public IDataPointNode Map(LinkedNode node) => new TestDataPointNode { OriginalNode = node };
+        public IDataPointNode Map(LinkedNode node) => new TestDataPointNode(node);
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 }

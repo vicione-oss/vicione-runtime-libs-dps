@@ -72,8 +72,8 @@ public sealed class OutgoingDataPortBaseTests
     {
         List<TestDataPointNode> dataPointNodes =
         [
-            new() { Channels = new([], [new TransferredChannel("channel1")]) },
-            new() { Channels = new([], [new TransferredChannel("channel2")]) }
+            new(new LinkedNode(new Node { TransferredChannels = ["channel1"] })),
+            new(new LinkedNode(new Node { TransferredChannels = ["channel2"] }))
         ];
         var typedNodeMapper = CreateTestNodeMapper(dataPointNodes);
         var mapper = new TestDataPointGroupsMapper();
