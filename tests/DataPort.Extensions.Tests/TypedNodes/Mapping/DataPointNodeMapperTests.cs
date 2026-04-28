@@ -1,8 +1,9 @@
 using System.Linq;
 using FluentValidation.Results;
-using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
+using ViciOne.Suite.DataPort.Extensions.Testing.YamlTesting;
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.TypedNodes.Mapping;
 
@@ -19,9 +20,10 @@ public class DataPointNodeMapperTests
 
         // Assert
         var propertyNames = properties.Select(p => p.Name).ToList();
-        propertyNames.Should().HaveCount(2);
+        propertyNames.Should().HaveCount(3);
         propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.DataValue));
         propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.Timestamp));
+        propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.FormattedValue));
     }
 
     [Fact]
@@ -34,9 +36,10 @@ public class DataPointNodeMapperTests
         var propertyNames = mapper.PropertyNamesDefinedInTargetNode();
 
         // Assert
-        propertyNames.Should().HaveCount(2);
+        propertyNames.Should().HaveCount(3);
         propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.DataValue));
         propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.Timestamp));
+        propertyNames.Should().Contain(nameof(TestDataPointNodeWithProperties.FormattedValue));
     }
 
     [Fact]
@@ -50,22 +53,6 @@ public class DataPointNodeMapperTests
 
         // Assert
         propertyNames.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void GetPropertiesDefinedInTargetNode_ExcludesPropertiesMarkedWithExcludeFromMapping()
-    {
-        // Arrange
-        IDataPointNodeMapper<TestDataPointNodeWithExcludedProperty> mapper = new ExcludedPropertyDataPointMapper();
-
-        // Act
-        var properties = mapper.GetPropertiesDefinedInTargetNode();
-
-        // Assert
-        var propertyNames = properties.Select(p => p.Name).ToList();
-        propertyNames.Should().HaveCount(1);
-        propertyNames.Should().Contain(nameof(TestDataPointNodeWithExcludedProperty.MappedProperty));
-        propertyNames.Should().NotContain(nameof(TestDataPointNodeWithExcludedProperty.ComputedProperty));
     }
 
     // Test mappers
@@ -84,10 +71,4 @@ public class DataPointNodeMapperTests
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 
-    private sealed class ExcludedPropertyDataPointMapper : IDataPointNodeMapper<TestDataPointNodeWithExcludedProperty>
-    {
-        public string TargetLinkedNodeTypeId => "excluded-property-datapoint";
-        public TestDataPointNodeWithExcludedProperty Map(LinkedNode node) => new(node);
-        public ValidationResult Validate(LinkedNode linkedNode) => new();
-    }
 }

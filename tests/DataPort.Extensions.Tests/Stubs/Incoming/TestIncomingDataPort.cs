@@ -6,7 +6,7 @@ using ViciOne.ManagedEngine.ExternalCommunication;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Client;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Mapping;
-using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 using ViciOne.Suite.DataPort.Extensions.Client;
 using ViciOne.Suite.DataPort.Extensions.Incoming;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;

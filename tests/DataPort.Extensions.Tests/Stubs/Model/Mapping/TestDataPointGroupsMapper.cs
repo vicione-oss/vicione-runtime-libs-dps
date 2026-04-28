@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort;
-using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 using ViciOne.Suite.DataPort.Extensions.Model.Mapping;
 

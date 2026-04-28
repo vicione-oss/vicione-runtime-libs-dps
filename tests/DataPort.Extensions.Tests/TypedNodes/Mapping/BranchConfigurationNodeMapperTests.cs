@@ -1,8 +1,9 @@
 using System.Linq;
 using System.Reflection;
 using FluentValidation.Results;
-using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Folders;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
+using ViciOne.Suite.DataPort.Extensions.Testing.YamlTesting;
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.TypedNodes.Mapping;
 
@@ -19,9 +20,10 @@ public class BranchConfigurationNodeMapperTests
 
         // Assert
         var propertyNames = properties.Select(p => p.Name).ToList();
-        propertyNames.Should().HaveCount(2);
+        propertyNames.Should().HaveCount(3);
         propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.CustomProperty1));
         propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.CustomProperty2));
+        propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.FullPath));
     }
 
     [Fact]
@@ -34,9 +36,10 @@ public class BranchConfigurationNodeMapperTests
         var propertyNames = mapper.PropertyNamesDefinedInTargetNode();
 
         // Assert
-        propertyNames.Should().HaveCount(2);
+        propertyNames.Should().HaveCount(3);
         propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.CustomProperty1));
         propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.CustomProperty2));
+        propertyNames.Should().Contain(nameof(TestBranchNodeWithProperties.FullPath));
     }
 
     [Fact]
@@ -66,22 +69,6 @@ public class BranchConfigurationNodeMapperTests
         properties.Should().OnlyContain(p => p.DeclaringType == typeof(TestBranchNodeWithProperties));
     }
 
-    [Fact]
-    public void GetPropertiesDefinedInTargetNode_ExcludesPropertiesMarkedWithExcludeFromMapping()
-    {
-        // Arrange
-        IBranchConfigurationNodeMapper<TestBranchNodeWithExcludedProperty> mapper = new ExcludedPropertyBranchMapper();
-
-        // Act
-        var properties = mapper.GetPropertiesDefinedInTargetNode();
-
-        // Assert
-        var propertyNames = properties.Select(p => p.Name).ToList();
-        propertyNames.Should().HaveCount(1);
-        propertyNames.Should().Contain(nameof(TestBranchNodeWithExcludedProperty.MappedProperty));
-        propertyNames.Should().NotContain(nameof(TestBranchNodeWithExcludedProperty.ComputedProperty));
-    }
-
     // Test mappers
 
     private sealed class TestBranchMapper : IBranchConfigurationNodeMapper<TestBranchNodeWithProperties>
@@ -104,13 +91,4 @@ public class BranchConfigurationNodeMapperTests
         public ValidationResult Validate(LinkedNode linkedNode) => new();
     }
 
-    private sealed class ExcludedPropertyBranchMapper : IBranchConfigurationNodeMapper<TestBranchNodeWithExcludedProperty>
-    {
-        public string TargetLinkedNodeTypeId => "excluded-property-branch";
-        public TestBranchNodeWithExcludedProperty Map(LinkedNode node) => new TestBranchNodeWithExcludedProperty
-        {
-            OriginalNode = node
-        };
-        public ValidationResult Validate(LinkedNode linkedNode) => new();
-    }
 }

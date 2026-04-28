@@ -1,13 +1,15 @@
+#pragma warning disable CA1515 // Public for YamlConsistencyTest type parameters
+
 using System;
 using System.Collections.Generic;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
 
-namespace ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.TypedNodes;
+namespace ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 
 /// <summary>
 /// Minimal test-only device node for unit testing, supporting both incoming and outgoing data ports.
 /// </summary>
-internal sealed class TestDeviceNode : IRootConfigurationNode<TestCommunication>
+public sealed class TestDeviceNode : IRootConfigurationNode<TestCommunication>
 {
     public TestCommunication OriginalCommunication { get; init; }
     public DeviceIdentifier DeviceIdentifier { get; init; }
