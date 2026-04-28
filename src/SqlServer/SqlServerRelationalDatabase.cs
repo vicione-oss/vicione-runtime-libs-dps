@@ -49,6 +49,12 @@ internal sealed class SqlServerRelationalDatabase(SqlServerDataPortCommunication
 
         async Task ConnectAsync()
         {
+            if (_connection is null)
+            {
+                _connection = new(_communication.ToConnectionString());
+                SqlConnectionPoolTracker.Register(_communication.ToConnectionString());
+            }
+
             _connection ??= new(_communication.ToConnectionString());
             await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -75,7 +81,7 @@ internal sealed class SqlServerRelationalDatabase(SqlServerDataPortCommunication
         if (_connection is not null)
         {
             await _connection.CloseAsync().ConfigureAwait(false);
-            SqlConnection.ClearPool(_connection);
+            SqlConnectionPoolTracker.Unregister(_communication.ToConnectionString(), _connection);
             await _connection.DisposeAsync().ConfigureAwait(false);
             _connection = null;
         }
