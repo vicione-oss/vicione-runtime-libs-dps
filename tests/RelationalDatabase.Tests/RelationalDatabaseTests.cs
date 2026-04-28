@@ -340,3 +340,156 @@ public class PrepareRowData
             { new Test { TestValue = 2, }, "{\"TestValue\":2}", true },
         };
 }
+
+public class DisableStructureValidation_
+{
+    [Fact]
+    public async Task ConnectAsync_does_not_call_CreateMissingStructure_when_DisableStructureValidation_is_true()
+    {
+        using var db = new DisabledValidationDatabase();
+        // CreateMissingStructureAsync throws if called; ConnectAsync must not throw
+        await db.ConnectAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task ConnectAsync_throws_on_column_mismatch_when_DisableStructureValidation_is_false()
+    {
+        using var db = new MismatchDatabase();
+
+        var task = () => db.ConnectAsync(TestContext.Current.CancellationToken);
+
+        await task.Should().ThrowExactlyAsync<InvalidOperationException>();
+    }
+
+    private static readonly Node s_columnNode = new()
+    {
+        Id = Guid.NewGuid(),
+        DesignId = RelationalDatabaseNodeDesignId.ColumnNodeId,
+        Name = "ID",
+        ValueType = typeof(int),
+    };
+
+    private sealed record DisabledValidationCommunication : RelationalDatabaseCommunication
+    { }
+
+    /// <summary>
+    /// Database with DisableStructureValidation = true.
+    /// GetExistingStructureAsync returns empty (simulates missing tables).
+    /// CreateMissingStructureAsync throws — proving it is never invoked.
+    /// GetExpectedStructure returns a structure that differs from existing — proving mismatch guard is also skipped.
+    /// </summary>
+    private sealed class DisabledValidationDatabase : RelationalDatabase
+    {
+        public DisabledValidationDatabase() : base(CreateCommunication(), Substitute.For<ILogger>()) { }
+
+        private static DisabledValidationCommunication CreateCommunication()
+            => new()
+            {
+                DisableStructureValidation = true,
+                Nodes = [s_columnNode],
+            };
+
+        protected override Task<IReadOnlyCollection<Database>> GetExistingStructureAsync(CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyCollection<Database>>([]);
+
+        protected override IReadOnlyCollection<Database> GetExpectedStructure(IReadOnlyCollection<INode> nodes)
+            =>
+            [
+                new("default",
+                [
+                    new("default",
+                    [
+                        new("default",
+                        [
+                            new("ID", "int", true, false, true),
+                            new("extra", "string", false, false, false),
+                        ]),
+                    ]),
+                ]),
+            ];
+
+        protected override Dictionary<Guid, ColumnInfo> CreateColumnInfos(IReadOnlyCollection<INode> nodes)
+            => new()
+            {
+                { s_columnNode.Id, new ColumnInfo(new("default", "default", "default"), "ID", false, false, typeof(int)) },
+            };
+
+        protected override ValueTask<bool> PublishAsync(IEnumerable<RowData> data, CancellationToken cancellationToken)
+            => ValueTask.FromResult(true);
+
+        protected override Task OpenConnectionAsync(IReadOnlyCollection<ColumnInfo> columnInfos, CancellationToken cancellationToken) => Task.CompletedTask;
+        protected override Task CloseConnectionAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        protected override Task CreateMissingStructureAsync(IReadOnlyCollection<Database> missingTables, IReadOnlyCollection<Database> missingDatabases, IReadOnlyCollection<Database> missingSchemas, CancellationToken cancellationToken)
+            => throw new InvalidOperationException("CreateMissingStructureAsync must not be called when DisableStructureValidation is true.");
+    }
+
+    /// <summary>
+    /// Database with DisableStructureValidation = false (default) and mismatched columns.
+    /// ConnectAsync must throw InvalidOperationException.
+    /// </summary>
+    private sealed class MismatchDatabase : RelationalDatabase
+    {
+        private static readonly Node s_node = new()
+        {
+            Id = Guid.NewGuid(),
+            DesignId = RelationalDatabaseNodeDesignId.ColumnNodeId,
+            Name = "ID",
+            ValueType = typeof(int),
+        };
+
+        public MismatchDatabase() : base(CreateCommunication(), Substitute.For<ILogger>()) { }
+
+        private static DisabledValidationCommunication CreateCommunication()
+            => new()
+            {
+                DisableStructureValidation = false,
+                Nodes = [s_node],
+            };
+
+        protected override Task<IReadOnlyCollection<Database>> GetExistingStructureAsync(CancellationToken cancellationToken)
+            => Task.FromResult<IReadOnlyCollection<Database>>(
+            [
+                new("default",
+                [
+                    new("default",
+                    [
+                        new("default",
+                        [
+                            new("ID", "int", true, false, true),
+                            new("extra", "string", false, false, false),
+                        ]),
+                    ]),
+                ]),
+            ]);
+
+        protected override IReadOnlyCollection<Database> GetExpectedStructure(IReadOnlyCollection<INode> nodes)
+            =>
+            [
+                new("default",
+                [
+                    new("default",
+                    [
+                        new("default",
+                        [
+                            new("ID", "int", true, false, true),
+                            new("different_column", "string", false, false, false),
+                        ]),
+                    ]),
+                ]),
+            ];
+
+        protected override Dictionary<Guid, ColumnInfo> CreateColumnInfos(IReadOnlyCollection<INode> nodes)
+            => new()
+            {
+                { s_node.Id, new ColumnInfo(new("default", "default", "default"), "ID", false, false, typeof(int)) },
+            };
+
+        protected override ValueTask<bool> PublishAsync(IEnumerable<RowData> data, CancellationToken cancellationToken)
+            => ValueTask.FromResult(true);
+
+        protected override Task OpenConnectionAsync(IReadOnlyCollection<ColumnInfo> columnInfos, CancellationToken cancellationToken) => Task.CompletedTask;
+        protected override Task CloseConnectionAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        protected override Task CreateMissingStructureAsync(IReadOnlyCollection<Database> missingTables, IReadOnlyCollection<Database> missingDatabases, IReadOnlyCollection<Database> missingSchemas, CancellationToken cancellationToken)
+            => Task.CompletedTask;
+    }
+}

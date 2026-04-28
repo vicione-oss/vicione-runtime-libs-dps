@@ -45,6 +45,7 @@ Nodes:
         Properties         :
           - Id             : BulkSize
           - Id             : MinimumPublishIntervalInMs
+          - Id             : DisableStructureValidation
 
   # ------------------- Database ----------------------------------------
 
@@ -284,6 +285,13 @@ Properties:
     UiControl   : NumericUpDown
     MinValue    : 100
     DefaultValue: 1000
+
+  - Id          : DisableStructureValidation
+    Name        : "Disable structure validation"
+    Description : "Skips automatic schema/table validation and creation. Only use with pre-validated or trusted node names."
+    DataType    : Bool
+    UiControl   : ToggleButton
+    DefaultValue: false
 
   - Id          : UserID
     Name        : "User ID"

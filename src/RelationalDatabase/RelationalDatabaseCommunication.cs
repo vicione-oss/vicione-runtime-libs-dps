@@ -4,4 +4,5 @@ public abstract record class RelationalDatabaseCommunication : DataPortCommunica
 {
     public int BulkSize { get; init; } = 10_000;
     public uint MinimumPublishIntervalInMs { get; init; } = 3_000;
+    public bool DisableStructureValidation { get; init; }
 }
