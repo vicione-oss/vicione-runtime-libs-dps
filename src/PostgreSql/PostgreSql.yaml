@@ -39,6 +39,7 @@ Nodes:
           - Id             : Port
             Required       : true
           - Id             : Database
+          - Id             : ConnectTimeout
       - Id                 : Authentication
         Properties         :
           - Id             : UserId
@@ -293,6 +294,14 @@ Properties:
     UiControl   : NumericUpDown
     MinValue    : 100
     DefaultValue: 1000
+
+  - Id          : ConnectTimeout
+    Name        : "Connect timeout"
+    Description : "The time in seconds to wait for a connection to open. Increase this value when connecting to slow or remote servers."
+    DataType    : Int32
+    UiControl   : NumericUpDown
+    MinValue    : 1
+    DefaultValue: 30
 
   - Id          : DisableStructureValidation
     Name        : "Disable structure validation"

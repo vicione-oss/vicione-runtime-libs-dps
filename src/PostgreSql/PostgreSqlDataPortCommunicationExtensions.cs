@@ -11,6 +11,7 @@ internal static class PostgreSqlDataPortCommunicationExtensions
         {
             Host = properties.Host,
             Port = properties.Port,
+            Timeout = properties.ConnectTimeout,
         };
         if (properties.Database is not null)
             builder.Database = properties.Database;

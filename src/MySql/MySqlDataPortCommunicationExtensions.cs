@@ -12,6 +12,7 @@ internal static class MySqlDataPortCommunicationExtensions
             Server = properties.Server,
             Port = properties.Port,
             Database = properties.Database,
+            ConnectionTimeout = (uint)properties.ConnectTimeout,
         };
         if (properties.UserId is not null)
             builder.UserID = properties.UserId;

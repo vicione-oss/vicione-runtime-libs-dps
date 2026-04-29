@@ -27,6 +27,18 @@ public class PostgreSqlDataPortCommunicationExtensions_ToConnectionString
     public void Sets_Password_if_available()
         => CreateCommunication(c => c.Password = "pw").ToConnectionString().Should().Contain("Password=pw");
 
+    [Fact]
+    public void ConnectTimeout_defaults_to_30()
+        => new PostgreSqlDataPortCommunication().ConnectTimeout.Should().Be(30);
+
+    [Fact]
+    public void ConnectTimeout_is_included_in_connection_string()
+        => CreateCommunication(c => c.ConnectTimeout = 60).ToConnectionString().Should().Contain("Timeout=60");
+
+    [Fact]
+    public void Sets_ConnectTimeout_default_in_connection_string()
+        => CreateCommunication().ToConnectionString().Should().Contain("Timeout=30");
+
     private static PostgreSqlDataPortCommunication CreateCommunication(Action<PostgreSqlDataPortCommunication>? configure = default)
     {
         PostgreSqlDataPortCommunication communication = new() { Host = "host", Port = 1234, };

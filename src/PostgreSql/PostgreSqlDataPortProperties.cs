@@ -31,4 +31,10 @@ internal sealed class PostgreSqlDataPortProperties(PostgreSqlDataPortCommunicati
         get => communication.Password;
         set => communication.Password = value;
     }
+
+    internal int ConnectTimeout
+    {
+        get => communication.ConnectTimeout;
+        set => communication.ConnectTimeout = value;
+    }
 }
