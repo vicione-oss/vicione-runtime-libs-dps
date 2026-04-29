@@ -23,10 +23,8 @@ Interoperability tests:
   variables:
     FILTER: 'Category=Interoperability'
     DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ''
   services:
-    - name: jfrog.i40.ifm-datalink.net:443/docker-remote/docker:dind
-      alias: docker
+    - docker:dind
   coverage: '/no coverage/'
   artifacts:
     reports:
