@@ -17,6 +17,14 @@ public sealed class HttpClientDataPortOutgoing : IExternalOutgoingCommunication<
     private readonly Uri _baseAddress;
     private readonly HttpClient _httpClient;
     private readonly HttpTreeHandlerOutgoing _treeHandlerOutgoing;
+    private readonly TaskPipeline<bool> _resiliencePipeline = new(3, retrycount =>
+        retrycount switch
+        {
+            0 => TimeSpan.Zero,
+            1 => TimeSpan.FromSeconds(1),
+            2 => TimeSpan.FromSeconds(5),
+            _ => TimeSpan.FromSeconds(10),
+        }, false);
 
     public HttpClientDataPortOutgoing(HttpClientDataPortCommunication communication, ILogger<HttpClientDataPortOutgoing> logger) : this(communication, logger, CreateHttpClient)
     { }
@@ -69,13 +77,27 @@ public sealed class HttpClientDataPortOutgoing : IExternalOutgoingCommunication<
 
     public async Task SendAsync(ulong engineCycle, IReadOnlyCollection<ExternalValue> values, CancellationToken cancellationToken)
     {
-        try
+        Exception? lastException = null;
+
+        if (!await _resiliencePipeline.ExecuteAsync(async ct => await Send(values, ct), cancellationToken).ConfigureAwait(false) && lastException is not null)
         {
-            await _treeHandlerOutgoing.Send(values, cancellationToken);
+            _logger.LogSendFailed(_baseAddress.OriginalString, lastException);
         }
-        catch (Exception ex)
+
+        async Task<bool> Send(IReadOnlyCollection<ExternalValue> values, CancellationToken ct)
         {
-            _logger.LogSendFailed(_baseAddress.OriginalString, ex);
+            try
+            {
+                await _treeHandlerOutgoing.Send(values, ct);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+
+                return false;
+            }
         }
     }
 }
