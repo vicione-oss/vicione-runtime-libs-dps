@@ -164,7 +164,7 @@ Nodes:
     Type                   : DataPortTreeNode
     Name                   : "JSON Column"
     Description            : "JSON column in the database table"
-    Icon                   : datapoint
+    Icon                   : folder
     PropertyCategories     :
       - Id                 : Other
         Properties         :
@@ -223,7 +223,7 @@ Nodes:
     Type: DataPortTreeNode
     Name: "Json Object"
     Description: "Json object in the json structure"
-    Icon: datapoint
+    Icon: folder
     ChildNodes:
       - Id                 : JsonObject
       - Id                 : JsonBool

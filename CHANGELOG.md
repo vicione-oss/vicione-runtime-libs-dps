@@ -6,6 +6,10 @@
 
 - Add `DisableStructureValidation` option to SQL DataPorts
 
+### Changed
+
+- Change `Json Column` and `Json Object` Icons to `folder` in SQL DataPorts
+
 ### Fixed
 
 - NotNull is now true when a column is a PrimaryKey or AutoIncrement in SQL DataPorts
