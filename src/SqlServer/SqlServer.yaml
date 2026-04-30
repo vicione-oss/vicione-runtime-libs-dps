@@ -54,7 +54,6 @@ Nodes:
   # -------------------- SingleDatabaseInstance ---------------------------
 
   - Id                     : SqlServer-SingleDatabaseInstance
-    MappingId              : SingleDatabaseInstance
     Type                   : DataPortNode
     Name                   : "Single Database Connection"
     Description            : "Single Database Connection"

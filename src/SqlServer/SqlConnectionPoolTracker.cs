@@ -11,7 +11,7 @@ namespace ViciOne.Suite.DataPort;
 /// physically released before the AssemblyLoadContext is unloaded, preventing the native SNI
 /// teardown crash (0xC0000005 in SNIPacketRelease).
 /// </summary>
-internal static class SqlConnectionPoolTracker // This class is needed because Unloading in Engine Host is too soon and a lib is unloaded before the SqlConnection is problely cleand up.
+internal static class SqlConnectionPoolTracker // This class is needed because Unloading in Engine Host is too soon and a lib is unloaded before the SqlConnection is properly cleaned up.
 {
     private static readonly Lock s_lock = new();
     private static readonly Dictionary<string, int> s_entries = [];

@@ -18,6 +18,7 @@ internal abstract class SqlServerRelationalDatabase(SqlServerDataPortCommunicati
     protected readonly ILogger _logger = logger;
     private SqlConnection? _connection;
     private readonly Dictionary<TableInfo, DataTable> _tables = [];
+    private string _connectionString = string.Empty;
 
     internal static SqlServerRelationalDatabase Create(SqlServerDataPortCommunication communication, ILogger logger)
         => communication.DesignId == SingleDatabaseInstanceNodeId
@@ -40,9 +41,10 @@ internal abstract class SqlServerRelationalDatabase(SqlServerDataPortCommunicati
         {
             if (_connection is null)
             {
-                _connection = new(_communication.ToConnectionString());
-                SqlConnectionPoolTracker.Register(_communication.ToConnectionString());
+                _connectionString = _communication.ToConnectionString();
+                _connection = new(_connectionString);
                 await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                SqlConnectionPoolTracker.Register(_connectionString);
             }
         }
     }
@@ -69,10 +71,16 @@ internal abstract class SqlServerRelationalDatabase(SqlServerDataPortCommunicati
     {
         if (_connection is not null)
         {
-            await _connection.CloseAsync().ConfigureAwait(false);
-            SqlConnectionPoolTracker.Unregister(_communication.ToConnectionString(), _connection);
-            await _connection.DisposeAsync().ConfigureAwait(false);
-            _connection = null;
+            try
+            {
+                await _connection.CloseAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                SqlConnectionPoolTracker.Unregister(_connectionString, _connection);
+                await _connection.DisposeAsync().ConfigureAwait(false);
+                _connection = null;
+            }
         }
 
         foreach (var table in _tables.Values)

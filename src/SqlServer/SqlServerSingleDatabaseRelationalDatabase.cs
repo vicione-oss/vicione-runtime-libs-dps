@@ -44,7 +44,7 @@ internal sealed class SqlServerSingleDatabaseRelationalDatabase(SqlServerDataPor
         using var command = await OpenCommandAsync(cancellationToken).ConfigureAwait(false);
 
         if (missingDatabases.Count != 0)
-            _logger.LogWarning("SingleDatabaseInstance node is active – automatic database creation is not supported. Ensure the database already exists before connecting.");
+            _logger.SingleDatabaseInstanceNoDatabaseCreation();
 
         foreach (var database in missingSchemas)
         {
