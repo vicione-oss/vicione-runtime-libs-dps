@@ -177,6 +177,43 @@ public class MySqlExtensions_Unify_Nodes
         column.Name.Should().Be("struct");
         column.Type.Should().Be("json");
     }
+
+    [Theory]
+    [InlineData(RelationalDatabaseNodeProperty.PrimaryKey)]
+    [InlineData(RelationalDatabaseNodeProperty.AutoIncrement)]
+    public void Froces_NotNull_to_true_when_PrimaryKey_or_AutoIncrement_is_true(string implicitNotNullProperty)
+    {
+        Node schemaNode = new()
+        {
+            Id = Guid.NewGuid(),
+            DesignId = RelationalDatabaseNodeDesignId.SchemaNodeId,
+            Name = "schema",
+        };
+        Node tableNode = new()
+        {
+            Id = Guid.NewGuid(),
+            ParentId = schemaNode.Id,
+            DesignId = RelationalDatabaseNodeDesignId.TableNodeId,
+            Name = "table",
+        };
+        Node columnNode = new()
+        {
+            Id = Guid.NewGuid(),
+            ParentId = tableNode.Id,
+            DesignId = RelationalDatabaseNodeDesignId.ColumnNodeId,
+            Properties = new() { { implicitNotNullProperty, new() { Value = true, } } },
+            Name = "id",
+            ValueType = typeof(int),
+        };
+        var nodes = new[] { schemaNode, tableNode, columnNode, };
+
+        var schemas = MySqlExtensions.Unify(nodes);
+
+        var column = schemas.Should().ContainSingle().Which
+            .Tables.Should().ContainSingle().Which
+            .Columns.Should().ContainSingle().Which;
+        column.NotNull.Should().BeTrue();
+    }
 }
 
 public class MySqlExtensions_ToSchemas

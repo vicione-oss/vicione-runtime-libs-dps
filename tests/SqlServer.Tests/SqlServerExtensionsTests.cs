@@ -192,6 +192,51 @@ public class SqlServerExtensions_Unify_Nodes
         column.Name.Should().Be("struct");
         column.Type.Should().Be("text");
     }
+
+    [Theory]
+    [InlineData(RelationalDatabaseNodeProperty.PrimaryKey)]
+    [InlineData(RelationalDatabaseNodeProperty.AutoIncrement)]
+    public void Froces_NotNull_to_true_when_PrimaryKey_or_AutoIncrement_is_true(string implicitNotNullProperty)
+    {
+        Node databaseNode = new()
+        {
+            Id = Guid.NewGuid(),
+            DesignId = RelationalDatabaseNodeDesignId.DatabaseNodeId,
+            Name = "db",
+        };
+        Node schemaNode = new()
+        {
+            Id = Guid.NewGuid(),
+            ParentId = databaseNode.Id,
+            DesignId = RelationalDatabaseNodeDesignId.SchemaNodeId,
+            Name = "schema",
+        };
+        Node tableNode = new()
+        {
+            Id = Guid.NewGuid(),
+            ParentId = schemaNode.Id,
+            DesignId = RelationalDatabaseNodeDesignId.TableNodeId,
+            Name = "table",
+        };
+        Node columnNode = new()
+        {
+            Id = Guid.NewGuid(),
+            ParentId = tableNode.Id,
+            DesignId = RelationalDatabaseNodeDesignId.ColumnNodeId,
+            Properties = new() { { implicitNotNullProperty, new() { Value = true, } } },
+            Name = "id",
+            ValueType = typeof(int),
+        };
+        var nodes = new[] { databaseNode, schemaNode, tableNode, columnNode, };
+
+        var databases = SqlServerExtensions.Unify(nodes);
+
+        var column = databases.Should().ContainSingle().Which
+            .Schemas.Should().ContainSingle().Which
+            .Tables.Should().ContainSingle().Which
+            .Columns.Should().ContainSingle().Which;
+        column.NotNull.Should().BeTrue();
+    }
 }
 
 public class SqlServerExtensions_ToSchemas

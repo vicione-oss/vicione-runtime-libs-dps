@@ -66,12 +66,15 @@ internal static class PostgreSqlExtensions
                 foreach (var column in columnNodes.Where(sn => sn.ParentId == table.Id))
                 {
                     var isJsonColumn = column.IsJsonColumn(nodeParentsCache);
+                    var primaryKey = column.GetPropertyValueOrDefault(RelationalDatabaseNodeProperty.PrimaryKey, false);
+                    var autoIncrement = column.GetPropertyValueOrDefault(RelationalDatabaseNodeProperty.AutoIncrement, false);
+                    var notNull = column.GetPropertyValueOrDefault(RelationalDatabaseNodeProperty.NotNull, false) || primaryKey || autoIncrement;
                     columns.Add(new(
                         column.Name,
                         ConvertType(isJsonColumn ? typeof(JsonNode) : column.ValueType ?? throw new InvalidOperationException("The column must have a type.")),
-                        column.GetPropertyValueOrDefault(RelationalDatabaseNodeProperty.PrimaryKey, false),
-                        column.GetPropertyValueOrDefault(RelationalDatabaseNodeProperty.NotNull, false),
-                        column.GetPropertyValueOrDefault(RelationalDatabaseNodeProperty.AutoIncrement, false)));
+                        primaryKey,
+                        notNull,
+                        autoIncrement));
                 }
 
                 tables.Add(new(table.Name, columns));

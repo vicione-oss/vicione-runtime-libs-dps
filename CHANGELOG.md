@@ -6,6 +6,10 @@
 
 - Add `DisableStructureValidation` option to SQL DataPorts
 
+### Fixed
+
+- NotNull is now true when a column is a PrimaryKey or AutoIncrement in SQL DataPorts
+
 ## 0.31.0 - 2026-04-22
 
 ### Fixed
