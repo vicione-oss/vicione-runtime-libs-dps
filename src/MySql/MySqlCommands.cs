@@ -46,7 +46,7 @@ internal static class MySqlCommands
         };
 
     private static string ComposeTableName(string schema, string table)
-        => $"`{schema}`.`{table}`";
+        => $"{IdentifierQuoter.QuoteForMySql(schema)}.{IdentifierQuoter.QuoteForMySql(table)}";
 
     internal static string ComposeSelectStructureCommandText()
     {
@@ -78,7 +78,7 @@ internal static class MySqlCommands
     }
 
     internal static string ComposeCreateSchemaCommandText(Schema schema)
-        => $"CREATE SCHEMA `{schema.Name}`;";
+        => $"CREATE SCHEMA {IdentifierQuoter.QuoteForMySql(schema.Name)};";
 
     internal static string ComposeCreateTableCommandText(Schema schema, Table table)
     {
@@ -91,7 +91,7 @@ internal static class MySqlCommands
 
         foreach (var column in table.Columns)
         {
-            command.AppendFormat(CultureInfo.InvariantCulture, "`{0}` {1}", column.Name, column.Type);
+            command.Append(CultureInfo.InvariantCulture, $"{IdentifierQuoter.QuoteForMySql(column.Name)} {column.Type}");
 
             if (column.AutoIncrement)
                 command.Append(" AUTO_INCREMENT");
@@ -114,8 +114,8 @@ internal static class MySqlCommands
     internal static string ComposeInsertCommand(TableInfo table, IReadOnlyCollection<ColumnInfo> columnInfos)
     {
         StringBuilder command = new();
-        command.AppendFormat(CultureInfo.InvariantCulture, "INSERT INTO `{0}`.`{1}` (", table.Schema, table.Table);
-        command.AppendJoin(',', columnInfos.Select(c => $"`{c.Name}`"));
+        command.Append(CultureInfo.InvariantCulture, $"INSERT INTO {IdentifierQuoter.QuoteForMySql(table.Schema)}.{IdentifierQuoter.QuoteForMySql(table.Table)} (");
+        command.AppendJoin(',', columnInfos.Select(c => IdentifierQuoter.QuoteForMySql(c.Name)));
         command.Append(") VALUES (");
         command.AppendJoin(',', columnInfos.Select(c => $"@{c.Name}"));
         command.Append(");");

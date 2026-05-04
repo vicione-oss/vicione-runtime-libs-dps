@@ -56,7 +56,7 @@ internal static class SqlServerCommands
         => ComposeTableNameTwoPart(tableInfo.Schema, tableInfo.Table);
 
     internal static string ComposeTableNameTwoPart(string schema, string table)
-        => $"\"{schema}\".\"{table}\"";
+        => $"{IdentifierQuoter.QuoteForSqlServer(schema)}.{IdentifierQuoter.QuoteForSqlServer(table)}";
 
     internal static string ComposeSelectStructureCommandText(string database)
     {
@@ -96,16 +96,16 @@ internal static class SqlServerCommands
     }
 
     internal static string ComposeCreateDatabaseCommandText(Database database)
-        => $"CREATE DATABASE \"{database.Name}\";";
+        => $"CREATE DATABASE {IdentifierQuoter.QuoteForSqlServer(database.Name)};";
 
     internal static string ComposeCreateSchemaCommandText(Schema schema)
-        => $"CREATE SCHEMA \"{schema.Name}\";";
+        => $"CREATE SCHEMA {IdentifierQuoter.QuoteForSqlServer(schema.Name)};";
 
     internal static string ComposeUseDatabaseCommandText(Database database)
         => ComposeUseDatabaseCommandText(database.Name);
 
     internal static string ComposeUseDatabaseCommandText(string database)
-        => $"USE \"{database}\";";
+        => $"USE {IdentifierQuoter.QuoteForSqlServer(database)};";
 
     internal static string ComposeCreateTableCommandText(Schema schema, Table table)
     {
@@ -121,7 +121,7 @@ internal static class SqlServerCommands
 
         foreach (var column in table.Columns)
         {
-            command.AppendFormat(CultureInfo.InvariantCulture, "\"{0}\" {1}", column.Name, column.Type);
+            command.Append(CultureInfo.InvariantCulture, $"{IdentifierQuoter.QuoteForSqlServer(column.Name)} {column.Type}");
 
             if (column.AutoIncrement)
                 command.Append(" IDENTITY(1,1)");

@@ -35,14 +35,14 @@ internal static class SqliteCommands
     private static string ComposeCreateTableCommandText(Table table)
     {
         StringBuilder command = new();
-        command.AppendFormat(CultureInfo.InvariantCulture, "CREATE TABLE \"{0}\" (", table.Name);
+        command.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {IdentifierQuoter.QuoteForAnsiSql(table.Name)} (");
         command.AppendLine();
 
         var last = table.Columns.Count - 1;
         var i = 0;
         foreach (var column in table.Columns)
         {
-            command.AppendFormat(CultureInfo.InvariantCulture, "\"{0}\" {1}", column.Name, column.Type);
+            command.Append(CultureInfo.InvariantCulture, $"{IdentifierQuoter.QuoteForAnsiSql(column.Name)} {column.Type}");
 
             if (column.PrimaryKey)
                 command.Append(" PRIMARY KEY");
@@ -64,9 +64,9 @@ internal static class SqliteCommands
     {
         StringBuilder commandText = new();
         commandText.Append("INSERT INTO ");
-        commandText.AppendFormat(CultureInfo.InvariantCulture, "\"{0}\"", table);
+        commandText.Append(IdentifierQuoter.QuoteForAnsiSql(table));
         commandText.Append(" (");
-        commandText.AppendJoin(',', columnInfos.Select(c => $"\"{c.Name}\""));
+        commandText.AppendJoin(',', columnInfos.Select(c => IdentifierQuoter.QuoteForAnsiSql(c.Name)));
         commandText.Append(") VALUES (");
         commandText.AppendJoin(',', columnInfos.Select(c => $"@{c.Name}"));
         commandText.Append(");");
