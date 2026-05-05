@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -15,8 +14,6 @@ public abstract class RelationalDatabase : IDisposable
 {
     private const int QueueSize = 100_000;
 
-    private static readonly SearchValues<char> s_forbiddenChars = SearchValues.Create(['\0', '\'', '"', '\b', '\n', '\r', '\t', '\\', '%', '$', '_', ';', ',', ' ', '@', '`',]);
-
     private readonly RelationalDatabaseCommunication _dataPortCommunication;
     private readonly ILogger _logger;
     private Dictionary<string, ColumnInfo> _channelColumnInfo = [];
@@ -24,9 +21,9 @@ public abstract class RelationalDatabase : IDisposable
     private readonly Dictionary<string, Guid> _channelColumnNodes;
     private readonly ManagedQueuePipeline<RowData>? _queue;
 
-    protected RelationalDatabase(RelationalDatabaseCommunication dataPortCommunication, ILogger logger)
+    protected RelationalDatabase(RelationalDatabaseCommunication dataPortCommunication, ILogger logger, int maxIdentifierLength = int.MaxValue)
     {
-        ValidateNodeNames(dataPortCommunication.Nodes);
+        ValidateNodeNames(dataPortCommunication.Nodes, maxIdentifierLength);
 
         var nodeParentsCache = dataPortCommunication.Nodes.CreateNodeParentsCache();
         var routes = dataPortCommunication.Nodes
@@ -133,10 +130,10 @@ public abstract class RelationalDatabase : IDisposable
         }
     }
 
-    internal static void ValidateNodeNames(IReadOnlyCollection<INode> nodes)
+    internal static void ValidateNodeNames(IReadOnlyCollection<INode> nodes, int maxIdentifierLength = int.MaxValue)
     {
         var inappropriateNodes = nodes
-            .Where(n => ContainsInappropriateSign(n.Name))
+            .Where(n => ContainsInappropriateSign(n.Name) || n.Name.Length > maxIdentifierLength)
             .ToArray();
 
         if (inappropriateNodes.Length != 0)
@@ -144,7 +141,7 @@ public abstract class RelationalDatabase : IDisposable
     }
 
     internal static bool ContainsInappropriateSign(string name)
-        => name.AsSpan().IndexOfAny(s_forbiddenChars) != -1;
+        => name.AsSpan().IndexOfAnyInRange('\x00', '\x1F') != -1 || name.Contains('\x7F', StringComparison.Ordinal);
 
     internal static string ComposeMessage(IReadOnlyCollection<Database> databases)
     {

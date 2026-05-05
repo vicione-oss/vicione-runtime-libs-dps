@@ -11,7 +11,7 @@ using ViciOne.DataPort.Communication;
 
 namespace ViciOne.Suite.DataPort;
 
-internal sealed class MySqlRelationalDatabase(MySqlDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger)
+internal sealed class MySqlRelationalDatabase(MySqlDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger, 64)
 {
     private readonly MySqlDataPortCommunication _communication = communication;
     private readonly ILogger _logger = logger;

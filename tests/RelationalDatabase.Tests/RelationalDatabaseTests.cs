@@ -161,23 +161,26 @@ public class ContainsInappropriateSign
     [InlineData("Main.MyColumn")]
     [InlineData("Main.MyColumn-Sub")]
     [InlineData("Hello+World#2303")]
+    [InlineData("Column 'Name'")]
+    [InlineData("\"Quoted\"")]
+    [InlineData("Hello World")]
+    [InlineData("$100")]
+    [InlineData("%discount")]
+    [InlineData("a,b")]
+    [InlineData("a;b")]
+    [InlineData("a`b")]
     public void Returns_false_if_value_is_appropriate(string value)
         => RelationalDatabase.ContainsInappropriateSign(value).Should().BeFalse();
 
     [Theory]
-    [InlineData("\"MyColumn\"")]
-    [InlineData("'MyColumn'")]
     [InlineData("Hello\n")]
     [InlineData("Hello\r")]
     [InlineData("Hello\tWorld")]
-    [InlineData("\\Hello")]
-    [InlineData("$Hello")]
-    [InlineData("%Hello")]
-    [InlineData("Hello World")]
     [InlineData("Hello\b")]
     [InlineData("Hello\0")]
-    [InlineData("Hello,")]
-    [InlineData("Hello;")]
+    [InlineData("Hello\x01")]
+    [InlineData("Hello\x1F")]
+    [InlineData("Hello\x7F")]
     public void Returns_true_if_value_is_inappropriate(string value)
         => RelationalDatabase.ContainsInappropriateSign(value).Should().BeTrue();
 }
@@ -192,7 +195,7 @@ public class ValidateNodeNames
             new()
             {
                 Id = Guid.Parse("bc6ba8c1-dfe7-492c-aacd-9497d10f5a7a"),
-                Name = "Test'",
+                Name = "Test\x01",
             },
             new()
             {
@@ -202,7 +205,41 @@ public class ValidateNodeNames
         };
         var act = () => RelationalDatabase.ValidateNodeNames(nodes);
 
-        act.Should().Throw<InvalidOperationException>().WithMessage($"*names*inappropriate*Test'*bc6ba8c1-dfe7-492c-aacd-9497d10f5a7a*Hello\n*5ac4ed19-8ba1-43f3-b042-79b6457b98d2*");
+        act.Should().Throw<InvalidOperationException>().WithMessage($"*names*inappropriate*Test\x01*bc6ba8c1-dfe7-492c-aacd-9497d10f5a7a*Hello\n*5ac4ed19-8ba1-43f3-b042-79b6457b98d2*");
+    }
+
+    [Fact]
+    public void Throws_when_name_exceeds_max_length()
+    {
+        var longName = new string('a', 65);
+        var nodes = new Node[]
+        {
+            new()
+            {
+                Id = Guid.Parse("bc6ba8c1-dfe7-492c-aacd-9497d10f5a7a"),
+                Name = longName,
+            },
+        };
+        var act = () => RelationalDatabase.ValidateNodeNames(nodes, maxIdentifierLength: 64);
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*names*inappropriate*");
+    }
+
+    [Fact]
+    public void Does_not_throw_when_name_equals_max_length()
+    {
+        var name = new string('a', 64);
+        var nodes = new Node[]
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+            },
+        };
+        var act = () => RelationalDatabase.ValidateNodeNames(nodes, maxIdentifierLength: 64);
+
+        act.Should().NotThrow();
     }
 }
 

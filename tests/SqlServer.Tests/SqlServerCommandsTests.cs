@@ -17,10 +17,10 @@ public class SqlServerCommands_ComposeCreateTableCommandText
         Schema schema = new("dbo", [table,]);
 
         SqlServerCommands.ComposeCreateTableCommandText(schema, table).Should().Be("""
-        CREATE TABLE "dbo"."users" (
-        "id" int IDENTITY(1,1) PRIMARY KEY NOT NULL,
-        "name" text,
-        "age" int NOT NULL);
+        CREATE TABLE [dbo].[users] (
+        [id] int IDENTITY(1,1) PRIMARY KEY NOT NULL,
+        [name] text,
+        [age] int NOT NULL);
         """.ReplaceLineEndings());
     }
 }
@@ -32,6 +32,6 @@ public class SqlServerCommands_ComposeTableNameTwoPart
     {
         TableInfo tableInfo = new("MyDB", "dbo", "users");
 
-        SqlServerCommands.ComposeTableNameTwoPart(tableInfo).Should().Be("\"dbo\".\"users\"");
+        SqlServerCommands.ComposeTableNameTwoPart(tableInfo).Should().Be("[dbo].[users]");
     }
 }

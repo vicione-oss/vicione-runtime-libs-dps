@@ -8,6 +8,7 @@
 - Add `ConnectTimeout` option to SQL-Server DataPort
 - Add `DisableStructureValidation` option to SQL DataPorts
 - Add `SqlConnectionPoolTracker` for SQL-Server DataPort testing on windows
+- Add Quote Always Strategy for database part names for SQL DataPorts
 
 ### Changed
 

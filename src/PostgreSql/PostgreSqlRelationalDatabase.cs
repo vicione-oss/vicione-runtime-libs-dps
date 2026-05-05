@@ -10,7 +10,7 @@ using ViciOne.DataPort.Communication;
 
 namespace ViciOne.Suite.DataPort;
 
-internal sealed class PostgreSqlRelationalDatabase(PostgreSqlDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger)
+internal sealed class PostgreSqlRelationalDatabase(PostgreSqlDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger, 63)
 {
     private readonly PostgreSqlDataPortCommunication _communication = communication;
     private readonly ILogger _logger = logger;

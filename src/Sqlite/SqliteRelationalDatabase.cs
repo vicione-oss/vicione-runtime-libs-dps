@@ -10,7 +10,8 @@ using ViciOne.DataPort.Communication;
 
 namespace ViciOne.Suite.DataPort;
 
-internal sealed class SqliteRelationalDatabase(SqliteDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger)
+// Sqlite has no limitation on identifier length, but it is set to 128 to match SqlServer.
+internal sealed class SqliteRelationalDatabase(SqliteDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger, 128) 
 {
     private readonly SqliteDataPortCommunication _communication = communication;
     private readonly ILogger _logger = logger;

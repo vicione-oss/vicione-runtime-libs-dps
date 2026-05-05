@@ -10,7 +10,7 @@ using ViciOne.DataPort.Communication;
 
 namespace ViciOne.Suite.DataPort;
 
-internal abstract class SqlServerRelationalDatabase(SqlServerDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger)
+internal abstract class SqlServerRelationalDatabase(SqlServerDataPortCommunication communication, ILogger logger) : RelationalDatabase(communication, logger, 128)
 {
     internal const string SingleDatabaseInstanceNodeId = "SqlServer-SingleDatabaseInstance";
 
