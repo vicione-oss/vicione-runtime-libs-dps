@@ -12,6 +12,7 @@ internal static class SqlServerDataPortCommunicationExtensions
             DataSource = properties.Port.HasValue ? $"{properties.Host},{properties.Port}" : properties.Host,
             InitialCatalog = properties.Database,
             TrustServerCertificate = true,
+            ConnectTimeout = communication.ConnectTimeout,
         };
         if (properties.UserID is not null)
             builder.UserID = properties.UserID;

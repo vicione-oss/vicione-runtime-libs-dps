@@ -9,7 +9,7 @@ namespace ViciOne.Suite.DataPort;
 
 public sealed class SqlServerDataPortOutgoing(SqlServerDataPortCommunication communication, ILogger<SqlServerDataPortOutgoing> logger) : IExternalOutgoingCommunication<SqlServerDataPortCommunication>, IDisposable
 {
-    private readonly SqlServerRelationalDatabase _database = new(communication, logger);
+    private readonly SqlServerRelationalDatabase _database = SqlServerRelationalDatabase.Create(communication, logger);
 
     public Task ConnectAsync(CancellationToken cancellationToken)
         => _database.ConnectAsync(cancellationToken);

@@ -15,13 +15,23 @@ public class SqlServerCommands_ComposeCreateTableCommandText
             new("age", "int", false, true, false),
         ]);
         Schema schema = new("dbo", [table,]);
-        Database database = new("MyDB", [schema,]);
 
-        SqlServerCommands.ComposeCreateTableCommandText(database, schema, table).Should().Be("""
-        CREATE TABLE "MyDB"."dbo"."users" (
+        SqlServerCommands.ComposeCreateTableCommandText(schema, table).Should().Be("""
+        CREATE TABLE "dbo"."users" (
         "id" int IDENTITY(1,1) PRIMARY KEY NOT NULL,
         "name" text,
         "age" int NOT NULL);
         """.ReplaceLineEndings());
+    }
+}
+
+public class SqlServerCommands_ComposeTableNameTwoPart
+{
+    [Fact]
+    public void Returns_two_part_name()
+    {
+        TableInfo tableInfo = new("MyDB", "dbo", "users");
+
+        SqlServerCommands.ComposeTableNameTwoPart(tableInfo).Should().Be("\"dbo\".\"users\"");
     }
 }

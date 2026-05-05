@@ -8,7 +8,7 @@ namespace ViciOne.Suite.DataPort;
 internal static class SqlServerCommands
 {
     internal const string SelectAllDatabases = "SELECT name FROM sys.sysdatabases;";
-    private const string SelectAllSchemasWithInformation = """
+    internal const string SelectAllSchemasWithInformation = """
     SELECT
         s.name AS 'schema',
         t.name AS 'table',
@@ -52,11 +52,11 @@ internal static class SqlServerCommands
             _ => dataType,
         };
 
-    internal static string ComposeTableName(TableInfo tableInfo)
-        => ComposeTableName(tableInfo.Database, tableInfo.Schema, tableInfo.Table);
+    internal static string ComposeTableNameTwoPart(TableInfo tableInfo)
+        => ComposeTableNameTwoPart(tableInfo.Schema, tableInfo.Table);
 
-    private static string ComposeTableName(string database, string schema, string table)
-        => $"\"{database}\".\"{schema}\".\"{table}\"";
+    internal static string ComposeTableNameTwoPart(string schema, string table)
+        => $"\"{schema}\".\"{table}\"";
 
     internal static string ComposeSelectStructureCommandText(string database)
     {
@@ -76,16 +76,19 @@ internal static class SqlServerCommands
         return commandText.ToString();
     }
 
-    internal static string ComposeCreateTablesCommandText(IReadOnlyCollection<Database> databases)
+    internal static string ComposeCreateTablesCommandText(IReadOnlyCollection<Database> databases, bool singleDatabase = false)
     {
         StringBuilder commandText = new();
 
         foreach (var database in databases)
         {
+            if (!singleDatabase)
+                commandText.AppendLine(ComposeUseDatabaseCommandText(database));
+
             foreach (var schema in database.Schemas)
             {
                 foreach (var table in schema.Tables)
-                    commandText.AppendLine(ComposeCreateTableCommandText(database, schema, table));
+                    commandText.AppendLine(ComposeCreateTableCommandText(schema, table));
             }
         }
 
@@ -104,11 +107,13 @@ internal static class SqlServerCommands
     internal static string ComposeUseDatabaseCommandText(string database)
         => $"USE \"{database}\";";
 
-    internal static string ComposeCreateTableCommandText(Database database, Schema schema, Table table)
+    internal static string ComposeCreateTableCommandText(Schema schema, Table table)
     {
         StringBuilder command = new();
 
-        command.AppendFormat(CultureInfo.InvariantCulture, "CREATE TABLE {0} (", ComposeTableName(database.Name, schema.Name, table.Name));
+        var tableName = ComposeTableNameTwoPart(schema.Name, table.Name);
+
+        command.AppendFormat(CultureInfo.InvariantCulture, "CREATE TABLE {0} (", tableName);
         command.AppendLine();
 
         var last = table.Columns.Count - 1;

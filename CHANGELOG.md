@@ -4,11 +4,15 @@
 
 ### Added
 
+- Add `SqlServer-SingleDatabaseInstance` to SQL-Server DataPort
+- Add `ConnectTimeout` option to SQL-Server DataPort
 - Add `DisableStructureValidation` option to SQL DataPorts
+- Add `SqlConnectionPoolTracker` for SQL-Server DataPort testing on windows
 
 ### Changed
 
 - Change `Json Column` and `Json Object` Icons to `folder` in SQL DataPorts
+- Rename SQL-Server `Instance` to `Connection`
 
 ### Fixed
 
