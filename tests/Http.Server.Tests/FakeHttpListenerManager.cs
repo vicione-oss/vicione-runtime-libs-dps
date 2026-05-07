@@ -9,6 +9,7 @@ internal class FakeHttpListenerManager : IHttpListenerManager
 {
     public List<string> PostEndpoints = [];
     public List<string> GetEndpoints = [];
+    public Dictionary<string, Func<IHttpContext, Task>> CapturedPostHandlers = [];
 
     public Task CloseConnection(HttpServerDataPortCommunication communication) => Task.CompletedTask;
 
@@ -22,6 +23,7 @@ internal class FakeHttpListenerManager : IHttpListenerManager
     public Task MapPost(HttpServerDataPortCommunication communication, string path, Func<IHttpContext, Task> handler)
     {
         PostEndpoints.Add(path);
+        CapturedPostHandlers[path] = handler;
 
         return Task.CompletedTask;
     }

@@ -139,4 +139,86 @@ public class HttpClientDataPortOutgoing_
         payload.Should().NotBeNull();
         payload.Should().Be("""{"value":23,"$meta":{"value":"System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e"}}""");
     }
+
+    [Fact]
+    public async Task Logs_send_failure_after_all_retries()
+    {
+        HttpClientDataPortCommunication communication = new()
+        {
+            Nodes =
+            [
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "data",
+                    AffectedChannels = { "v1", },
+                    TransferredChannels = { "v1", },
+                    ValueType = typeof(int?),
+                    DesignId = HttpClientNodeDesignId.Path,
+                },
+            ],
+        };
+        _ = new HttpClientDataPortProperties(communication)
+        {
+            BaseAddress = "http://local",
+            PollInterval = TimeSpan.FromMilliseconds(500),
+        };
+        TestLogger<HttpClientDataPortOutgoing> logger = new(LogLevel.Warning);
+        int callCount = 0;
+        using SubstituteHttpMessageHandler messageHandler = new(_ =>
+        {
+            callCount++;
+            throw new HttpRequestException("simulated failure");
+        });
+
+        using var outgoing = new HttpClientDataPortOutgoing(communication, logger, () => new(messageHandler));
+
+        await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+        await outgoing.SendAsync(0, [new() { Channel = "v1", Value = 23, }], TestContext.Current.CancellationToken);
+
+        callCount.Should().Be(3);
+        logger.Calls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Does_not_log_when_send_succeeds_on_retry()
+    {
+        HttpClientDataPortCommunication communication = new()
+        {
+            Nodes =
+            [
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "data",
+                    AffectedChannels = { "v1", },
+                    TransferredChannels = { "v1", },
+                    ValueType = typeof(int?),
+                    DesignId = HttpClientNodeDesignId.Path,
+                },
+            ],
+        };
+        _ = new HttpClientDataPortProperties(communication)
+        {
+            BaseAddress = "http://local",
+            PollInterval = TimeSpan.FromMilliseconds(500),
+        };
+        TestLogger<HttpClientDataPortOutgoing> logger = new(LogLevel.Warning);
+        int callCount = 0;
+        using SubstituteHttpMessageHandler messageHandler = new(_ =>
+        {
+            callCount++;
+            if (callCount == 1)
+                throw new HttpRequestException("transient failure");
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        using var outgoing = new HttpClientDataPortOutgoing(communication, logger, () => new(messageHandler));
+
+        await outgoing.ConnectAsync(TestContext.Current.CancellationToken);
+        await outgoing.SendAsync(0, [new() { Channel = "v1", Value = 23, }], TestContext.Current.CancellationToken);
+
+        callCount.Should().Be(2);
+        logger.Calls.Should().Be(0);
+    }
 }
