@@ -53,7 +53,7 @@ public sealed class HttpServerDataPortIncoming : IExternalIncomingCommunication<
                 {
                     try
                     {
-                        var reader = new StreamReader(context.Request.InputStream);
+                        using var reader = new StreamReader(context.Request.InputStream);
                         var jsonNode = JsonNode.Parse(await reader.ReadToEndAsync());
 
                         List<ExternalValue> values = [];
@@ -70,6 +70,7 @@ public sealed class HttpServerDataPortIncoming : IExternalIncomingCommunication<
                     catch (Exception ex)
                     {
                         _logger.LogReceiveFailed(ex);
+                        context.Response.StatusCode = 500;
                     }
                 });
             }

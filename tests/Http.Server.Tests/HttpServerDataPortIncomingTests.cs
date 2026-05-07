@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Loader;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using AwesomeAssertions;
+using EmbedIO;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ViciOne.ManagedEngine.Runtime;
@@ -152,6 +155,58 @@ public class HttpServerDataPortIncoming_
         await incoming.ConnectAsync(TestContext.Current.CancellationToken);
 
         manager.PostEndpoints.Should().ContainSingle().Which.Should().Be("endpoint");
+    }
+
+    [Fact]
+    public async Task Returns_500_status_code_on_post_exception()
+    {
+        TestLogger<HttpServerDataPortIncoming> logger = new();
+        var part = Guid.NewGuid();
+        var endpoint = Guid.NewGuid();
+        List<Node> nodes =
+        [
+            new()
+            {
+                Id = part,
+                Name = "data",
+                DesignId = HttpServerNodeDesignId.PathPart,
+            },
+            new()
+            {
+                Id = endpoint,
+                ParentId = part,
+                Name = "post",
+                DesignId = HttpServerNodeDesignId.HttpPostEndpoint,
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ParentId = endpoint,
+                Name = "value",
+                AffectedChannels = { "v1", },
+                TransferredChannels = { "v1", },
+                ValueType = typeof(int?),
+                DesignId = HttpServerNodeDesignId.Path,
+            },
+        ];
+
+        HttpServerDataPortCommunication communication = new() { Nodes = nodes };
+        _ = new HttpServerDataPortProperties(communication) { BaseAddress = "http://local" };
+        var manager = new FakeHttpListenerManager();
+        var incoming = new HttpServerDataPortIncoming(communication, logger, AssemblyLoadContext.Default, manager);
+
+        await incoming.ConnectAsync(TestContext.Current.CancellationToken);
+
+        var response = Substitute.For<IHttpResponse>();
+        var request = Substitute.For<IHttpRequest>();
+        request.InputStream.Returns(new MemoryStream(Encoding.UTF8.GetBytes("not valid json!")));
+        var context = Substitute.For<IHttpContext>();
+        context.Request.Returns(request);
+        context.Response.Returns(response);
+
+        await manager.CapturedPostHandlers["data"](context);
+
+        response.Received(1).StatusCode = 500;
     }
 
     public class HttpServerDataPortIncoming_ProcessJsonNode

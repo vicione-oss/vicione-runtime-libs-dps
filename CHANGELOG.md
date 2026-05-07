@@ -5,7 +5,7 @@
 ### Added
 
 - Add `SqlServer-SingleDatabaseInstance` to SQL-Server DataPort
-- Add `ConnectTimeout` option to SQL-Server DataPort
+- Add `ConnectTimeout` option to SQL DataPorts
 - Add `DisableStructureValidation` option to SQL DataPorts
 - Add `SqlConnectionPoolTracker` for SQL-Server DataPort testing on windows
 - Add Quote Always Strategy for database part names for SQL DataPorts
@@ -18,6 +18,8 @@
 ### Fixed
 
 - NotNull is now true when a column is a PrimaryKey or AutoIncrement in SQL DataPorts
+- HTTP Client now retries on failure
+- HTTP Server now sends error code on post failure
 
 ## 0.31.0 - 2026-04-22
 

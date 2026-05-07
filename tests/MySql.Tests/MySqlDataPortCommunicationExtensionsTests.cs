@@ -23,6 +23,18 @@ public class MySqlDataPortCommunicationExtensions_ToConnectionString
     public void Sets_Password_if_available()
         => CreateCommunication(c => c.Password = "pw").ToConnectionString().Should().Contain("Password=pw");
 
+    [Fact]
+    public void ConnectTimeout_defaults_to_30()
+        => new MySqlDataPortCommunication().ConnectTimeout.Should().Be(30);
+
+    [Fact]
+    public void ConnectTimeout_is_included_in_connection_string()
+        => CreateCommunication(c => c.ConnectTimeout = 60).ToConnectionString().Should().Contain("Connection Timeout=60");
+
+    [Fact]
+    public void Sets_ConnectTimeout_default_in_connection_string()
+        => CreateCommunication().ToConnectionString().Should().Contain("Connection Timeout=30");
+
     private static MySqlDataPortCommunication CreateCommunication(Action<MySqlDataPortCommunication>? configure = default)
     {
         MySqlDataPortCommunication communication = new() { Server = "host", Port = 1234, Database = "db", };
