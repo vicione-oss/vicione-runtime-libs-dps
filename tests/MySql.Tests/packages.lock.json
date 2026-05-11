@@ -477,11 +477,11 @@
         "type": "Project",
         "dependencies": {
           "AwesomeAssertions": "[9.4.0, )",
-          "Common.Tests": "[0.31.0, )",
+          "Common.Tests": "[0.32.0, )",
           "JunitXml.TestLogger": "[7.0.2, )",
           "Microsoft.NET.Test.Sdk": "[18.3.0, )",
           "NSubstitute": "[5.3.0, )",
-          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.31.0, )",
+          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.32.0, )",
           "xunit.v3": "[3.2.2, )"
         }
       },
@@ -495,13 +495,13 @@
         "type": "Project",
         "dependencies": {
           "MySqlConnector": "[2.5.0, )",
-          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.31.0, )"
+          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.32.0, )"
         }
       },
       "ViciOne.Suite.DataPort.RelationalDatabase": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Suite.DataPort": "[0.31.0, )"
+          "ViciOne.Suite.DataPort": "[0.32.0, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {

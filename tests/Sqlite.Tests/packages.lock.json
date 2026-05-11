@@ -447,11 +447,11 @@
         "type": "Project",
         "dependencies": {
           "AwesomeAssertions": "[9.4.0, )",
-          "Common.Tests": "[0.31.0, )",
+          "Common.Tests": "[0.32.0, )",
           "JunitXml.TestLogger": "[7.0.2, )",
           "Microsoft.NET.Test.Sdk": "[18.3.0, )",
           "NSubstitute": "[5.3.0, )",
-          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.31.0, )",
+          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.32.0, )",
           "xunit.v3": "[3.2.2, )"
         }
       },
@@ -464,14 +464,14 @@
       "ViciOne.Suite.DataPort.RelationalDatabase": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Suite.DataPort": "[0.31.0, )"
+          "ViciOne.Suite.DataPort": "[0.32.0, )"
         }
       },
       "ViciOne.Suite.DataPort.Sqlite": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Data.Sqlite": "[10.0.5, )",
-          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.31.0, )"
+          "ViciOne.Suite.DataPort.RelationalDatabase": "[0.32.0, )"
         }
       },
       "Microsoft.Data.Sqlite": {

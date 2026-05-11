@@ -429,7 +429,7 @@
         "type": "Project",
         "dependencies": {
           "EmbedIO": "[3.5.2, )",
-          "ViciOne.Suite.DataPort": "[0.31.0, )"
+          "ViciOne.Suite.DataPort": "[0.32.0, )"
         }
       },
       "EmbedIO": {
