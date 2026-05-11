@@ -374,7 +374,7 @@
           "FluentValidation": "[12.1.0, )",
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.5, )",
           "Polly": "[8.6.6, )",
-          "ViciOne.Suite.DataPort": "[0.31.0, )"
+          "ViciOne.Suite.DataPort": "[0.32.0, )"
         }
       },
       "ViciOne.Suite.DataPort.Extensions.Testing": {
@@ -382,8 +382,8 @@
         "dependencies": {
           "AwesomeAssertions": "[9.4.0, )",
           "Microsoft.Extensions.Logging.Console": "[10.0.5, )",
-          "ViciOne.Suite.DataPort": "[0.31.0, )",
-          "ViciOne.Suite.DataPort.Extensions": "[0.31.0, )",
+          "ViciOne.Suite.DataPort": "[0.32.0, )",
+          "ViciOne.Suite.DataPort.Extensions": "[0.32.0, )",
           "ViciOne.TreeBuilder": "[1.0.0, )",
           "xunit.v3.extensibility.core": "[3.2.2, )"
         }

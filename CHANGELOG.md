@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 0.32.0 - 2026-05-11
 
 ### Added
 

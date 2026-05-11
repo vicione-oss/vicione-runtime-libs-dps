@@ -429,7 +429,7 @@
         "type": "Project",
         "dependencies": {
           "MQTTnet.Extensions": "[0.21.0, )",
-          "ViciOne.Suite.DataPort": "[0.31.0, )"
+          "ViciOne.Suite.DataPort": "[0.32.0, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
