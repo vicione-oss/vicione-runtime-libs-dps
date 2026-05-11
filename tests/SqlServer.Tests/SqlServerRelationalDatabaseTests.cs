@@ -114,7 +114,7 @@ public class SqlServerRelationalDatabase_SingleDatabaseInstance(SqlServerTestSys
 
         using var connection = new SqlConnection(sqlServer.Communication.ToConnectionString());
         await connection.OpenAsync(TestContext.Current.CancellationToken);
-        using var command = new SqlCommand("SELECT value FROM SingleDbWriteSchema.values", connection);
+        using var command = new SqlCommand("SELECT value FROM [SingleDbWriteSchema].[values]", connection);
         var result = await command.ExecuteScalarAsync(TestContext.Current.CancellationToken);
         result.Should().Be("test_value");
     }
