@@ -2,7 +2,6 @@
 
 Provider                                                       |Eingangsseite      |Ausgangsseite      |freie JSON Struktur    |Andere Provider spezifische Features
 -:|:-:|:-:|:-:|:-:
-[MQTT](#mqtt)                                                  |:heavy_check_mark: |:heavy_check_mark: |:heavy_check_mark:     |:heavy_check_mark:
 [HTTP Client](#http-client)                                                  |:heavy_check_mark: |:heavy_check_mark: |:heavy_check_mark:     |:heavy_check_mark: / :x:
 ||||
 [**Relationale Datenbank**](#relationale-datenbanken)
@@ -50,15 +49,6 @@ H|D1H|-
 - `Device 1` bekommt seine Werte über die Kanäle `Device 1 Temperature` und `Device 1 Humidity`
 - `Temperature` bekommt seinen Wert über den Kanal `Temperature`
 - `Humidity` wird einzeln nicht versendet
-
-## MQTT
-
-### Node Eigenschaften
-
-Richtung|Name|Typ|Werte
--|-|-|-
-Outgoing|Retain|`bool`|true/false
-Incoming,Outgoing|Serializer|`byte`|0-Inherited, 1-JSON, 2-PlainText
 
 ## HTTP Client
 

@@ -126,21 +126,6 @@ Prerelease OPCUA Server Raw:
   after_script:
     - !reference [ .push-metadata ]
 
-Prerelease MQTT Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Mqtt/Mqtt.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Mqtt'
-    METADATA_FILE: 'src/Mqtt/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
 Prerelease Sqlite Raw:
   extends: .dotnet-deploy-raw-rids
   variables:
@@ -335,21 +320,6 @@ Release OPCUA Server Raw:
     PROJECT: 'src/OpcUa.Server/OpcUa.Server.csproj'
     DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.OpcUa.Server'
     METADATA_FILE: 'src/OpcUa.Server/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Release MQTT Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Mqtt/Mqtt.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Mqtt'
-    METADATA_FILE: 'src/Mqtt/metadata.json'
     METADATA_VERSION_FILE: 'VERSION'
     METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
     METADATA_MIN_VERSION_KEY: 'MinCoreVersion'

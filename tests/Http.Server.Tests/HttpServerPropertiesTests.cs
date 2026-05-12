@@ -63,7 +63,6 @@ public class HttpServerPropertiesTests_AuthenticationType
     public static TheoryData<byte> Conversion() => new()
     {
         { (byte)AuthenticationType.Basic },
-        { (byte)AuthenticationType.Basic },
         { (byte)AuthenticationType.None },
     };
 }

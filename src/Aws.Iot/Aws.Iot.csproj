@@ -7,10 +7,11 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.IoT" />
+    <PackageReference Include="ViciOne.Suite.DataPort.Mqtt" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\Mqtt\Mqtt.csproj" />
+    <ProjectReference Include="..\DataPort\DataPort.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,13 +19,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="RemoveMqttYamlFromBuild" AfterTargets="Build">
-    <Delete Files="$(OutputPath)Mqtt.yaml" />
-  </Target>
-
-  <Target Name="RemoveMqttYamlFromPublish" AfterTargets="Publish">
-    <Delete Files="$(PublishDir)Mqtt.yaml" />
-  </Target>
 
 </Project>
