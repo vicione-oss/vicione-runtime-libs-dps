@@ -8,11 +8,10 @@
     <PropertyGroup>
         <!-- XML Documentation (generates .xml file included in package for IntelliSense) -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-      
+
         <!-- Include symbols and sources in main package -->
-        <DebugType>portable</DebugType>
+        <DebugType>embedded</DebugType>
         <EmbedAllSources>true</EmbedAllSources>
-        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- Package Metadata -->
         <PackageReadmeFile>README.md</PackageReadmeFile>
