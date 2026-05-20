@@ -13,7 +13,7 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.Mapping;
 /// <typeparam name="TDataPointGroup">The type of data point group.</typeparam>
 /// <typeparam name="TRootNode">The type of root configuration node.</typeparam>
 /// <typeparam name="TDataPortCommunication">The type of communication configuration.</typeparam>
-public interface IDataPointGroupsMapper<TDataPoint, TDataPointGroup, in TRootNode, TDataPortCommunication>
+public interface IDataPointGroupsMapper<TDataPoint, out TDataPointGroup, in TRootNode, TDataPortCommunication>
     : IDataPointsMapper<TRootNode, TDataPortCommunication, TDataPoint>
     where TDataPoint : IPollingDataPoint
     where TRootNode : IRootConfigurationNode<TDataPortCommunication>

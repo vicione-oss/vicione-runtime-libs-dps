@@ -1,4 +1,4 @@
-﻿namespace ViciOne.Suite.DataPort.Extensions.Outgoing.ValueValidation;
+﻿namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 
 /// <summary>
 /// Specifies the reason why a DataPointValue validation failed.
@@ -6,9 +6,9 @@
 public enum ValidationFailureReason
 {
     /// <summary>
-    /// Runtime value type does not match the configured data point type.
+    /// Value could not be converted to the data point's configured .NET type.
     /// </summary>
-    TypeMismatch,
+    ConversionFailure,
 
     /// <summary>
     /// Value is outside the valid range for the configured data type.

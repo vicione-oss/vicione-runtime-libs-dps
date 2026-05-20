@@ -61,12 +61,13 @@ Both `AffectedChannel` and `TransferredChannel` are records wrapping a single `s
 
 **Location**: `Model/DataPoints/PollFrequency.cs`
 
-Strongly-typed polling interval wrapping a `TimeSpan`. Has implicit conversions to/from `TimeSpan`.
+Strongly-typed polling interval wrapping a `TimeSpan`. Has implicit conversions to/from `TimeSpan`,
+plus `FromSeconds`/`FromMilliseconds` factory helpers.
 
 ```csharp
-var fast   = new PollFrequency(TimeSpan.FromMilliseconds(100));  // 10 Hz
-var medium = new PollFrequency(TimeSpan.FromMilliseconds(500));  // 2 Hz
-var slow   = new PollFrequency(TimeSpan.FromSeconds(1));         // 1 Hz
+var fast   = PollFrequency.FromMilliseconds(100);  // 10 Hz
+var medium = PollFrequency.FromMilliseconds(500);  // 2 Hz
+var slow   = PollFrequency.FromSeconds(1);         // 1 Hz
 ```
 
 ## Configuration Records

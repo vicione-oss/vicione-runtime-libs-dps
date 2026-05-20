@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,7 +53,7 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
     where TDeviceNode : IRootConfigurationNode<TCommunication>
     where TDataPoint : IPollingDataPoint
     where TDataPointGroup : IDataPointPollingGroup<TDataPoint>
-    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TDataPointValue : IDataPointValue
     where TReadClient : IReadClient<TDataPointGroup, TDataPointValue>
     where TClientInformation : IClientInformation
 {
@@ -181,30 +180,26 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
         null;
 
     /// <summary>
-    /// Converts a batch of data point values to external values.
-    /// Override to provide custom conversion logic.
+    /// Converts a batch of strongly-typed data point values to external values. The default implementation emits one
+    /// <see cref="ExternalValue"/> per transferred channel of each value's data point, using the untyped
+    /// <see cref="IDataPointValue.Value"/>. Override to customise the projection.
     /// </summary>
-    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
-    [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
     protected virtual IReadOnlyList<ExternalValue> ToExternalValues(
         IReadOnlyList<TDataPointValue> values,
         DateTime timestamp)
     {
-        var result = new List<ExternalValue>(values.Sum(dpv => dpv.DataPoint.Channels.TransferredChannels.Count));
+        var result = new List<ExternalValue>(values.Sum(dpv => dpv.DataPoint.Channels.Transferred.Count));
         foreach (var dataPointValue in values)
         {
-            foreach (var channel in dataPointValue.DataPoint.Channels.TransferredChannels)
-            {
+            foreach (var channel in dataPointValue.DataPoint.Channels.Transferred)
                 result.Add(ToExternalValue(timestamp, channel, dataPointValue));
-            }
         }
 
         return result;
     }
 
     /// <summary>
-    /// Converts a data point value to an external value.
-    /// Override to provide custom conversion logic.
+    /// Converts a single data point value to an external value for one of its transferred channels.
     /// </summary>
     protected virtual ExternalValue ToExternalValue(DateTime timestamp, TransferredChannel channel,
         TDataPointValue dataPointValue) =>

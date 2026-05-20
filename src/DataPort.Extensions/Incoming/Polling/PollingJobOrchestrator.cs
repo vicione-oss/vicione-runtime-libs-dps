@@ -34,7 +34,7 @@ namespace ViciOne.Suite.DataPort.Extensions.Incoming.Polling;
 internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>
     : IAsyncDisposable
     where TDataPoint : IPollingDataPoint
-    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TDataPointValue : IDataPointValue
     where TDataPointGroup : IDataPointPollingGroup<TDataPoint>
     where TReadClient : IReadClient<TDataPointGroup, TDataPointValue>
 {

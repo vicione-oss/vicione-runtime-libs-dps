@@ -1,150 +1,187 @@
 Common:
-  Target       : DataPort
-  ContentType  : Rules
-  Version      : 1.0.0
-  Date         : 2026-04-28
-  Description  : "Test DataPort for YAML consistency testing"
-  Author       : "test"
-  MetadataType : YAML
-  Namespace    : "ViciOne.DataPort.Test"
+  Target: DataPort
+  ContentType: Rules
+  Version: 1.0.0
+  Date: 2026-04-28
+  Description: "Test DataPort for YAML consistency testing"
+  Author: "test"
+  MetadataType: YAML
+  Namespace: "ViciOne.DataPort.Test"
 
 Root:
-  Id                       : "TestDataPort"
-  Name                     : "Test DataPort"
-  Description              : "DataPort for testing YAML consistency infrastructure"
-  Icon                     : test
-  ChildNodes               :
-    - Id                   : Device
-      MaxDepth             : 64
-      MaxInstances         : 8
+  Id: "TestDataPort"
+  Name: "Test DataPort"
+  Description: "DataPort for testing YAML consistency infrastructure"
+  Icon: test
+  ChildNodes:
+    - Id: Device
+      MaxDepth: 64
+      MaxInstances: 8
 
 Nodes:
 
-  - Id                     : Device
-    Type                   : DataPortNode
-    Name                   : "Device"
-    Description            : "Test device node"
-    Icon                   : device
-    TransferDirections     : [ Outbound, Inbound ]
-    ChildNodes             :
-      - Id                 : Folder
-      - Id                 : DataPoint
-    PropertyCategories     :
-      - Id                 : Connection
-        Properties         :
-          - Id             : IpAddress
-          - Id             : Port
-          - Id             : QueueConfiguration
+  - Id: Device
+    Type: DataPortNode
+    Name: "Device"
+    Description: "Test device node"
+    Icon: device
+    TransferDirections: [ Outbound, Inbound ]
+    ChildNodes:
+      - Id: Folder
+      - Id: Int
+      - Id: String
+    PropertyCategories:
+      - Id: Connection
+        Properties:
+          - Id: IpAddress
+          - Id: Port
+          - Id: QueueConfiguration
 
-  - Id                     : Folder
-    MappingId              : Folder
-    Type                   : DataPortTreeNode
-    Name                   : "Folder"
-    Description            : "Test folder node"
-    Icon                   : test-folder
-    ChildNodes             :
-      - Id                 : Folder
-      - Id                 : DataPoint
-    PropertyCategories     :
-      - Id                 : Configuration
-        Properties         :
-          - Id             : GroupName
-          - Id             : CustomProperty1
-          - Id             : CustomProperty2
+  - Id: Folder
+    MappingId: Folder
+    Type: DataPortTreeNode
+    Name: "Folder"
+    Description: "Test folder node"
+    Icon: test-folder
+    ChildNodes:
+      - Id: Folder
+      - Id: Int
+      - Id: String
+    PropertyCategories:
+      - Id: Configuration
+        Properties:
+          - Id: GroupName
+          - Id: CustomProperty1
+          - Id: CustomProperty2
 
-  - Id                     : DataPoint
-    MappingId              : DataPoint
-    Type                   : DataPortTreeNode
-    Name                   : "DataPoint"
-    Description            : "Test data point node"
-    Icon                   : test-datapoint
-    TransferModes          : [ OnChange, Periodic ]
-    DataTypes              : [ Bool, Int32, Float64, String ]
-    PropertyCategories     :
-      - Id                 : Values
-        Properties         :
-          - Id             : DataValue
-          - Id             : Timestamp
+  - Id: String
+    MappingId: String
+    Type: DataPortTreeNode
+    Name: "StringDataPoint"
+    Description: "Test data point node for strings"
+    Icon: test-datapoint
+    TransferModes: [ OnChange, Periodic ]
+    DataTypes: [ String ]
+    PropertyCategories:
+      - Id: Configuration
+        Properties:
+          - Id: StringProperty
+          - Id: PollFrequency
+
+
+  - Id: Int
+    MappingId: Int
+    Type: DataPortTreeNode
+    Name: "DataPoint"
+    Description: "Test data point node for ints"
+    Icon: test-datapoint
+    TransferModes: [ OnChange, Periodic ]
+    DataTypes: [ Int32 ]
+    PropertyCategories:
+      - Id: Configuration
+        Properties:
+          - Id: IntNodeProperty
+          - Id: PollFrequency
 
 PropertyCategories:
-  - Id          : Connection
-    Name        : "Connection"
-    Description : "Connection properties"
+  - Id: Connection
+    Name: "Connection"
+    Description: "Connection properties"
 
-  - Id          : Configuration
-    Name        : "Configuration"
-    Description : "Configuration properties"
+  - Id: Configuration
+    Name: "Configuration"
+    Description: "Configuration properties"
 
-  - Id          : Values
-    Name        : "Values"
-    Description : "Value properties"
+  - Id: Values
+    Name: "Values"
+    Description: "Value properties"
 
 Properties:
-  - Id          : IpAddress
-    Name        : "IP Address"
-    Description : "The IP address"
-    DataType    : String
-    UiControl   : TextBox
+  - Id: IpAddress
+    Name: "IP Address"
+    Description: "The IP address"
+    DataType: String
+    UiControl: TextBox
 
-  - Id          : Port
-    Name        : "Port"
-    Description : "The port number"
-    DataType    : UInt16
-    UiControl   : NumericUpDown
+  - Id: PollFrequency
+    Name: "Poll frequency (ms)"
+    Description: "Define how often the data point should be read from the PLC."
+    DataType: Int32
+    UiControl: NumericUpDown
+    DefaultValue: 500
+    MinValue: 100
+
+  - Id: Port
+    Name: "Port"
+    Description: "The port number"
+    DataType: UInt16
+    UiControl: NumericUpDown
     DefaultValue: 102
 
-  - Id          : QueueConfiguration
-    Name        : "Queue Configuration"
-    Description : "Queue configuration"
-    DataType    : String
-    UiControl   : TextBox
+  - Id: QueueConfiguration
+    Name: "Queue Configuration"
+    Description: "Queue configuration"
+    DataType: String
+    UiControl: TextBox
 
-  - Id          : GroupName
-    Name        : "Group Name"
-    Description : "Name of the group"
-    DataType    : String
-    UiControl   : TextBox
+  - Id: GroupName
+    Name: "Group Name"
+    Description: "Name of the group"
+    DataType: String
+    UiControl: TextBox
 
-  - Id          : CustomProperty1
-    Name        : "Custom Property 1"
-    Description : "A custom string property"
-    DataType    : String
-    UiControl   : TextBox
+  - Id: CustomProperty1
+    Name: "Custom Property 1"
+    Description: "A custom string property"
+    DataType: String
+    UiControl: TextBox
 
-  - Id          : CustomProperty2
-    Name        : "Custom Property 2"
-    Description : "A custom integer property"
-    DataType    : Int32
-    UiControl   : NumericUpDown
+  - Id: CustomProperty2
+    Name: "Custom Property 2"
+    Description: "A custom integer property"
+    DataType: Int32
+    UiControl: NumericUpDown
     DefaultValue: 0
 
-  - Id          : DataValue
-    Name        : "Data Value"
-    Description : "The data value"
-    DataType    : String
-    UiControl   : TextBox
+  - Id: StringProperty
+    Name: "Something to configure for a string"
+    Description: "A custom string property"
+    DataType: String
+    UiControl: TextBox
 
-  - Id          : Timestamp
-    Name        : "Timestamp"
-    Description : "The timestamp"
-    DataType    : Int64
-    UiControl   : NumericUpDown
+  - Id: IntNodeProperty
+    Name: "Something to configure for a int"
+    Description: "A custom int property"
+    DataType: String
+    UiControl: TextBox
+
+  - Id: DataValue
+    Name: "Data Value"
+    Description: "The data value"
+    DataType: String
+    UiControl: TextBox
+
+  - Id: Timestamp
+    Name: "Timestamp"
+    Description: "The timestamp"
+    DataType: Int64
+    UiControl: NumericUpDown
     DefaultValue: 0
 
 Icons:
 
-  - Id          : test
-    Content     : PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiLz4=
-    ContentType : Base64
+  - Id: test
+    Content: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiLz4=
+    ContentType: Base64
 
-  - Id          : device
-    Content     : PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiLz4=
-    ContentType : Base64
+  - Id: device
+    Content: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiLz4=
+    ContentType: Base64
 
-  - Id          : test-folder
-    Content     : PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiLz4=
-    ContentType : Base64
+  - Id: test-folder
+    Content: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiLz4=
+    ContentType: Base64
 
-  - Id          : test-datapoint
-    Content     : PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiLz4=
-    ContentType : Base64
+  - Id: test-datapoint
+    Content: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxIDEiLz4=
+    ContentType: Base64

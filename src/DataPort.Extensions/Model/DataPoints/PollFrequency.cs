@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 #pragma warning disable CA2225
 namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
@@ -8,6 +8,20 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 /// </summary>
 public readonly record struct PollFrequency(TimeSpan Value)
 {
+    /// <summary>
+    /// Creates a <see cref="PollFrequency"/> representing the given number of seconds.
+    /// </summary>
+    /// <param name="seconds">The polling interval in seconds.</param>
+    /// <returns>A <see cref="PollFrequency"/> with a <see cref="Value"/> of <paramref name="seconds"/> seconds.</returns>
+    public static PollFrequency FromSeconds(int seconds) => new(TimeSpan.FromSeconds(seconds));
+
+    /// <summary>
+    /// Creates a <see cref="PollFrequency"/> representing the given number of milliseconds.
+    /// </summary>
+    /// <param name="milliseconds">The polling interval in milliseconds.</param>
+    /// <returns>A <see cref="PollFrequency"/> with a <see cref="Value"/> of <paramref name="milliseconds"/> milliseconds.</returns>
+    public static PollFrequency FromMilliseconds(int milliseconds) => new(TimeSpan.FromMilliseconds(milliseconds));
+
     /// <summary>
     /// Implicitly converts a TimeSpan to a PollFrequency.
     /// </summary>

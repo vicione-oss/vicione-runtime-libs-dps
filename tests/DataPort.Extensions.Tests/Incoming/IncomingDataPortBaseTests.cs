@@ -11,8 +11,10 @@ using ViciOne.ManagedEngine.ExternalCommunication;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Client;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Incoming;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort.DataPoints.Int;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort.DataPoints.String;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Mapping;
-using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints.Int;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Verification;
 using ViciOne.Suite.DataPort.Extensions.Exceptions;
@@ -41,7 +43,7 @@ public class IncomingDataPortBaseTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var dataPointNodes = CreateTestDataPointNodes(4); // 4 points with same frequency = 1 group
+        var dataPointNodes = CreateTestIntNodes(4); // 4 points with same frequency = 1 group
         var nodeMapper = CreateTestNodeMapper("192.168.1.100", dataPointNodes);
 
         var sut = new TestIncomingDataPort(
@@ -70,12 +72,12 @@ public class IncomingDataPortBaseTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var dataPointNodes = CreateTestDataPointNodes(2);
+        var dataPointNodes = CreateTestIntNodes(2);
         var nodeMapper = CreateTestNodeMapper("192.168.1.100", dataPointNodes);
 
 
         var misConfiguredDataPoint = new MisconfiguredDataPoint<TestDataPoint>(
-            new TestDataPoint(),
+            new IntDataPoint(),
             [new MismatchingConfiguration("Test mismatch")]);
 
         var verifier = new TestDataPointConfigurationVerifier
@@ -112,7 +114,7 @@ public class IncomingDataPortBaseTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var dataPointNodes = CreateTestDataPointNodes(4);
+        var dataPointNodes = CreateTestIntNodes(4);
         var nodeMapper = CreateTestNodeMapper("192.168.1.100", dataPointNodes);
 
         var sut = new TestIncomingDataPort(
@@ -175,16 +177,13 @@ public class IncomingDataPortBaseTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var dataPointNodes = CreateTestDataPointNodes(2);
+        var dataPointNodes = CreateTestIntNodes(2);
         var nodeMapper = CreateTestNodeMapper("192.168.1.100", dataPointNodes);
 
-        var testDataPointValues = new List<TestDataPointValue>
+        var testDataPointValues = new List<IDataPointValue>
         {
-            new()
-            {
-                TransferredChannels = ["Channel1", "Channel2"],
-                Value = 42
-            }
+            new IntDataPoint { Channels = new([], [new("Channel1"), new("Channel2")]) }
+                .CreateTypedValue(42)
         };
 
         _readClient.ReadResult = testDataPointValues;
@@ -227,23 +226,17 @@ public class IncomingDataPortBaseTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var dataPointNodes = CreateTestDataPointNodes(2);
+        var dataPointNodes = CreateTestIntNodes(2);
         var nodeMapper = CreateTestNodeMapper("192.168.1.100", dataPointNodes);
         var expectedTimestamp = new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero);
         _timeProvider.SetUtcNow(expectedTimestamp);
 
-        var testDataPointValues = new List<TestDataPointValue>
+        var testDataPointValues = new List<IDataPointValue>
         {
-            new()
-            {
-                TransferredChannels = ["Channel1"],
-                Value = 123
-            },
-            new()
-            {
-                TransferredChannels = ["Channel2"],
-                Value = 456
-            }
+            new IntDataPoint { Channels = new([], [new("Channel1")]) }
+                .CreateTypedValue(123),
+            new StringDataPoint { Channels = new([], [new("Channel2")]) }
+                .CreateTypedValue("text")
         };
 
         _readClient.ReadResult = testDataPointValues;
@@ -279,7 +272,7 @@ public class IncomingDataPortBaseTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var dataPointNodes = CreateTestDataPointNodes(4);
+        var dataPointNodes = CreateTestIntNodes(4);
         var nodeMapper = CreateTestNodeMapper("192.168.1.100", dataPointNodes);
 
         var sut = new TestIncomingDataPort(
@@ -305,7 +298,7 @@ public class IncomingDataPortBaseTests
     {
         // Arrange
         var communication = new TestCommunication();
-        var dataPointNodes = CreateTestDataPointNodes(2);
+        var dataPointNodes = CreateTestIntNodes(2);
         var nodeMapper = CreateTestNodeMapper("192.168.1.100", dataPointNodes);
 
         var sut = new TestIncomingDataPort(
@@ -334,7 +327,7 @@ public class IncomingDataPortBaseTests
 
     private static TypedNodeMapper<TestCommunication, TestDeviceNode> CreateTestNodeMapper(
         string deviceAddress,
-        List<TestDataPointNode>? dataPointNodes = null)
+        List<IntNode>? dataPointNodes = null)
     {
         var rootMapper = Substitute.For<IRootConfigurationNodeMapper<TestDeviceNode, TestCommunication>>();
         rootMapper.CreateRootNode(Arg.Any<TestCommunication>())
@@ -360,23 +353,23 @@ public class IncomingDataPortBaseTests
             []);
     }
 
-    private static List<TestDataPointNode> CreateTestDataPointNodesWithDifferentFrequencies(int groupCount)
+    private static List<IntNode> CreateTestDataPointNodesWithDifferentFrequencies(int groupCount)
     {
-        var dataPointNodes = new List<TestDataPointNode>();
+        var dataPointNodes = new List<IntNode>();
 
         for (var i = 0; i < groupCount; i++)
         {
-            var pollFrequency = new PollFrequency(TimeSpan.FromMilliseconds(100 + (i * 50)));
-            dataPointNodes.AddRange(CreateTestDataPointNodes(2, pollFrequency));
+            var pollFrequency = PollFrequency.FromMilliseconds(100 + (i * 50));
+            dataPointNodes.AddRange(CreateTestIntNodes(2, pollFrequency));
         }
 
         return dataPointNodes;
     }
 
-    private static List<TestDataPointNode> CreateTestDataPointNodes(int count, PollFrequency? pollFrequency = null)
+    private static List<IntNode> CreateTestIntNodes(int count, PollFrequency? pollFrequency = null)
     {
-        var dataPointNodes = new List<TestDataPointNode>(count);
-        var frequency = pollFrequency ?? new PollFrequency(TimeSpan.FromMilliseconds(100));
+        var dataPointNodes = new List<IntNode>(count);
+        var frequency = pollFrequency ?? PollFrequency.FromMilliseconds(100);
 
         for (var i = 0; i < count; i++)
         {
@@ -385,7 +378,7 @@ public class IncomingDataPortBaseTests
                 {
                     TransferredChannels = [$"Channel{i}"]
                 });
-            dataPointNodes.Add(new TestDataPointNode(originalNode)
+            dataPointNodes.Add(new IntNode(originalNode, PollFrequency.FromMilliseconds(100), new IntNodeProperty("something"))
             {
                 PollFrequency = frequency
             });

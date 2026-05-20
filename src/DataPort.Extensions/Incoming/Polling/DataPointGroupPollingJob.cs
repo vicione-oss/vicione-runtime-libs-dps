@@ -37,7 +37,7 @@ internal sealed class DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDat
         executionInterval, input, onJobOutputAvailable,
         resiliencePipeline, timeProvider, logger, externalCancellation)
     where TDataPoint : IPollingDataPoint
-    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TDataPointValue : IDataPointValue
     where TDataPointGroup : IDataPointPollingGroup<TDataPoint>
     where TReadClient : IReadClient<TDataPointGroup, TDataPointValue>
 {

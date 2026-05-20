@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +48,7 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
     TClientInformation>
     : IExternalOutgoingCommunication<TCommunication>, IAsyncDisposable
     where TDataPoint : IDataPoint
-    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TDataPointValue : IDataPointValue
     where TWriteClient : IWriteClient<TDataPointValue>
     where TRootNode : IRootConfigurationNode<TCommunication>
     where TCommunication : DataPortCommunication
@@ -153,12 +152,18 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
         CancellationToken cancellationToken)
     {
         var resolvedChannels = ResolveChannels(values);
-        var dataPointValues = ToDataPointValues(resolvedChannels);
-        var validationResult = _validator.ValidateAll(dataPointValues);
-        if (validationResult.IsValid) return EnqueueAsync(validationResult.ValidValues);
+        var conversionResult = ConvertValues(resolvedChannels);
         // TODO: Discuss inconsistent behaviour
         // Unmatched channels will just be logged and we write the rest, when there are some invalid-values we drop the whole batch
-        _logger.DataPointValuesInvalid(validationResult.Failures.Count, dataPointValues.Count);
+        if (!conversionResult.AllConverted)
+        {
+            _logger.DataPointValuesInvalid(conversionResult.Failures.Count, resolvedChannels.Count);
+            return Task.CompletedTask;
+        }
+
+        var validationResult = _validator.ValidateAll(conversionResult.ConvertedValues);
+        if (validationResult.IsValid) return EnqueueAsync(validationResult.ValidValues);
+        _logger.DataPointValuesInvalid(validationResult.Failures.Count, conversionResult.ConvertedValues.Count);
         return Task.CompletedTask;
     }
 
@@ -193,9 +198,18 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
         null;
 
     /// <summary>
-    /// Converts an external value matched to a specific data point into a typed data point value.
+    /// Converts an external value, matched to a specific data point, into a strongly-typed data point value.
     /// </summary>
-    protected abstract TDataPointValue ConvertValue(ExternalValue externalValue, TDataPoint dataPoint);
+    /// <param name="externalValue">The external value to convert.</param>
+    /// <param name="dataPoint">The data point the value was matched to.</param>
+    /// <returns>
+    /// A <see cref="DataPointValueConversion{TDataPointValue}"/> carrying either the converted value
+    /// (<see cref="ConvertedDataPointValue{TDataPointValue}"/>) or a <see cref="DataPointValueValidationFailure"/>
+    /// describing why the value could not be represented as the data point's configured .NET type
+    /// (<see cref="NotConvertedDataPointValue{TDataPointValue}"/>).
+    /// </returns>
+    protected abstract DataPointValueConversion<TDataPointValue> ConvertToDataPointValue(
+        ExternalValue externalValue, TDataPoint dataPoint);
 
     /// <summary>
     /// Override to dispose resources owned by the subclass. Called before the base class releases its own resources.
@@ -258,17 +272,28 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
         return resolution.ResolvedChannels;
     }
 
-    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
-    private List<TDataPointValue> ToDataPointValues(IReadOnlyList<ResolvedChannel<TDataPoint>> resolvedChannels)
+    private DataPointValuesConversionResult<TDataPointValue> ConvertValues(
+        IReadOnlyList<ResolvedChannel<TDataPoint>> resolvedChannels)
     {
-        var dataPointValues = new List<TDataPointValue>(resolvedChannels.Count);
+        var converted = new List<TDataPointValue>(resolvedChannels.Count);
+        var failures = new List<DataPointValueValidationFailure>();
         foreach (var channel in resolvedChannels)
         {
-            var dataPointValue = ConvertValue(channel.ExternalValue, channel.DataPoint);
-            dataPointValues.Add(dataPointValue);
+            switch (ConvertToDataPointValue(channel.ExternalValue, channel.DataPoint))
+            {
+                case ConvertedDataPointValue<TDataPointValue> c:
+                    converted.Add(c.Value);
+                    break;
+                case NotConvertedDataPointValue<TDataPointValue> nc:
+                    _logger.ConversionFailed(channel.ExternalValue.Channel, nc.Failure.Details);
+                    failures.Add(nc.Failure);
+                    break;
+            }
         }
 
-        return dataPointValues;
+        return new DataPointValuesConversionResult<TDataPointValue>(
+            ConvertedValues: converted,
+            Failures: failures);
     }
 
     private Task EnqueueAsync(IReadOnlyList<TDataPointValue> dataPointValues)

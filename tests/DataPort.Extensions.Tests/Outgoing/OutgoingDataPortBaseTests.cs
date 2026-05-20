@@ -9,8 +9,9 @@ using NSubstitute;
 using ViciOne.ManagedEngine.ExternalCommunication;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Client;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort.DataPoints.Int;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Mapping;
-using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints.Int;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Outgoing;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Verification;
@@ -30,7 +31,7 @@ namespace ViciOne.Suite.DataPort.Extension.Tests.Outgoing;
 /// </summary>
 public sealed class OutgoingDataPortBaseTests
 {
-    private readonly IWriteClient<TestDataPointValue> _mockWriteClient;
+    private readonly IWriteClient<IDataPointValue> _mockWriteClient;
     private readonly TestClientLifecycleManager _connectionManager;
     private readonly ILogger<TestOutgoingDataPort> _logger;
     private readonly ILoggerFactory _loggerFactory;
@@ -38,7 +39,7 @@ public sealed class OutgoingDataPortBaseTests
 
     public OutgoingDataPortBaseTests()
     {
-        _mockWriteClient = Substitute.For<IWriteClient<TestDataPointValue>>();
+        _mockWriteClient = Substitute.For<IWriteClient<IDataPointValue>>();
         _connectionManager = new TestClientLifecycleManager(_ => new TestClient
         {
             WriteFunc = (values, ct) => _mockWriteClient.WriteAsync(values, ct)
@@ -71,10 +72,10 @@ public sealed class OutgoingDataPortBaseTests
         IRetryPolicy? retryPolicy = null,
         IDataPointConfigurationVerifier<TestDataPoint>? configurationVerifier = null)
     {
-        List<TestDataPointNode> dataPointNodes =
+        List<IntNode> dataPointNodes =
         [
-            new(new LinkedNode(new Node { TransferredChannels = ["channel1"] })),
-            new(new LinkedNode(new Node { TransferredChannels = ["channel2"] }))
+            new(new LinkedNode(new Node { TransferredChannels = ["channel1"] }), PollFrequency.FromMilliseconds(100), new IntNodeProperty("1")),
+            new(new LinkedNode(new Node { TransferredChannels = ["channel2"] }), PollFrequency.FromMilliseconds(100), new IntNodeProperty("2"))
         ];
         var typedNodeMapper = CreateTestNodeMapper(dataPointNodes);
         var mapper = new TestDataPointGroupsMapper();
@@ -91,7 +92,7 @@ public sealed class OutgoingDataPortBaseTests
     }
 
     private static TypedNodeMapper<TestCommunication, TestDeviceNode> CreateTestNodeMapper(
-        List<TestDataPointNode>? dataPointNodes = null)
+        List<IntNode>? dataPointNodes = null)
     {
         var rootMapper = Substitute.For<IRootConfigurationNodeMapper<TestDeviceNode, TestCommunication>>();
         rootMapper.CreateRootNode(Arg.Any<TestCommunication>())
@@ -115,7 +116,7 @@ public sealed class OutgoingDataPortBaseTests
         // Arrange
         var callCount = 0;
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 callCount++;
@@ -139,7 +140,7 @@ public sealed class OutgoingDataPortBaseTests
         // Assert
         callCount.Should().Be(4, "should retry 3 times then succeed");
         await _mockWriteClient.Received(4).WriteAsync(
-            Arg.Any<IReadOnlyList<TestDataPointValue>>(),
+            Arg.Any<IReadOnlyList<IDataPointValue>>(),
             Arg.Any<CancellationToken>());
 
         await dataPort.DisconnectAsync(CancellationToken.None);
@@ -151,7 +152,7 @@ public sealed class OutgoingDataPortBaseTests
         // Arrange
         var callCount = 0;
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 callCount++;
@@ -203,7 +204,7 @@ public sealed class OutgoingDataPortBaseTests
         // Arrange
         var callCount = 0;
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 callCount++;
@@ -258,7 +259,7 @@ public sealed class OutgoingDataPortBaseTests
         var callCount = 0;
 
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
                 callCount++;
@@ -300,7 +301,7 @@ public sealed class OutgoingDataPortBaseTests
         var communication = CreateTestCommunication(maxPendingMessages: 2);
 
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new InvalidOperationException("Write always fails to trigger retries"));
 
         // Enable warning logging
@@ -340,7 +341,7 @@ public sealed class OutgoingDataPortBaseTests
         var writeCallCount = 0;
 
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 writeCallCount++;
@@ -378,7 +379,7 @@ public sealed class OutgoingDataPortBaseTests
         var writeCallCount = 0;
 
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 writeCallCount++;
@@ -422,7 +423,7 @@ public sealed class OutgoingDataPortBaseTests
         var communication = CreateTestCommunication(maxPendingMessages: 2);
 
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new InvalidOperationException("Write always fails"));
 
         // Enable warning logging
@@ -471,7 +472,7 @@ public sealed class OutgoingDataPortBaseTests
         var retryPolicy = new InfiniteRetryPolicy();
 
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new InvalidOperationException("Write always fails"));
 
         await using var dataPort = CreateTestOutgoingDataPort(
@@ -517,7 +518,7 @@ public sealed class OutgoingDataPortBaseTests
 
         // Verify WriteAsync was never called
         await _mockWriteClient.DidNotReceive().WriteAsync(
-            Arg.Any<IReadOnlyList<TestDataPointValue>>(),
+            Arg.Any<IReadOnlyList<IDataPointValue>>(),
             Arg.Any<CancellationToken>());
 
         await dataPort.DisconnectAsync(CancellationToken.None);
@@ -551,7 +552,7 @@ public sealed class OutgoingDataPortBaseTests
 
         // Verify WriteAsync was never called (no valid channels)
         await _mockWriteClient.DidNotReceive().WriteAsync(
-            Arg.Any<IReadOnlyList<TestDataPointValue>>(),
+            Arg.Any<IReadOnlyList<IDataPointValue>>(),
             Arg.Any<CancellationToken>());
 
         await dataPort.DisconnectAsync(CancellationToken.None);
@@ -606,7 +607,7 @@ public sealed class OutgoingDataPortBaseTests
         // Arrange
         var writeCallCount = 0;
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 Interlocked.Increment(ref writeCallCount);
@@ -659,7 +660,7 @@ public sealed class OutgoingDataPortBaseTests
             _loggerFactory);
 
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(ValueTask.CompletedTask);
 
         // Act
@@ -670,7 +671,7 @@ public sealed class OutgoingDataPortBaseTests
         await Task.Delay(200, TestContext.Current.CancellationToken);
 
         await _mockWriteClient.Received(1).WriteAsync(
-            Arg.Any<IReadOnlyList<TestDataPointValue>>(),
+            Arg.Any<IReadOnlyList<IDataPointValue>>(),
             Arg.Any<CancellationToken>());
 
         await dataPort.DisconnectAsync(CancellationToken.None);
@@ -685,7 +686,7 @@ public sealed class OutgoingDataPortBaseTests
             VerifyResult =
             [
                 new MisconfiguredDataPoint<TestDataPoint>(
-                    new TestDataPoint { Channels = new([], [new TransferredChannel("channel1")]) },
+                    new IntDataPoint { Channels = new([], [new TransferredChannel("channel1")]) },
                     [new MismatchingConfiguration("Type mismatch: expected Int32, got String")])
             ]
         };
@@ -716,10 +717,10 @@ public sealed class OutgoingDataPortBaseTests
             VerifyResult =
             [
                 new MisconfiguredDataPoint<TestDataPoint>(
-                    new TestDataPoint { Channels = new([], [new TransferredChannel("channel1")]) },
+                    new IntDataPoint { Channels = new([], [new TransferredChannel("channel1")]) },
                     [new MismatchingConfiguration("Type mismatch")]),
                 new MisconfiguredDataPoint<TestDataPoint>(
-                    new TestDataPoint { Channels = new([], [new TransferredChannel("channel2")]) },
+                    new IntDataPoint { Channels = new([], [new TransferredChannel("channel2")]) },
                     [new MismatchingConfiguration("Range exceeded")])
             ]
         };
@@ -760,7 +761,7 @@ public sealed class OutgoingDataPortBaseTests
             _instantDelayProvider);
 
         _mockWriteClient
-            .WriteAsync(Arg.Any<IReadOnlyList<TestDataPointValue>>(), Arg.Any<CancellationToken>())
+            .WriteAsync(Arg.Any<IReadOnlyList<IDataPointValue>>(), Arg.Any<CancellationToken>())
             .Returns(ValueTask.CompletedTask);
 
         // Act
@@ -775,7 +776,7 @@ public sealed class OutgoingDataPortBaseTests
 
         // Verify WriteAsync was called (queue processing is active)
         await _mockWriteClient.Received(1).WriteAsync(
-            Arg.Any<IReadOnlyList<TestDataPointValue>>(),
+            Arg.Any<IReadOnlyList<IDataPointValue>>(),
             Arg.Any<CancellationToken>());
 
         await dataPort.DisconnectAsync(CancellationToken.None);

@@ -66,8 +66,8 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
     /// <summary>
     /// Dynamically generates test cases for each device node in YAML.
     /// </summary>
-    public static TheoryData<DataPortNodeType> GetDataPortNodeTestCases() =>
-        [.. s_lazyRuleset.Value.GetRootNodes()];
+    public static TheoryData<DataPortNodeType> GetDataPortNodeTestCases()
+        => [.. s_lazyRuleset.Value.GetRootNodes()];
 
     [Theory]
     [MemberData(nameof(GetDataPortNodeTestCases))]
@@ -112,12 +112,11 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
     }
 
 
-    public static TheoryData<IBranchConfigurationNodeMapper<IBranchConfigurationNode>>
-        GetConfigurationMapperTestCases() =>
-    [
-        .. TYamlConfig.Mapper.ConfigurationNodeMappers
-            .Select(static m => new TheoryDataRow<IBranchConfigurationNodeMapper<IBranchConfigurationNode>>(m))
-    ];
+    public static TheoryData<IBranchConfigurationNodeMapper<IBranchConfigurationNode>> GetConfigurationMapperTestCases()
+        => [
+            .. TYamlConfig.Mapper.ConfigurationNodeMappers
+                .Select(static m => new TheoryDataRow<IBranchConfigurationNodeMapper<IBranchConfigurationNode>>(m))
+        ];
 
     public static TheoryData<string> GetConfigurationNodeMapperTestCases() =>
     [

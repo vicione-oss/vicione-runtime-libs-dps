@@ -7,6 +7,7 @@ using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Client;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.DataPort;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 using ViciOne.Suite.DataPort.Extensions.Client;
+using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 using ViciOne.Suite.DataPort.Extensions.Model.Mapping;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
 using ViciOne.Suite.DataPort.Extensions.Outgoing;
@@ -35,7 +36,7 @@ internal class TestOutgoingDataPort(
     IRetryPolicy? retryPolicy = null,
     IDataPointConfigurationVerifier<TestDataPoint>? configurationVerifier = null,
     TestClientInformation? clientInformation = null)
-    : OutgoingDataPortBase<TestDataPoint, TestDataPointValue, TestClient, TestDeviceNode, TestCommunication,
+    : OutgoingDataPortBase<TestDataPoint, IDataPointValue, TestClient, TestDeviceNode, TestCommunication,
         TestClientInformation>
     (communication, loggerFactory, typedNodeMapper, mapper, queueConfiguration,
         delayProvider ?? new DefaultDelayProvider())
@@ -44,21 +45,17 @@ internal class TestOutgoingDataPort(
     public Task EnqueueAsync(IReadOnlyList<ExternalValue> externalValues)
         => base.SendAsync(0, externalValues, CancellationToken.None);
 
-    protected override IDataPointConfigurationVerifier<TestDataPoint>? CreateConfigurationVerifier(TestClient client) =>
-        configurationVerifier;
+    protected override IDataPointConfigurationVerifier<TestDataPoint>? CreateConfigurationVerifier(TestClient client)
+        => configurationVerifier;
 
-    protected override IClientLifecycleManager<TestClient, TestClientInformation> ClientLifecycleManager { get; } =
-        connectionManager;
+    protected override IClientLifecycleManager<TestClient, TestClientInformation> ClientLifecycleManager { get; } = connectionManager;
 
     public override TestClientInformation ClientInformation { get; } =
         clientInformation ?? new TestClientInformation();
 
     protected override IRetryPolicy RetryPolicy { get; } = retryPolicy ?? new InfiniteRetryPolicy();
 
-    protected override TestDataPointValue ConvertValue(ExternalValue externalValue, TestDataPoint dataPoint)
-        => new()
-        {
-            Value = externalValue.Value,
-            DataPoint = dataPoint
-        };
+    protected override DataPointValueConversion<IDataPointValue> ConvertToDataPointValue(
+        ExternalValue externalValue, TestDataPoint dataPoint)
+        => dataPoint.ConvertValue(externalValue.Value);
 }

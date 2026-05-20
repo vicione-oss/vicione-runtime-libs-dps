@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Client;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Mapping;
-using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints.Int;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Outgoing;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
@@ -49,7 +49,7 @@ public class TestOutgoingDataPortSmokeTests
     }
 
     private static TypedNodeMapper<TestCommunication, TestDeviceNode> CreateTestNodeMapper(
-        List<TestDataPointNode>? dataPointNodes = null)
+        List<IntNode>? dataPointNodes = null)
     {
         var rootMapper = Substitute.For<IRootConfigurationNodeMapper<TestDeviceNode, TestCommunication>>();
         rootMapper.CreateRootNode(Arg.Any<TestCommunication>())

@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using FluentValidation.Results;
 using NSubstitute;
-using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints.Int;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Folders;
 using ViciOne.Suite.DataPort.Extensions.Exceptions;
+using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
 
@@ -123,7 +124,7 @@ public class TypedNodeMapperTests
         {
             Id = Guid.NewGuid(),
             DesignId = "TestDataPoint",
-            Name = "TestDataPointNode",
+            Name = "IntNode",
             Properties = []
         };
 
@@ -152,7 +153,7 @@ public class TypedNodeMapperTests
 
         // Assert
         act.Should().ThrowExactly<InvalidConfigurationException>()
-            .WithMessage("*TestDataPointNode*")
+            .WithMessage("*IntNode*")
             .WithMessage("*TestDataPoint*")
             .WithMessage("*ByteNumber*");
         _dataPointMapper.Received(1).Validate(Arg.Any<LinkedNode>());
@@ -175,7 +176,7 @@ public class TypedNodeMapperTests
             Id = Guid.NewGuid(),
             ParentId = configNode.Id,
             DesignId = "TestDataPoint",
-            Name = "TestDataPointNode",
+            Name = "IntNode",
             Properties = []
         };
 
@@ -209,7 +210,7 @@ public class TypedNodeMapperTests
         _dataPointMapper.Map(Arg.Any<LinkedNode>()).Returns(callInfo =>
         {
             var node = callInfo.Arg<LinkedNode>();
-            return new TestDataPointNode(node);
+            return new IntNode(node, PollFrequency.FromMilliseconds(100), new IntNodeProperty("something"));
         });
 
         // Act

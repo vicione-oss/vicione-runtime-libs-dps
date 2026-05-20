@@ -20,7 +20,7 @@ internal sealed class ChannelResolver<TDataPoint> where TDataPoint : IDataPoint
         var channelIndex = new Dictionary<string, TDataPoint>();
         foreach (var dataPoint in dataPoints)
         {
-            foreach (var channel in dataPoint.Channels.TransferredChannels)
+            foreach (var channel in dataPoint.Channels.Transferred)
                 channelIndex[channel.Value] = dataPoint;
         }
 
