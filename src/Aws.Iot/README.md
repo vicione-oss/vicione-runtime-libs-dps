@@ -7,12 +7,7 @@
 
 ## Node Eigenschaften
 
-Im Hintergrund wird der [MQTT](mqtt) DataPort verwendet, daher sind die Eigenschaften identisch. Sie sind nur nicht an jedem Knoten verfügbar.
-
-Richtung|Name|Typ|Werte
--|-|-|-
-Outgoing|Retain|`bool`|true/false
-Incoming,Outgoing|Serializer|`byte`|0-Inherited, 1-JSON, 2-PlainText
+Im Hintergrund wird vicione-oss/vicione/runtime-libs/dp-mqtt> verwendet, daher sind die Eigenschaften identisch. Sie sind nur nicht an jedem Knoten verfügbar.
 
 ## Zugriffsschlüssel
 

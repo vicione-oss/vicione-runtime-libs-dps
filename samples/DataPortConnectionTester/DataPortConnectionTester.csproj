@@ -14,7 +14,6 @@
     <ProjectReference Include="..\..\src\Http.Client\Http.Client.csproj" />
     <ProjectReference Include="..\..\src\InfluxDb\InfluxDb.csproj" />
     <ProjectReference Include="..\..\src\MySql\MySql.csproj" />
-    <ProjectReference Include="..\..\src\Mqtt\Mqtt.csproj" />
     <ProjectReference Include="..\..\src\OpcUa.Client\OpcUa.Client.csproj" />
     <ProjectReference Include="..\..\src\OpcUa.Server\OpcUa.Server.csproj" />
     <ProjectReference Include="..\..\src\PostgreSql\PostgreSql.csproj" />

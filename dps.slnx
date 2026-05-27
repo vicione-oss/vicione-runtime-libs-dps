@@ -23,6 +23,7 @@
         <Project Path="samples/HttpServerOutgoingTest/HttpServerOutgoingTest.csproj" />
         <Project Path="samples/OpcUa.Server.Standalone/OpcUa.Server.Standalone.csproj" />
     </Folder>
+    <Folder Name="/docs/" />
     <Folder Name="/docs/DataPort.Extensions.Testing/">
         <File Path="docs/DataPort.Extensions.Testing/README.md" />
     </Folder>
@@ -46,7 +47,6 @@
         <Project Path="src/Http.Client/Http.Client.csproj" />
         <Project Path="src/Http.Server/Http.Server.csproj" />
         <Project Path="src/InfluxDb/InfluxDb.csproj" />
-        <Project Path="src/Mqtt/Mqtt.csproj" />
         <Project Path="src/MySql/MySql.csproj" />
         <Project Path="src/OpcUa.Client/OpcUa.Client.csproj" />
         <Project Path="src/OpcUa.Server/OpcUa.Server.csproj" />
@@ -66,7 +66,6 @@
         <Project Path="tests/Http.Client.Tests/Http.Client.Tests.csproj" />
         <Project Path="tests/Http.Server.Tests/Http.Server.Tests.csproj" />
         <Project Path="tests/InfluxDb.Tests/InfluxDb.Tests.csproj" />
-        <Project Path="tests/Mqtt.Tests/Mqtt.Tests.csproj" />
         <Project Path="tests/MySql.Tests/MySql.Tests.csproj" />
         <Project Path="tests/OpcUa.Client.Tests/OpcUa.Client.Tests.csproj" />
         <Project Path="tests/OpcUa.Server.Tests/OpcUa.Server.Tests.csproj" />

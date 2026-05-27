@@ -27,8 +27,8 @@ public class AwsToMqttConverter_ToMqtt
             ValueType = typeof(int),
             Properties = new()
             {
-                { MqttNodeProperties.Retain, new() { Value = true } },
-                { MqttNodeProperties.Serializer, new() { Value = (byte)2 } },
+                { "Retain", new() { Value = true, } },
+                { "Serializer", new() { Value = (byte)2, } },
             },
         };
         var groupNodeId = Guid.NewGuid();
@@ -70,8 +70,8 @@ public class AwsToMqttConverter_ToMqtt
             TransferredChannels = { valueOneNodeId.ToString(), },
             Properties = new()
             {
-                { MqttNodeProperties.Retain, new() { Value = true} },
-                { MqttNodeProperties.Serializer, new() { Value = (byte)2 } },
+                { "Retain", new() { Value = true, } },
+                { "Serializer", new() { Value = (byte)2, } },
             },
         });
         mqttCommunication.Nodes.Should().ContainEquivalentOf(new Node()

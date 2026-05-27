@@ -17,7 +17,6 @@ internal static class Program
         { "PostgreSql", PostgreSqlConnectionTestAsync },
         { "Sql-Server", SqlServerConnectionTestAsync },
         { "Sqlite", SqliteConnectionTestAsync },
-        { "Mqtt", MqttConnectionTestAsync },
         { "AzureIotHub", AzureIotHubConnectionTestAsync },
         { "Http.Client", HttpClientConnectionTestAsync },
         { "AWS Iot", AwsIotDataPortAsync },
@@ -141,18 +140,6 @@ internal static class Program
             DataSource = "",
         };
         await SqliteConnectionTester.TestConnectionAsync(communication);
-    }
-
-    private static async Task MqttConnectionTestAsync()
-    {
-        MqttDataPortCommunication communication = new();
-        _ = new MqttDataPortProperties(communication)
-        {
-            Protocol = MqttProtocol.Tcp,
-            Host = string.Empty,
-            Port = 1883,
-        };
-        await MqttConnectionTester.TestConnectionAsync(communication);
     }
 
     private static async Task AzureIotHubConnectionTestAsync()
