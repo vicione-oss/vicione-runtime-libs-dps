@@ -39,8 +39,6 @@
     </Folder>
     <Folder Name="/src/">
         <Project Path="src/Aws.Iot/Aws.Iot.csproj" />
-        <Project Path="src/Azure.EventGrid.Topic/Azure.EventGrid.Topic.csproj" />
-        <Project Path="src/Azure.IotHub/Azure.IotHub.csproj" />
         <Project Path="src/DataPort.Extensions/DataPort.Extensions.csproj" />
         <Project Path="src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj" />
         <Project Path="src/DataPort/DataPort.csproj" />
@@ -57,8 +55,6 @@
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/Aws.Iot.Tests/Aws.Iot.Tests.csproj" />
-        <Project Path="tests/Azure.EventGrid.Topic.Tests/Azure.EventGrid.Topic.Tests.csproj" />
-        <Project Path="tests/Azure.IotHub.Tests/Azure.IotHub.Tests.csproj" />
         <Project Path="tests/Common.Tests/Common.Tests.csproj" />
         <Project Path="tests/DataPort.Extensions.Tests/DataPort.Extensions.Tests.csproj" />
         <Project Path="tests/DataPort.Extensions.Testing.Tests/DataPort.Extensions.Testing.Tests.csproj" />

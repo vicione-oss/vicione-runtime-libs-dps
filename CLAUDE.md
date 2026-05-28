@@ -1,6 +1,6 @@
 # DataPorts
 
-ViciOne Suite runtime library providing DataPort providers for various protocols (AWS IoT, Azure IoT Hub, MQTT, OPC-UA, SQL databases, InfluxDB, etc.).
+ViciOne Suite runtime library providing DataPort providers for various protocols (AWS IoT, MQTT, OPC-UA, SQL databases, InfluxDB, etc.).
 
 **Solution file**: `dps.slnx`
 

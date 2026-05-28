@@ -17,7 +17,6 @@ internal static class Program
         { "PostgreSql", PostgreSqlConnectionTestAsync },
         { "Sql-Server", SqlServerConnectionTestAsync },
         { "Sqlite", SqliteConnectionTestAsync },
-        { "AzureIotHub", AzureIotHubConnectionTestAsync },
         { "Http.Client", HttpClientConnectionTestAsync },
         { "AWS Iot", AwsIotDataPortAsync },
         { "InfluxDB", InfluxDbConnectionTestAsync },
@@ -140,21 +139,6 @@ internal static class Program
             DataSource = "",
         };
         await SqliteConnectionTester.TestConnectionAsync(communication);
-    }
-
-    private static async Task AzureIotHubConnectionTestAsync()
-    {
-        AzureIotHubDataPortCommunication communication = new()
-        {
-            Nodes = [],
-        };
-        _ = new AzureIotHubDataPortProperties(communication)
-        {
-            Hostname = "",
-            SharedAccessSignatureKeyName = "",
-            SharedAccessSignatureKey = "",
-        };
-        await AzureIotHubConnectionTester.TestConnectionAsync(communication);
     }
 
     private static async Task HttpClientConnectionTestAsync()
