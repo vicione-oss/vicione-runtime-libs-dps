@@ -14,8 +14,6 @@ MySql/MariaDB                                                  |-               
 InfluxDB 2.0                                                   |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
 ||||
 **Cloud**
-[Azure IoT Hub](./src/Azure.IotHub/README.md)                  |:heavy_check_mark: |:heavy_check_mark: |:heavy_check_mark:     |:x:
-[Azure EventGrid Topic](./src/Azure.EventGrid.Topic/README.md) |-                  |:heavy_check_mark: |:heavy_check_mark:     |:x:
 [AWS IoT](./src/Aws.Iot/README.md)                                            |:heavy_check_mark: |:heavy_check_mark: |:heavy_check_mark:     |-
 ||||
 **moneo embedded**

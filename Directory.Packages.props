@@ -5,8 +5,6 @@
   <ItemGroup>
     <PackageVersion Include="AWSSDK.IoT" Version="4.0.6.9" />
     <PackageVersion Include="AWSSDK.IotData" Version="4.0.2.19" />
-    <PackageVersion Include="Azure.Messaging.EventGrid" Version="5.0.0" />
-    <PackageVersion Include="Azure.Messaging.EventHubs" Version="5.12.2" />
     <PackageVersion Include="BenchmarkDotNet.Extensions" Version="1.2.0" />
     <PackageVersion Include="coverlet.collector" Version="8.0.0" />
     <PackageVersion Include="EmbedIO" Version="3.5.2" />
@@ -15,8 +13,6 @@
     <PackageVersion Include="FluentValidation" Version="12.1.0" />
     <PackageVersion Include="InfluxDB.Client" Version="5.0.0" />
     <PackageVersion Include="JunitXml.TestLogger" Version="7.0.2" />
-    <PackageVersion Include="Microsoft.Azure.Devices" Version="1.41.0" />
-    <PackageVersion Include="Microsoft.Azure.Devices.Client" Version="1.42.3" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />

@@ -66,36 +66,6 @@ Prerelease AWS IoT Raw:
   after_script:
     - !reference [ .push-metadata ]
 
-Prerelease Azure IoT Hub Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Azure.IotHub/Azure.IotHub.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Azure.IotHub'
-    METADATA_FILE: 'src/Azure.IotHub/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Prerelease Azure EventGrid Topic Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Azure.EventGrid.Topic/Azure.EventGrid.Topic.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Azure.EventGrid.Topic'
-    METADATA_FILE: 'src/Azure.EventGrid.Topic/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
 Prerelease OPCUA Client Raw:
   extends: .dotnet-deploy-raw-rids
   variables:
@@ -260,36 +230,6 @@ Release AWS IoT Raw:
     PROJECT: 'src/Aws.Iot/Aws.Iot.csproj'
     DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Aws.Iot'
     METADATA_FILE: 'src/Aws.Iot/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Release Azure IoT Hub Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Azure.IotHub/Azure.IotHub.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Azure.IotHub'
-    METADATA_FILE: 'src/Azure.IotHub/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Release Azure EventGrid Topic Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Azure.EventGrid.Topic/Azure.EventGrid.Topic.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Azure.EventGrid.Topic'
-    METADATA_FILE: 'src/Azure.EventGrid.Topic/metadata.json'
     METADATA_VERSION_FILE: 'VERSION'
     METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
     METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
