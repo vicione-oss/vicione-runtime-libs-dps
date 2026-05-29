@@ -13,9 +13,6 @@ MySql/MariaDB                                                  |-               
 **Zeitreihendatenbank**
 InfluxDB 2.0                                                   |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
 ||||
-**Cloud**
-[AWS IoT](./src/Aws.Iot/README.md)                                            |:heavy_check_mark: |:heavy_check_mark: |:heavy_check_mark:     |-
-||||
 **moneo embedded**
 OPC UA Client                                                  |:heavy_check_mark: |:heavy_check_mark: |:x:                    |?
 [OPC UA Server](#opc-ua-server)                                |:heavy_check_mark: |:heavy_check_mark: |:x:                    |?

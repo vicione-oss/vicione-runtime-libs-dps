@@ -18,7 +18,6 @@ internal static class Program
         { "Sql-Server", SqlServerConnectionTestAsync },
         { "Sqlite", SqliteConnectionTestAsync },
         { "Http.Client", HttpClientConnectionTestAsync },
-        { "AWS Iot", AwsIotDataPortAsync },
         { "InfluxDB", InfluxDbConnectionTestAsync },
     };
 
@@ -149,17 +148,6 @@ internal static class Program
             BaseAddress = "",
         };
         await HttpClientConnectionTester.TestConnectionAsync(communication);
-    }
-
-    private static async Task AwsIotDataPortAsync()
-    {
-        AwsIotDataPortCommunication communication = new();
-        _ = new AwsIotDataPortProperties(communication)
-        {
-            AccessKey = "",
-            SecretAccessKey = ""
-        };
-        await AwsIotDataPortConnectionTester.TestConnectionAsync(communication);
     }
 
     private static async Task InfluxDbConnectionTestAsync()
