@@ -51,21 +51,6 @@ Prerelease Dataport.Extensions.Testing NuGet:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
 
-Prerelease AWS IoT Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Aws.Iot/Aws.Iot.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Aws.Iot'
-    METADATA_FILE: 'src/Aws.Iot/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
 Prerelease OPCUA Client Raw:
   extends: .dotnet-deploy-raw-rids
   variables:
@@ -220,21 +205,6 @@ Release DataPort.Extensions.Testing NuGet:
   variables:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
-
-Release AWS IoT Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Aws.Iot/Aws.Iot.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Aws.Iot'
-    METADATA_FILE: 'src/Aws.Iot/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
 
 Release OPCUA Client Raw:
   extends: .dotnet-release-raw-rids

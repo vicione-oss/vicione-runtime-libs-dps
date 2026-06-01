@@ -3,8 +3,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AWSSDK.IoT" Version="4.0.6.9" />
-    <PackageVersion Include="AWSSDK.IotData" Version="4.0.2.19" />
     <PackageVersion Include="BenchmarkDotNet.Extensions" Version="1.2.0" />
     <PackageVersion Include="coverlet.collector" Version="8.0.0" />
     <PackageVersion Include="EmbedIO" Version="3.5.2" />
