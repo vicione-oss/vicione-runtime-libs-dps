@@ -9,10 +9,8 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 /// <remarks>
 /// The hierarchy is closed to the two cases declared in this assembly. Replaces the previous pattern of
 /// returning a nullable value, which silently lost the reason for a failure.
-/// TODO: Replace this abstract-record-with-private-protected-ctor workaround with the C# 15 union types
-/// feature once .NET 11 is the minimum TFM, e.g.
-/// <c>public union DataPointValueConversion&lt;T&gt;(ConvertedDataPointValue&lt;T&gt;, NotConvertedDataPointValue&lt;T&gt;);</c>
-/// (see https://learn.microsoft.com/dotnet/csharp/whats-new/csharp-15#union-types).
+/// TODO: Replace this abstract-record-with-private-protected-ctor workaround with native C# union types
+/// once the language feature ships and the minimum TFM supports it.
 /// </remarks>
 public abstract record DataPointValueConversion<TDataPointValue> where TDataPointValue : IDataPointValue
 {

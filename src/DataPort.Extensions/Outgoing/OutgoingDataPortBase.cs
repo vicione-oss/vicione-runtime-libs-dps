@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -288,6 +289,9 @@ public abstract class OutgoingDataPortBase<TDataPoint, TDataPointValue, TWriteCl
                     _logger.ConversionFailed(channel.ExternalValue.Channel, nc.Failure.Details);
                     failures.Add(nc.Failure);
                     break;
+                default:
+                    throw new UnreachableException(
+                        $"Unknown {nameof(DataPointValueConversion<TDataPointValue>)} case.");
             }
         }
 

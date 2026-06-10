@@ -72,7 +72,7 @@ Nodes:
   - Id: Int
     MappingId: Int
     Type: DataPortTreeNode
-    Name: "DataPoint"
+    Name: "IntDataPoint"
     Description: "Test data point node for ints"
     Icon: test-datapoint
     TransferModes: [ OnChange, Periodic ]

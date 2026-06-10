@@ -12,7 +12,6 @@ namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 /// This removes the need for a runtime type check during validation.
 /// </remarks>
 public interface ITypedDataPointValue<out TValue> : IDataPointValue
-
 {
     /// <summary>
     /// Gets the strongly-typed value of this data point.

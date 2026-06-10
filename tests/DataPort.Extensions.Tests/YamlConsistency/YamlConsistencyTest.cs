@@ -16,7 +16,7 @@ public class YamlConsistencyTest :
 {
     public static string YamlFileName => "TestDataPort.yaml";
 
-    public static TypedNodeMapper<TestCommunication, TestDeviceNode> Mapper => TestNodeMapper.Instance();
+    public static TypedNodeMapper<TestCommunication, TestDeviceNode> Mapper { get; } = TestNodeMapper.Instance();
 
     public static HashSet<string> ExcludedCommunicationProperties
         => [nameof(TestCommunication.ConnectionString)];

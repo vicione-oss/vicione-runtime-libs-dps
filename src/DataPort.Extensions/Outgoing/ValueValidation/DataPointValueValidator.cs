@@ -58,11 +58,12 @@ public class DataPointValueValidator<TDataPoint, TDataPointValue>(ILogger logger
         logger.ValueOutOfRange(
             channel,
             dataPoint.Identifier.Value,
+            dataPointValue.Value,
             dataType);
 
         return new DataPointValueValidationFailure(
             DataPoint: dataPoint,
             Reason: ValidationFailureReason.ValueOutOfRange,
-            Details: $"Value out of range at {dataPoint.Identifier} for {dataType}");
+            Details: $"Value out of range at {dataPoint.Identifier}: '{dataPointValue.Value}' is invalid for {dataType}");
     }
 }
