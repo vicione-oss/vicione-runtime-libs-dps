@@ -44,13 +44,8 @@
         <Project Path="src/Http.Client/Http.Client.csproj" />
         <Project Path="src/Http.Server/Http.Server.csproj" />
         <Project Path="src/InfluxDb/InfluxDb.csproj" />
-        <Project Path="src/MySql/MySql.csproj" />
         <Project Path="src/OpcUa.Client/OpcUa.Client.csproj" />
         <Project Path="src/OpcUa.Server/OpcUa.Server.csproj" />
-        <Project Path="src/PostgreSql/PostgreSql.csproj" />
-        <Project Path="src/RelationalDatabase/RelationalDatabase.csproj" />
-        <Project Path="src/Sqlite/Sqlite.csproj" />
-        <Project Path="src/SqlServer/SqlServer.csproj" />
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/Common.Tests/Common.Tests.csproj" />
@@ -60,12 +55,7 @@
         <Project Path="tests/Http.Client.Tests/Http.Client.Tests.csproj" />
         <Project Path="tests/Http.Server.Tests/Http.Server.Tests.csproj" />
         <Project Path="tests/InfluxDb.Tests/InfluxDb.Tests.csproj" />
-        <Project Path="tests/MySql.Tests/MySql.Tests.csproj" />
         <Project Path="tests/OpcUa.Client.Tests/OpcUa.Client.Tests.csproj" />
         <Project Path="tests/OpcUa.Server.Tests/OpcUa.Server.Tests.csproj" />
-        <Project Path="tests/PostgreSql.Tests/PostgreSql.Tests.csproj" />
-        <Project Path="tests/RelationalDatabase.Tests/RelationalDatabase.Tests.csproj" />
-        <Project Path="tests/Sqlite.Tests/Sqlite.Tests.csproj" />
-        <Project Path="tests/SqlServer.Tests/SqlServer.Tests.csproj" />
     </Folder>
 </Solution>

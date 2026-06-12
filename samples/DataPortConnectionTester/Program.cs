@@ -13,10 +13,6 @@ internal static class Program
     private static readonly Dictionary<string, Func<Task>> s_choices = new()
     {
         { "OpcUa.Client", OpcUaClientConnectionTestAsync },
-        { "MySQL", MySqlConnectionTestAsync },
-        { "PostgreSql", PostgreSqlConnectionTestAsync },
-        { "Sql-Server", SqlServerConnectionTestAsync },
-        { "Sqlite", SqliteConnectionTestAsync },
         { "Http.Client", HttpClientConnectionTestAsync },
         { "InfluxDB", InfluxDbConnectionTestAsync },
     };
@@ -74,70 +70,6 @@ internal static class Program
             ApplicationCertificatesStorePath = "",
         };
         await OpcUaClientConnectionTester.TestConnectionAsync(clientCommunication);
-    }
-
-    private static async Task MySqlConnectionTestAsync()
-    {
-        MySqlDataPortCommunication communication = new()
-        {
-            Nodes = [],
-        };
-        _ = new MySqlDataPortProperties(communication)
-        {
-            Server = "",
-            Port = 3306,
-            UserId = "",
-            Password = "",
-            Database = "",
-        };
-        await MySqlConnectionTester.TestConnectionAsync(communication);
-    }
-
-    private static async Task PostgreSqlConnectionTestAsync()
-    {
-        PostgreSqlDataPortCommunication communication = new()
-        {
-            Nodes = [],
-        };
-        _ = new PostgreSqlDataPortProperties(communication)
-        {
-            Host = "",
-            Port = 5432,
-            UserId = "",
-            Password = "",
-            Database = "",
-        };
-        await PostgreSqlConnectionTester.TestConnectionAsync(communication);
-    }
-
-    private static async Task SqlServerConnectionTestAsync()
-    {
-        SqlServerDataPortCommunication communication = new()
-        {
-            Nodes = [],
-        };
-        _ = new SqlServerDataPortProperties(communication)
-        {
-            Host = "",
-            Port = 1433,
-            Database = "",
-            UserID = "",
-            Password = "",
-        };
-        await SqlServerConnectionTester.TestConnectionAsync(communication);
-    }
-
-    private static async Task SqliteConnectionTestAsync()
-    {
-        SqliteDataPortCommunication communication = new()
-        {
-            Nodes = [],
-        };
-        _ = new SqliteDataPortProperties(communication)
-        {
-            DataSource = "",
-        };
-        await SqliteConnectionTester.TestConnectionAsync(communication);
     }
 
     private static async Task HttpClientConnectionTestAsync()
