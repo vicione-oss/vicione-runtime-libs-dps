@@ -1,6 +1,6 @@
 # DataPorts
 
-ViciOne Suite runtime library providing DataPort providers for various protocols (OPC-UA, SQL databases, InfluxDB, etc.).
+ViciOne Suite runtime library providing DataPort providers for various protocols (OPC-UA, InfluxDB, etc.).
 
 **Solution file**: `dps.slnx`
 

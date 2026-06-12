@@ -4,12 +4,6 @@ Provider                                                       |Eingangsseite   
 -:|:-:|:-:|:-:|:-:
 [HTTP Client](#http-client)                                                  |:heavy_check_mark: |:heavy_check_mark: |:heavy_check_mark:     |:heavy_check_mark: / :x:
 ||||
-[**Relationale Datenbank**](#relationale-datenbanken)
-SQLite                                                         |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
-SQL-Server                                                     |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
-PostgreSQL                                                     |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
-MySql/MariaDB                                                  |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
-||||
 **Zeitreihendatenbank**
 InfluxDB 2.0                                                   |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
 ||||
@@ -53,18 +47,6 @@ Richtung|Name|Typ|Werte
 -|-|-|-
 Incoming, Outgoing|Headers|`Dictionary<string, string>`
 Outgoing|HttpMethod|`int`|0-GET, 1-POST, 2-PATCH, 3-PUT, 4-DELETE
-
-## Relationale Datenbanken
-
-### Node Eigenschaften
-
-PostgreSQL, SQL-Server, SQLite, MariaDB
-
-Name|Typ
--|-
-PrimaryKey|`bool`
-NotNull|`bool`
-AutoIncrement|`bool`
 
 ## OPC UA Server
 

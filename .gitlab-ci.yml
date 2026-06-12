@@ -81,36 +81,6 @@ Prerelease OPCUA Server Raw:
   after_script:
     - !reference [ .push-metadata ]
 
-Prerelease Sqlite Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Sqlite/Sqlite.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Sqlite'
-    METADATA_FILE: 'src/Sqlite/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Prerelease SQL-Server Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/SqlServer/SqlServer.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.SqlServer'
-    METADATA_FILE: 'src/SqlServer/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
 Prerelease HTTP Client Raw:
   extends: .dotnet-deploy-raw-rids
   variables:
@@ -120,36 +90,6 @@ Prerelease HTTP Client Raw:
     PROJECT: 'src/Http.Client/Http.Client.csproj'
     DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Http.Client'
     METADATA_FILE: 'src/Http.Client/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Prerelease PostgreSql Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/PostgreSql/PostgreSql.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.PostgreSql'
-    METADATA_FILE: 'src/PostgreSql/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Prerelease MySql Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/MySql/MySql.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.MySql'
-    METADATA_FILE: 'src/MySql/metadata.json'
     METADATA_VERSION_FILE: 'VERSION'
     METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
     METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
@@ -236,36 +176,6 @@ Release OPCUA Server Raw:
   after_script:
     - !reference [ .push-metadata ]
 
-Release Sqlite Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/Sqlite/Sqlite.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Sqlite'
-    METADATA_FILE: 'src/Sqlite/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Release SQL-Server Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/SqlServer/SqlServer.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.SqlServer'
-    METADATA_FILE: 'src/SqlServer/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
 Release HTTP Client Raw:
   extends: .dotnet-release-raw-rids
   variables:
@@ -275,36 +185,6 @@ Release HTTP Client Raw:
     PROJECT: 'src/Http.Client/Http.Client.csproj'
     DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.Http.Client'
     METADATA_FILE: 'src/Http.Client/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Release PostgreSql Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/PostgreSql/PostgreSql.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.PostgreSql'
-    METADATA_FILE: 'src/PostgreSql/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Release MySql Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/MySql/MySql.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.MySql'
-    METADATA_FILE: 'src/MySql/metadata.json'
     METADATA_VERSION_FILE: 'VERSION'
     METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
     METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
