@@ -51,36 +51,6 @@ Prerelease Dataport.Extensions.Testing NuGet:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
 
-Prerelease OPCUA Client Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/OpcUa.Client/OpcUa.Client.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.OpcUa.Client'
-    METADATA_FILE: 'src/OpcUa.Client/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Prerelease OPCUA Server Raw:
-  extends: .dotnet-deploy-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/OpcUa.Server/OpcUa.Server.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.OpcUa.Server'
-    METADATA_FILE: 'src/OpcUa.Server/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
 Prerelease HTTP Client Raw:
   extends: .dotnet-deploy-raw-rids
   variables:
@@ -145,36 +115,6 @@ Release DataPort.Extensions.Testing NuGet:
   variables:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
-
-Release OPCUA Client Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/OpcUa.Client/OpcUa.Client.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.OpcUa.Client'
-    METADATA_FILE: 'src/OpcUa.Client/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
-
-Release OPCUA Server Raw:
-  extends: .dotnet-release-raw-rids
-  variables:
-    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
-    USER: ${Raw_User_RW_JFrog}
-    PASSWORD: ${Raw_PW_RW_JFrog}
-    PROJECT: 'src/OpcUa.Server/OpcUa.Server.csproj'
-    DST_DIRECTORY: 'fbs/ViciOne.Suite.DataPort.OpcUa.Server'
-    METADATA_FILE: 'src/OpcUa.Server/metadata.json'
-    METADATA_VERSION_FILE: 'VERSION'
-    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
-    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
-  after_script:
-    - !reference [ .push-metadata ]
 
 Release HTTP Client Raw:
   extends: .dotnet-release-raw-rids
