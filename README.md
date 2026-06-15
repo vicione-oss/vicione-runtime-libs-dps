@@ -1,12 +1,5 @@
 # DataPorts
 
-Provider                                                       |Eingangsseite      |Ausgangsseite      |freie JSON Struktur    |Andere Provider spezifische Features
--:|:-:|:-:|:-:|:-:
-[HTTP Client](#http-client)                                                  |:heavy_check_mark: |:heavy_check_mark: |:heavy_check_mark:     |:heavy_check_mark: / :x:
-||||
-**Zeitreihendatenbank**
-InfluxDB 2.0                                                   |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
-
 ## Konfiguration - Verwendung
 
 Alle DataPort Provider (incoming, outgoing) bekommen im Konstruktor eine [`IDataPortCommunication`](src/DataPort/IDataPortCommunication.cs) übergeben. Diese enthält Informationen über den Baum und welche Knoten wie beeinflusst und/oder gesendet werden. Beide Möglichkeiten sind Listen, da ein Knoten mehrfach abgebildet sein kann. (z.B. als Gruppen Knoten und einzel Knoten gleichzeitig)
@@ -34,12 +27,3 @@ H|D1H|-
 - `Device 1` bekommt seine Werte über die Kanäle `Device 1 Temperature` und `Device 1 Humidity`
 - `Temperature` bekommt seinen Wert über den Kanal `Temperature`
 - `Humidity` wird einzeln nicht versendet
-
-## HTTP Client
-
-### Node Eigenschaften
-
-Richtung|Name|Typ|Werte
--|-|-|-
-Incoming, Outgoing|Headers|`Dictionary<string, string>`
-Outgoing|HttpMethod|`int`|0-GET, 1-POST, 2-PATCH, 3-PUT, 4-DELETE

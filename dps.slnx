@@ -19,8 +19,6 @@
     <Folder Name="/samples/">
         <Project Path="samples/Benchmarks/Benchmarks.csproj" />
         <Project Path="samples/DataPortConnectionTester/DataPortConnectionTester.csproj" />
-        <Project Path="samples/HttpServerIncomingTest/HttpServerIncomingTest.csproj" />
-        <Project Path="samples/HttpServerOutgoingTest/HttpServerOutgoingTest.csproj" />
     </Folder>
     <Folder Name="/docs/" />
     <Folder Name="/docs/DataPort.Extensions.Testing/">
@@ -33,24 +31,17 @@
         <File Path="Directory.Packages.props" />
         <File Path="NuGet.Config" />
         <File Path="README.md" />
-        <File Path="THIRD-PARTY-NOTICES.md" />
         <File Path="VERSION" />
     </Folder>
     <Folder Name="/src/">
         <Project Path="src/DataPort.Extensions/DataPort.Extensions.csproj" />
         <Project Path="src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj" />
         <Project Path="src/DataPort/DataPort.csproj" />
-        <Project Path="src/Http.Client/Http.Client.csproj" />
-        <Project Path="src/Http.Server/Http.Server.csproj" />
-        <Project Path="src/InfluxDb/InfluxDb.csproj" />
     </Folder>
     <Folder Name="/tests/">
         <Project Path="tests/Common.Tests/Common.Tests.csproj" />
         <Project Path="tests/DataPort.Extensions.Tests/DataPort.Extensions.Tests.csproj" />
         <Project Path="tests/DataPort.Extensions.Testing.Tests/DataPort.Extensions.Testing.Tests.csproj" />
         <Project Path="tests/DataPort.Tests/DataPort.Tests.csproj" />
-        <Project Path="tests/Http.Client.Tests/Http.Client.Tests.csproj" />
-        <Project Path="tests/Http.Server.Tests/Http.Server.Tests.csproj" />
-        <Project Path="tests/InfluxDb.Tests/InfluxDb.Tests.csproj" />
     </Folder>
 </Solution>
