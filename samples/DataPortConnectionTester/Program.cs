@@ -12,7 +12,6 @@ internal static class Program
 {
     private static readonly Dictionary<string, Func<Task>> s_choices = new()
     {
-        { "OpcUa.Client", OpcUaClientConnectionTestAsync },
         { "Http.Client", HttpClientConnectionTestAsync },
         { "InfluxDB", InfluxDbConnectionTestAsync },
     };
@@ -36,40 +35,6 @@ internal static class Program
 
             Console.ReadLine();
         }
-    }
-
-    private static async Task OpcUaClientConnectionTestAsync()
-    {
-        OpcUaServerDataPortCommunication serverCommunication = new();
-        _ = new OpcUaServerDataPortProperties(serverCommunication)
-        {
-            User = "",
-            Server = "",
-            Password = "",
-            ApplicationCertificatesStorePath = "",
-        };
-        using var loggerFactory = new NullLoggerFactory();
-
-        await using OpcUaServerDataPortIncoming incoming = new(serverCommunication, loggerFactory);
-        await using OpcUaServerDataPortOutgoing outgoing = new(serverCommunication, loggerFactory);
-
-        await incoming.ConnectAsync(CancellationToken.None);
-        await outgoing.ConnectAsync(CancellationToken.None);
-
-        OpcUaClientDataPortCommunication clientCommunication = new()
-        {
-            UserAuthenticationType = 1,
-        };
-        _ = new OpcUaClientDataPortProperties(clientCommunication)
-        {
-            Endpoint = "",
-            Server = "",
-            Password = "",
-            User = "",
-            ApplicationName = "",
-            ApplicationCertificatesStorePath = "",
-        };
-        await OpcUaClientConnectionTester.TestConnectionAsync(clientCommunication);
     }
 
     private static async Task HttpClientConnectionTestAsync()

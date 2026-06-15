@@ -260,29 +260,6 @@
           "NodaTime": "[3.0.0, 4.0.0)"
         }
       },
-      "OPCFoundation.NetStandard.Opc.Ua.Configuration": {
-        "type": "Transitive",
-        "resolved": "1.5.375.457",
-        "contentHash": "i+iFqjSwPMOQ5g1yJVMMXVLG54lsVUj7HPqbRAQxdm04UZ8uGNt59aF9BpkcBpYzNXSHoVUocZfuVeAcUCIj+A==",
-        "dependencies": {
-          "OPCFoundation.NetStandard.Opc.Ua.Core": "1.5.375.457"
-        }
-      },
-      "OPCFoundation.NetStandard.Opc.Ua.Core": {
-        "type": "Transitive",
-        "resolved": "1.5.375.457",
-        "contentHash": "u9aLQBTgZv1T4i2z/AXrAlfALIEG4DUHnIlDTzQox0aJ2pWSm4uyJBMZs/90AFveLHvtrHYU2iozNzYWP0Sopg==",
-        "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "9.0.1",
-          "Newtonsoft.Json": "13.0.3",
-          "OPCFoundation.NetStandard.Opc.Ua.Security.Certificates": "1.5.375.457"
-        }
-      },
-      "OPCFoundation.NetStandard.Opc.Ua.Security.Certificates": {
-        "type": "Transitive",
-        "resolved": "1.5.375.457",
-        "contentHash": "+kYvuS99heA4bJxtRyBqwlW2EfVuqK5e1wKG9tMP2QaEqRVJpc2L6smueDcyT04NgWMIdnQvWTiLhazoZi4ZHQ=="
-      },
       "Perfolizer": {
         "type": "Transitive",
         "resolved": "0.6.1",
@@ -367,13 +344,6 @@
           "ViciOne.Suite.DataPort": "[0.32.0, )"
         }
       },
-      "ViciOne.Suite.DataPort.OpcUa.Client": {
-        "type": "Project",
-        "dependencies": {
-          "OPCFoundation.NetStandard.Opc.Ua.Client": "[1.5.375.457, )",
-          "ViciOne.Suite.DataPort": "[0.32.0, )"
-        }
-      },
       "InfluxDB.Client": {
         "type": "CentralTransitive",
         "requested": "[5.0.0, )",
@@ -395,16 +365,6 @@
         "contentHash": "9HOdqlDtPptVcmKAjsQ/Nr5Rxfq6FMYLdhvZh1lVmeKR738qeYecQD7+ldooXf+u2KzzR1kafSphWngIM3C6ug==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5"
-        }
-      },
-      "OPCFoundation.NetStandard.Opc.Ua.Client": {
-        "type": "CentralTransitive",
-        "requested": "[1.5.375.457, )",
-        "resolved": "1.5.375.457",
-        "contentHash": "wzc7Jx7GVnxM3lPQpZaU4C+u13Jm5Rg/DRGdTJIFQCTW8M6C8J0CNU2f+9wcY4ajGYhD/cbBGy9tIIwf8hPpGA==",
-        "dependencies": {
-          "OPCFoundation.NetStandard.Opc.Ua.Configuration": "1.5.375.457",
-          "OPCFoundation.NetStandard.Opc.Ua.Core": "1.5.375.457"
         }
       },
       "ViciOne.ManagedEngine.Contracts": {

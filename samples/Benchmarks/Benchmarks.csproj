@@ -12,7 +12,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Http.Client\Http.Client.csproj" />
     <ProjectReference Include="..\..\src\InfluxDb\InfluxDb.csproj" />
-    <ProjectReference Include="..\..\src\OpcUa.Client\OpcUa.Client.csproj" />
   </ItemGroup>
 
 </Project>

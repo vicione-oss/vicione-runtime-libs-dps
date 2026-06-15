@@ -1,6 +1,6 @@
 # DataPorts
 
-ViciOne Suite runtime library providing DataPort providers for various protocols (OPC-UA, InfluxDB, etc.).
+ViciOne Suite runtime library providing DataPort providers for various protocols (InfluxDB, etc.).
 
 **Solution file**: `dps.slnx`
 
@@ -32,6 +32,6 @@ not in the `.csproj`.
 - `src/DataPort/` — core DataPort framework (no extensions)
 - `src/DataPort.Extensions/` — reusable base classes for building providers (see its CLAUDE.md)
 - `src/DataPort.Extensions.Testing/` — test helpers for extension-based providers
-- `src/{Protocol}/` — protocol-specific providers (Mqtt, OpcUa.Client, InfluxDb, etc.)
+- `src/{Protocol}/` — protocol-specific providers (InfluxDb, etc.)
 - `tests/` — test projects mirroring src layout
 - `samples/` — benchmark and example projects

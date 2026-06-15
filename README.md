@@ -6,10 +6,6 @@ Provider                                                       |Eingangsseite   
 ||||
 **Zeitreihendatenbank**
 InfluxDB 2.0                                                   |-                  |:heavy_check_mark: |:heavy_check_mark:     |-
-||||
-**moneo embedded**
-OPC UA Client                                                  |:heavy_check_mark: |:heavy_check_mark: |:x:                    |?
-[OPC UA Server](#opc-ua-server)                                |:heavy_check_mark: |:heavy_check_mark: |:x:                    |?
 
 ## Konfiguration - Verwendung
 
@@ -47,13 +43,3 @@ Richtung|Name|Typ|Werte
 -|-|-|-
 Incoming, Outgoing|Headers|`Dictionary<string, string>`
 Outgoing|HttpMethod|`int`|0-GET, 1-POST, 2-PATCH, 3-PUT, 4-DELETE
-
-## OPC UA Server
-
-### Node Eigenschaften
-
-Node Typ|Name|Verwendung
--|-|-
-Variable|Maximum|Gibt den Maximalwert an den ein Client senden darf bevor ein 'BadOutOfRange' Status als Antwort kommt. Wird nicht für Knoten vom Typ 'string' unterstützt
-Variable|Minimum|Gibt den Minimalwert an den ein Client senden darf bevor ein 'BadOutOfRange' Status als Antwort kommt. Wird nicht für Knoten vom Typ 'string' unterstützt
-Variable, Writeable Variable|Status|Soll zur Laufzeit dazu verwendet werden den Status der Nodes zu setzen. Es können sowohl die Namen der Statuscodes als string als auch der Wert als uint übergeben werden. Eine Liste der Statuscodes ist hier verfügbar: <https://reference.opcfoundation.org/Core/Part6/v104/docs/A.2>
