@@ -12,8 +12,6 @@ Build:
 
 Unit tests:
   extends: .dotnet-test-xunit
-  variables:
-    FILTER: 'Category!=Interoperability'
   artifacts:
     reports:
       junit: artifacts/tests/*-test-report.xml

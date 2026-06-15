@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AwesomeAssertions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace ViciOne.Suite.DataPort;
@@ -80,14 +80,14 @@ public class ManagedQueue_Append_Items
     [Fact]
     public void Logs_warning_if_limit_is_reached()
     {
-        TestLogger<ManagedQueue<int>> logger = new();
+        FakeLogger<ManagedQueue<int>> logger = new();
         using var queue = new ManagedQueue<int>([1], 1, logger, "my list");
         var items = new[] { 2, 3, };
 
         queue.Append(items);
 
-        logger.Calls.Should().Be(1);
-        logger.Message.Should().MatchEquivalentOf("*limit*my list*2*remove*");
+        logger.Collector.Count.Should().Be(1);
+        logger.LatestRecord.Message.Should().MatchEquivalentOf("*limit*my list*2*remove*");
     }
 }
 
