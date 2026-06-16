@@ -56,8 +56,6 @@
     <ItemGroup Condition="$(MSBuildProjectDirectory.Contains('src'))">
       <InternalsVisibleTo Include="$(MSBuildProjectName).Tests" />
       <InternalsVisibleTo Include="Benchmarks" />
-      <InternalsVisibleTo Include="HttpServerOutgoingTest" />
-      <InternalsVisibleTo Include="HttpServerIncomingTest" />
       <InternalsVisibleTo Include="DataPortConnectionTester" />
       <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>

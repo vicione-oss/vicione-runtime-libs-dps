@@ -10,8 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Http.Client\Http.Client.csproj" />
-    <ProjectReference Include="..\..\src\InfluxDb\InfluxDb.csproj" />
+    <ProjectReference Include="..\..\src\DataPort\DataPort.csproj" />
   </ItemGroup>
 
 </Project>
