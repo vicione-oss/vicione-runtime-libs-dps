@@ -234,11 +234,6 @@
         "resolved": "4.7.0",
         "contentHash": "VybpaOQQhqE6siHppMktjfGBw1GCwvCqiufqmP8F1nj7fTUNtW35LOEt3UZTEsECfo+ELAl/9o9nJx3U91i7vA=="
       },
-      "ViciOne.ManagedEngine.Serialization": {
-        "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "8ZwPSnqDn3lZODdhK2/7Qe54yNEWt3XIxmVDAd5IK86+OjsU3gSCcZdMOo1Zq2aqWja4KtlSzgvj3hQfMqiisQ=="
-      },
       "ViciOne.Suite.DataPort": {
         "type": "Project",
         "dependencies": {
@@ -263,6 +258,12 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.3",
           "ViciOne.ManagedEngine.Serialization": "1.0.0"
         }
+      },
+      "ViciOne.ManagedEngine.Serialization": {
+        "type": "CentralTransitive",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "8ZwPSnqDn3lZODdhK2/7Qe54yNEWt3XIxmVDAd5IK86+OjsU3gSCcZdMOo1Zq2aqWja4KtlSzgvj3hQfMqiisQ=="
       }
     }
   }

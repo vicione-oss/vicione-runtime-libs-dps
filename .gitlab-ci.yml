@@ -18,6 +18,27 @@ Unit tests:
 
 # Prerelease
 
+Prerelease FunctionBlock NuGet:
+  extends: .dotnet-deploy-nuget
+  variables:
+    PROJECT: 'src/FunctionBlock/FunctionBlock.csproj'
+    REPO: 'JFrogViciOne'
+
+Prerelease FunctionBlock Raw:
+  extends: .dotnet-deploy-raw-rids
+  variables:
+    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-dev'
+    USER: ${Raw_User_RW_JFrog}
+    PASSWORD: ${Raw_PW_RW_JFrog}
+    PROJECT: 'src/FunctionBlock/FunctionBlock.csproj'
+    DST_DIRECTORY: 'fbs/ViciOne.Suite.System.DataPort'
+    METADATA_FILE: 'src/FunctionBlock/metadata.json'
+    METADATA_VERSION_FILE: 'VERSION'
+    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
+    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
+  after_script:
+    - !reference [.push-metadata]
+
 Prerelease DataPort NuGet:
   extends: .dotnet-deploy-nuget
   variables:
@@ -37,6 +58,30 @@ Prerelease Dataport.Extensions.Testing NuGet:
     REPO: 'JFrogViciOne'
 
 # Release
+
+Release FunctionBlock NuGet:
+  extends: .dotnet-release-nuget
+  variables:
+    PROJECT: 'src/FunctionBlock/FunctionBlock.csproj'
+    REPO: 'JFrogViciOne'
+
+Release FunctionBlock Raw:
+  extends: .dotnet-release-raw-rids
+  variables:
+    SERVER: 'https://ifm.jfrog.io/artifactory/vicione-suite-staging'
+    USER: ${Raw_User_RW_JFrog}
+    PASSWORD: ${Raw_PW_RW_JFrog}
+    PROJECT: 'src/FunctionBlock/FunctionBlock.csproj'
+    DST_DIRECTORY: 'fbs/ViciOne.Suite.System.DataPort'
+    METADATA_FILE: 'src/FunctionBlock/metadata.json'
+    METADATA_VERSION_FILE: 'VERSION'
+    METADATA_MIN_VERSION_FILE: 'VERSION_CORE'
+    METADATA_MIN_VERSION_KEY: 'MinCoreVersion'
+  after_script:
+    - !reference [.push-metadata]
+
+Publish FunctionBlock Raw:
+  extends: .dotnet-release-public
 
 Release DataPort NuGet:
   extends: .dotnet-release-nuget
