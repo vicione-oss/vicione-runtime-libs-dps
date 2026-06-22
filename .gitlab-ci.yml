@@ -55,3 +55,14 @@ Release DataPort.Extensions.Testing NuGet:
   variables:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
+
+Publish Pages:
+  stage: release
+  pages: true
+  script:
+    - mkdir public
+    - echo "<html><body><p>Index</p></body></html>" > public/index.html
+    - echo "Publish Pages on \"$CI_PAGES_URL\""
+  rules:
+    - !reference [.rules_tag_manual]
+    - !reference [.rules_default_branch]
