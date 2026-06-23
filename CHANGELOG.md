@@ -6,6 +6,7 @@
 
 - Add new icons to DataPorts
 - Move all DataPort providers to separate repositories to keep DataPort core in one place
+- Integrate DataPort FunctionBlock into this repo
 
 ## 0.32.0 - 2026-05-11
 

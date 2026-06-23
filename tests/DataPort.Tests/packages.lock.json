@@ -259,11 +259,6 @@
         "resolved": "6.0.0",
         "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
-      "ViciOne.ManagedEngine.Serialization": {
-        "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "8ZwPSnqDn3lZODdhK2/7Qe54yNEWt3XIxmVDAd5IK86+OjsU3gSCcZdMOo1Zq2aqWja4KtlSzgvj3hQfMqiisQ=="
-      },
       "xunit.analyzers": {
         "type": "Transitive",
         "resolved": "1.27.0",
@@ -347,6 +342,12 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.3",
           "ViciOne.ManagedEngine.Serialization": "1.0.0"
         }
+      },
+      "ViciOne.ManagedEngine.Serialization": {
+        "type": "CentralTransitive",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "8ZwPSnqDn3lZODdhK2/7Qe54yNEWt3XIxmVDAd5IK86+OjsU3gSCcZdMOo1Zq2aqWja4KtlSzgvj3hQfMqiisQ=="
       },
       "xunit.v3.extensibility.core": {
         "type": "CentralTransitive",
