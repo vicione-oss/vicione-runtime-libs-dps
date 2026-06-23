@@ -1,0 +1,8 @@
+- name: Home
+  href: index.md
+- name: Overview
+  href: explanation/overview.md
+- name: DataPortCommunication
+  href: explanation/data-port-communication.md
+- name: LinkedNode and channels
+  href: explanation/linked-node.md

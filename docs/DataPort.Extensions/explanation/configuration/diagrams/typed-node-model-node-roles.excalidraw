@@ -1,0 +1,802 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://excalidraw-jetbrains-plugin",
+  "elements": [
+    {
+      "id": "root",
+      "type": "rectangle",
+      "x": 320,
+      "y": 0,
+      "width": 300,
+      "height": 64,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#ffec99",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 400001,
+      "version": 3,
+      "versionNonce": 96238479,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "roottx",
+          "type": "text"
+        },
+        {
+          "id": "arA",
+          "type": "arrow"
+        },
+        {
+          "id": "arB",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "roottx",
+      "type": "text",
+      "x": 330,
+      "y": 14,
+      "width": 280,
+      "height": 36,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 400003,
+      "version": 3,
+      "versionNonce": 520489185,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false,
+      "text": "ROOT - IRootConfigurationNode\nthe device (exactly one)",
+      "fontSize": 14,
+      "fontFamily": 1,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "root",
+      "originalText": "ROOT - IRootConfigurationNode\nthe device (exactly one)",
+      "lineHeight": 1.25,
+      "baseline": 18
+    },
+    {
+      "id": "branch1",
+      "type": "rectangle",
+      "x": 120,
+      "y": 150,
+      "width": 300,
+      "height": 64,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#a5d8ff",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 400005,
+      "version": 3,
+      "versionNonce": 1122251183,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "branch1tx",
+          "type": "text"
+        },
+        {
+          "id": "arA",
+          "type": "arrow"
+        },
+        {
+          "id": "arC",
+          "type": "arrow"
+        },
+        {
+          "id": "arD",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "branch1tx",
+      "type": "text",
+      "x": 130,
+      "y": 164,
+      "width": 280,
+      "height": 36,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 400007,
+      "version": 3,
+      "versionNonce": 1911833793,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false,
+      "text": "BRANCH - IBranchConfigurationNode\ngrouping (namespace / program)",
+      "fontSize": 14,
+      "fontFamily": 1,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "branch1",
+      "originalText": "BRANCH - IBranchConfigurationNode\ngrouping (namespace / program)",
+      "lineHeight": 1.25,
+      "baseline": 18
+    },
+    {
+      "id": "leafR",
+      "type": "rectangle",
+      "x": 560,
+      "y": 150,
+      "width": 320,
+      "height": 64,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#b2f2bb",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 400009,
+      "version": 3,
+      "versionNonce": 166732751,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "leafRtx",
+          "type": "text"
+        },
+        {
+          "id": "arB",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "leafRtx",
+      "type": "text",
+      "x": 570,
+      "y": 164,
+      "width": 300,
+      "height": 36,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 400011,
+      "version": 3,
+      "versionNonce": 1735394465,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false,
+      "text": "LEAF - IDataPointNode\ndirectly under root (flat protocols)",
+      "fontSize": 14,
+      "fontFamily": 1,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "leafR",
+      "originalText": "LEAF - IDataPointNode\ndirectly under root (flat protocols)",
+      "lineHeight": 1.25,
+      "baseline": 18
+    },
+    {
+      "id": "branch2",
+      "type": "rectangle",
+      "x": 40,
+      "y": 300,
+      "width": 280,
+      "height": 64,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#a5d8ff",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 400013,
+      "version": 3,
+      "versionNonce": 184078831,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "branch2tx",
+          "type": "text"
+        },
+        {
+          "id": "arC",
+          "type": "arrow"
+        },
+        {
+          "id": "arE",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "branch2tx",
+      "type": "text",
+      "x": 50,
+      "y": 314,
+      "width": 260,
+      "height": 36,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 400015,
+      "version": 3,
+      "versionNonce": 1529399425,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false,
+      "text": "BRANCH (nested)\nfolder / function block",
+      "fontSize": 14,
+      "fontFamily": 1,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "branch2",
+      "originalText": "BRANCH (nested)\nfolder / function block",
+      "lineHeight": 1.25,
+      "baseline": 18
+    },
+    {
+      "id": "leaf1",
+      "type": "rectangle",
+      "x": 350,
+      "y": 300,
+      "width": 240,
+      "height": 64,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#b2f2bb",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 400017,
+      "version": 3,
+      "versionNonce": 1594276879,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "leaf1tx",
+          "type": "text"
+        },
+        {
+          "id": "arD",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "leaf1tx",
+      "type": "text",
+      "x": 360,
+      "y": 314,
+      "width": 220,
+      "height": 36,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 400019,
+      "version": 3,
+      "versionNonce": 115216481,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false,
+      "text": "LEAF - IDataPointNode\none readable/writable value",
+      "fontSize": 14,
+      "fontFamily": 1,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "leaf1",
+      "originalText": "LEAF - IDataPointNode\none readable/writable value",
+      "lineHeight": 1.25,
+      "baseline": 18
+    },
+    {
+      "id": "leaf2",
+      "type": "rectangle",
+      "x": 40,
+      "y": 450,
+      "width": 280,
+      "height": 64,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#b2f2bb",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 400021,
+      "version": 3,
+      "versionNonce": 1779589679,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "leaf2tx",
+          "type": "text"
+        },
+        {
+          "id": "arE",
+          "type": "arrow"
+        }
+      ],
+      "updated": 1781510830578,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "leaf2tx",
+      "type": "text",
+      "x": 50,
+      "y": 464,
+      "width": 260,
+      "height": 36,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 400023,
+      "version": 3,
+      "versionNonce": 1079991361,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830579,
+      "link": null,
+      "locked": false,
+      "text": "LEAF - IDataPointNode\none readable/writable value",
+      "fontSize": 14,
+      "fontFamily": 1,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "leaf2",
+      "originalText": "LEAF - IDataPointNode\none readable/writable value",
+      "lineHeight": 1.25,
+      "baseline": 18
+    },
+    {
+      "id": "legend",
+      "type": "rectangle",
+      "x": 788,
+      "y": 439,
+      "width": 420,
+      "height": 210,
+      "angle": 0,
+      "strokeColor": "#868e96",
+      "backgroundColor": "#f1f3f5",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "dashed",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 400025,
+      "version": 11,
+      "versionNonce": 2097431631,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "id": "legendtx",
+          "type": "text"
+        }
+      ],
+      "updated": 1781510830579,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "legendtx",
+      "type": "text",
+      "x": 793,
+      "y": 479,
+      "width": 331.8246765136719,
+      "height": 130,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 400027,
+      "version": 14,
+      "versionNonce": 995083599,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510832510,
+      "link": null,
+      "locked": false,
+      "text": "Mirrors the device's physical hierarchy:\n\nROOT   - device endpoint (OPC-UA server, S7 PLC)\nBRANCH - grouping (namespace/folder, program/FB)\nLEAF   - one value (node, variable, tag)\n\nBranches carry no value - only leaves do.\nEach leaf becomes one runtime data point.",
+      "fontSize": 13,
+      "fontFamily": 1,
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": "legend",
+      "originalText": "Mirrors the device's physical hierarchy:\n\nROOT   - device endpoint (OPC-UA server, S7 PLC)\nBRANCH - grouping (namespace/folder, program/FB)\nLEAF   - one value (node, variable, tag)\n\nBranches carry no value - only leaves do.\nEach leaf becomes one runtime data point.",
+      "lineHeight": 1.25,
+      "baseline": 125
+    },
+    {
+      "id": "arA",
+      "type": "arrow",
+      "x": 440,
+      "y": 68,
+      "width": 160,
+      "height": 78,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 2
+      },
+      "seed": 400029,
+      "version": 3,
+      "versionNonce": 934601327,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830579,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -170,
+          78
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "root",
+        "focus": 0,
+        "gap": 4
+      },
+      "endBinding": {
+        "elementId": "branch1",
+        "focus": 0,
+        "gap": 4
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow"
+    },
+    {
+      "id": "arB",
+      "type": "arrow",
+      "x": 500,
+      "y": 68,
+      "width": 200,
+      "height": 78,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 2
+      },
+      "seed": 400031,
+      "version": 3,
+      "versionNonce": 1951662081,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830579,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          220,
+          78
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "root",
+        "focus": 0,
+        "gap": 4
+      },
+      "endBinding": {
+        "elementId": "leafR",
+        "focus": 0,
+        "gap": 4
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow"
+    },
+    {
+      "id": "arC",
+      "type": "arrow",
+      "x": 240,
+      "y": 218,
+      "width": 60,
+      "height": 78,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 2
+      },
+      "seed": 400033,
+      "version": 3,
+      "versionNonce": 720157839,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830579,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -60,
+          78
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "branch1",
+        "focus": 0,
+        "gap": 4
+      },
+      "endBinding": {
+        "elementId": "branch2",
+        "focus": 0,
+        "gap": 4
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow"
+    },
+    {
+      "id": "arD",
+      "type": "arrow",
+      "x": 320,
+      "y": 218,
+      "width": 130,
+      "height": 78,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 2
+      },
+      "seed": 400035,
+      "version": 3,
+      "versionNonce": 1421236193,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830579,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          150,
+          78
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "branch1",
+        "focus": 0,
+        "gap": 4
+      },
+      "endBinding": {
+        "elementId": "leaf1",
+        "focus": 0,
+        "gap": 4
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow"
+    },
+    {
+      "id": "arE",
+      "type": "arrow",
+      "x": 180,
+      "y": 368,
+      "width": 0,
+      "height": 78,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 2
+      },
+      "seed": 400037,
+      "version": 3,
+      "versionNonce": 979653295,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1781510830579,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          78
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": {
+        "elementId": "branch2",
+        "focus": 0,
+        "gap": 4
+      },
+      "endBinding": {
+        "elementId": "leaf2",
+        "focus": 0,
+        "gap": 4
+      },
+      "startArrowhead": null,
+      "endArrowhead": "arrow"
+    }
+  ],
+  "appState": {
+    "gridSize": null,
+    "viewBackgroundColor": "#ffffff"
+  },
+  "files": {}
+}

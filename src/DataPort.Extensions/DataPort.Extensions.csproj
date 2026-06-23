@@ -21,8 +21,9 @@
     <!-- Include documentation files in the package, preserving folder structure -->
     <ItemGroup>
         <None Include="..\..\docs\DataPort.Extensions\*.md" Pack="true" PackagePath="\" Visible="false"/>
-        <None Include="..\..\docs\DataPort.Extensions\Incoming\*.md" Pack="true" PackagePath="Incoming\" Visible="false"/>
-        <None Include="..\..\docs\DataPort.Extensions\Outgoing\*.md" Pack="true" PackagePath="Outgoing\" Visible="false"/>
+        <None Include="..\..\docs\DataPort.Extensions\explanation\**\*.md" Pack="true" PackagePath="explanation\" Visible="false"/>
+        <None Include="..\..\docs\DataPort.Extensions\how-to\**\*.md" Pack="true" PackagePath="how-to\" Visible="false"/>
+        <None Include="..\..\docs\DataPort.Extensions\reference\**\*.md" Pack="true" PackagePath="reference\" Visible="false"/>
     </ItemGroup>
 
   <ItemGroup>

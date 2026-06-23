@@ -1,11 +1,13 @@
 # DataPort.Extensions
 
-Reusable infrastructure library for building protocol-agnostic DataPort providers in ViciOne Suite. Consumers implement protocol-specific read/write clients; this library handles lifecycle orchestration, polling, queuing, validation, and resilience.
+Reusable infrastructure library for building protocol-agnostic DataPort implementations in ViciOne Suite. Consumers implement protocol-specific read/write clients; this library handles lifecycle orchestration, polling, queuing, validation, and resilience.
 
 **Target framework**: .NET 9.0
 **Root namespace**: `ViciOne.Suite.DataPort.Extensions`
 
 ## Architecture
+
+Canonical explanation for humans: [`../../docs/DataPort.Extensions/explanation/Overview.md`](../../docs/DataPort.Extensions/explanation/Overview.md). The summary below is the agent-facing cheat sheet — keep it terse and keep detail out of it.
 
 The library is split into two symmetric halves:
 
@@ -13,20 +15,21 @@ The library is split into two symmetric halves:
 `IncomingDataPortBase` orchestrates: connect → verify data points → start polling jobs → convert values → raise `Received` event → stop polling → disconnect.
 
 Key components:
-- `IClientLifecycleManager<TClient>` — acquire/release protocol connections
+- `IClientLifecycleManager<TClient, TClientInformation>` — acquire/release protocol connections (shared with Outgoing; lives in top-level `Client/`)
 - `IReadClient<TDataPointGroup, TDataPointValue>` — protocol-specific reads
 - `PollingJobOrchestrator` / `DataPointGroupPollingJob` — periodic polling per group
-- `PeriodicJob` — generic periodic task with Polly circuit breaker and timeout
-- `IDataPointValueConverter<TDataPoint, TDataPointValue>` — convert read values to `ExternalValue`
-- `IDataPointConfigurationVerifier<TDataPoint>` — optional pre-poll validation
+- `PeriodicJob` — generic periodic task that runs each tick through a (mandatory) Polly `ResiliencePipeline`
+- `IncomingDataPortBase.CreatePollingResiliencePipeline(TDataPointGroup)` — virtual hook returning each group's resilience pipeline; default returns `DefaultResiliencePipeline` (timeout + circuit breaker tuned to the group's poll frequency). The orchestrator calls it per group and threads the result down to `PeriodicJob`
+- `IncomingDataPortBase.ToExternalValues` / `ToExternalValue` — virtual hooks for converting read values to `ExternalValue`
+- `IDataPointConfigurationVerifier<TDataPoint>` — optional pre-poll validation (lives in top-level `Verification/`)
 
 ### Outgoing (write) data ports
-`OutgoingDataPortBase` orchestrates: connect → start queue processor → receive `SendAsync` calls → resolve channels → convert → validate (all-or-nothing) → enqueue → write with retry → disconnect.
+`OutgoingDataPortBase` orchestrates: connect → start queue processor → receive `SendAsync` calls → resolve channels → convert → range-validate (both all-or-nothing) → enqueue → write with retry → disconnect.
 
 Key components:
 - `ChannelResolver<TDataPoint>` — O(1) channel-name → data point lookup (pre-built at connect time)
-- `IExternalValueConverter<TDataPoint, TDataPointValue>` — convert `ExternalValue` to protocol value
-- `DataPointValueValidator<TDataPoint, TDataPointValue>` — type + range validation; drops entire batch if any value fails
+- `OutgoingDataPortBase.ConvertToDataPointValue` — abstract method converting an `ExternalValue` to a `DataPointValueConversion<TDataPointValue>` (`Converted…`/`NotConverted…`); failures reported as data, not thrown
+- `DataPointValueValidator<TDataPoint, TDataPointValue>` — range validation only (type is compile-time via `ITypedDataPointValue<TValue>`); drops entire batch if any value fails
 - `QueueProcessor<TValue>` — background write loop with peek/mark retry pattern
 - `PrependableChannelQueue<T>` / `ChannelQueue<T>` — bounded `System.Threading.Channels` queue with backpressure
 - `IRetryPolicy` — `BoundedRetryPolicy` or `InfiniteRetryPolicy`
@@ -39,8 +42,10 @@ Key components:
 |--------------------------------|---------------------|------------------------------------------------------------------------|
 | `IDataPoint`                   | `Model/DataPoints/` | Addressable data element; has `Channels`, `Identifier`, `DataTypeName` |
 | `IPollingDataPoint`            | `Model/DataPoints/` | Extends `IDataPoint` with `PollFrequency`                              |
-| `IDataPointValue<T>`           | `Model/DataPoints/` | Value + data point; `ValidateType()`, `IsInValueRange()`               |
-| `Channels`                     | `Model/DataPoints/` | Immutable record of `AffectedChannel` and `TransferredChannel` lists   |
+| `ITypedDataPoint<TValue>`      | `Model/DataPoints/` | `IDataPoint` declaring its .NET value type; `CreateTypedValue(TValue)` |
+| `IDataPointValue`              | `Model/DataPoints/` | Non-generic value view; `DataPoint`, `object? Value`, `IsInValueRange()` |
+| `ITypedDataPointValue<TValue>` | `Model/DataPoints/` | Strongly-typed value payload (`TypedValue`); removes runtime type check |
+| `Channels`                     | `Model/DataPoints/` | `record struct` of `Affected` + `Transferred` channel lists (`IReadOnlyList`) |
 | `PollFrequency`                | `Model/DataPoints/` | `TimeSpan` wrapper with implicit conversions                           |
 | `IRootConfigurationNode<TCom>` | `Model/TypedNodes/` | Root of typed configuration hierarchy; has `DeviceIdentifier`          |
 | `IConfigurationNode`           | `Model/TypedNodes/` | Intermediate node; holds child nodes and data point nodes              |
@@ -68,17 +73,17 @@ Related files live in `Model/TypedNodes/Mapping/` and its `Properties/` subfolde
 
 ## Important conventions
 
-**Validation semantics**: Outgoing validation is all-or-nothing. If any value in a batch fails type or range validation, the entire batch is discarded. This is intentional — do not change to partial validation without discussion.
+**Validation semantics**: The outgoing path has two all-or-nothing gates — conversion then range validation. If any value in a batch fails to convert, or any converted value is out of range, the entire batch is discarded. (Unmatched channels are the exception: they are logged and skipped, not batch-dropping.) This is intentional — do not change to partial validation without discussion. There is no runtime type check; type correctness is guaranteed at compile time by `ITypedDataPointValue<TValue>`.
 
 **Queue peek/mark pattern**: `QueueProcessor` peeks the head item before writing, then marks it as read only on success. This allows retry without re-enqueue. Do not refactor to dequeue-first.
 
 **Thread safety**: Base class lifecycle methods (`ConnectAsync`, `DisconnectAsync`, `SendAsync`) are NOT thread-safe and must be called from a single thread.
 
-**Logging**: Each major component has a companion `*Logs` class with structured log definitions and event IDs. Add new log messages there rather than inline. Event IDs 1000–1299 are reserved for `PeriodicJob`.
+**Logging**: Each major component has a companion `*Logs` class with structured log definitions and event IDs. Add new log messages there rather than inline.
 
 **Performance hot paths**: `OutgoingDataPortBase.SendAsync` and `QueueProcessor` use pre-allocated `List` capacities and indexed `for` loops — avoid introducing LINQ in those paths.
 
-**Logger access**: `OutgoingDataPortBase` exposes a `protected ILogger Logger` property. Subclasses use `Logger`; the base class uses it directly. The logger is initialized in the constructor from `ILoggerFactory`.
+**Logger access**: `OutgoingDataPortBase` holds a private `ILogger` for its own use and stores the injected `ILoggerFactory`. Subclasses that need to log should create their own typed logger from the factory rather than expect an inherited `Logger` property.
 
 ## Testing conventions
 
@@ -94,15 +99,15 @@ consistency tests). Reference this package in new test projects rather than reim
 
 ```
 src/DataPort.Extensions/
+├── Client/                       # IClientLifecycleManager, IClientInformation (shared)
 ├── Exceptions/
+├── Verification/                 # IDataPointConfigurationVerifier, MisConfiguredDataPoint (shared)
 ├── Incoming/
-│   ├── Client/                   # IClientLifecycleManager, IReadClient
-│   ├── Polling/
-│   │   └── Job/                  # PeriodicJob, DefaultResiliencePipeline
-│   ├── ValueConversion/          # IDataPointValueConverter
-│   └── Verification/             # IDataPointConfigurationVerifier
+│   ├── Client/                   # IReadClient
+│   └── Polling/
+│       └── Job/                  # PeriodicJob, DefaultResiliencePipeline
 ├── Model/
-│   ├── DataPoints/               # IDataPoint, IDataPointValue, Channels, PollFrequency
+│   ├── DataPoints/               # IDataPoint, IDataPointValue, Channels, PollFrequency, IPollingDataPoint, IDataPointPollingGroup
 │   ├── Mapping/                  # IDataPointsMapper, IDataPointGroupsMapper
 │   └── TypedNodes/
 │       └── Mapping/
@@ -111,10 +116,8 @@ src/DataPort.Extensions/
     ├── ChannelResolution/        # ChannelResolver, ChannelResolutions
     ├── Client/                   # IWriteClient
     ├── QueueProcessing/
-    │   ├── Bounded/              # ChannelQueue
-    │   ├── Prependable/          # PrependableChannelQueue
+    │   ├── Bounded/              # ChannelQueue, ChannelQueueBase, ChannelQueueEnumerator
+    │   ├── Prependable/          # PrependableChannelQueue, PrependableChannelQueueEnumerator, HeadSource
     │   └── Retry/                # IRetryPolicy, BoundedRetryPolicy, InfiniteRetryPolicy, RetryBackoffCalculator
-    └── Value/
-        ├── Conversion/           # IExternalValueConverter
-        └── Validation/           # DataPointValueValidator and result types
+    └── ValueValidation/          # DataPointValueValidator and result types
 ```

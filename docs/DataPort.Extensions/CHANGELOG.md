@@ -1,6 +1,52 @@
 # DataPort.Extensions — Changelog
 
-## 0.30.0 — unreleased
+## Unreleased — type-safe values, conversion/validation split
+
+### Added
+
+- `ITypedDataPoint<TValue>` and `ITypedDataPointValue<TValue>` (in `Model.DataPoints`) — strongly-typed data point and value interfaces. The CLR type argument is now the source of truth for a data point's data type, replacing the former enum/string discriminator. `ITypedDataPoint<TValue>` adds `CreateTypedValue(TValue)`; `ITypedDataPointValue<TValue>` adds `TypedValue`.
+- `DataPointValueConversion<TDataPointValue>` with cases `ConvertedDataPointValue<…>` and `NotConvertedDataPointValue<…>` (in `Model.DataPoints`) — a closed result type for value conversion, replacing the previous nullable-return pattern that silently lost the failure reason.
+- `DataPointValuesConversionResult<TDataPointValue>` (in `Outgoing.ValueValidation`) — batch conversion outcome with a computed `AllConverted`.
+- `Channels.AffectedChannels(params string[])` / `Channels.TransferredChannels(params string[])` — static factory helpers that build the channel lists from names.
+
+### Changed
+
+- **Breaking**: `IDataPoint` and `IDataPointValue` are no longer generic. `IDataPointValue` now exposes `IDataPoint DataPoint`, `object? Value`, and `bool IsInValueRange()`. The former `IDataPointValue<TDataPoint>` (which also carried `ValidateType()`) is replaced by `IDataPointValue` plus `ITypedDataPointValue<TValue>`.
+- **Breaking**: `OutgoingDataPortBase.ConvertValue(ExternalValue, TDataPoint): TDataPointValue` → `ConvertToDataPointValue(ExternalValue, TDataPoint): DataPointValueConversion<TDataPointValue>`. Conversion failures are now returned as data (a `NotConvertedDataPointValue`) rather than thrown or signalled with `null`.
+- **Breaking**: the outgoing write path is now two all-or-nothing stages — conversion, then range validation. A failure at either stage drops the whole batch. There is no longer a runtime *type* check (it is guaranteed at compile time by `ITypedDataPointValue<TValue>`).
+- **Breaking**: `DataPointValueValidator<TDataPoint, TDataPointValue>` validates range only; the constraint is now `TDataPointValue : IDataPointValue` (was `IDataPointValue<TDataPoint>`), the constructor takes an `ILogger`, and `ValidateAll(IReadOnlyList<TDataPointValue>)` returns `DataPointValuesValidationResult<TDataPointValue>`.
+- **Breaking**: `DataPointValuesValidationResult` now has a single type parameter `<TDataPointValue>` and carries `ValidValues` + `Failures`; `IsValid` is a computed property (was a constructor parameter).
+- **Breaking**: `DataPointValueValidationFailure` moved to `Model.DataPoints` and is now a non-generic `readonly record struct (IDataPoint DataPoint, ValidationFailureReason Reason, string Details)` — the `ActualValue` member is removed.
+- **Breaking**: `ValidationFailureReason.TypeMismatch` → `ValidationFailureReason.ConversionFailure`.
+- **Breaking**: `Channels` record-struct properties renamed: `AffectedChannels` → `Affected`, `TransferredChannels` → `Transferred`. (The old names now exist as the static factory helpers above.)
+
+### Removed
+
+- **Breaking**: `IDataPointValue.ValidateType()` and the `TypeValidationResult` type — type correctness is now guaranteed at compile time by `ITypedDataPointValue<TValue>`.
+
+### Migration
+
+```csharp
+// Before — single conversion method, type checked at runtime
+protected override MyValue ConvertValue(ExternalValue externalValue, MyPoint dataPoint)
+    => new MyValue(dataPoint, externalValue.Value);
+
+// After — return a conversion result; report (don't throw) failures
+protected override DataPointValueConversion<MyValue> ConvertToDataPointValue(
+    ExternalValue externalValue, MyPoint dataPoint)
+    => externalValue.Value is int raw
+        ? new ConvertedDataPointValue<MyValue>(dataPoint.CreateTypedValue(raw))
+        : new NotConvertedDataPointValue<MyValue>(new DataPointValueValidationFailure(
+            dataPoint, ValidationFailureReason.ConversionFailure, "Expected int"));
+```
+
+- Make your value type implement `ITypedDataPointValue<TValue>` (drop any `ValidateType()` implementation); keep `IsInValueRange()` for range checks.
+- Rename `Channels.AffectedChannels` / `.TransferredChannels` property access to `.Affected` / `.Transferred`.
+- Replace `ValidationFailureReason.TypeMismatch` with `ValidationFailureReason.ConversionFailure`.
+
+---
+
+## 0.30.0 — 2026-03-20
 
 ### Added
 
@@ -16,8 +62,8 @@
 - **Breaking**: `IDataPoint.DataTypeString` → `IDataPoint.DataTypeName: DataTypeName`
 - **Breaking**: `IConnectionManager<TClient>` renamed to `IClientLifecycleManager<TClient, TClientInformation>`, moved from `...Incoming.Client` to `...Client` (shared namespace, used by both base classes); no longer extends `IAsyncDisposable`; both methods now take a `TClientInformation` first parameter where `TClientInformation : IClientInformation` (see §5)
 - **Breaking**: `IDataPointsMapper` type parameters reordered: `<TDataPoint, TRootNode, TCom>` → `<TRootNode, TCom, TDataPoint>` (see §2)
-- **Breaking**: `IncomingDataPortBase` — new `TDataPoint` and `TClientInformation` type parameters (7 total), constructor replaced: `connectionManager` and `configurationVerifier` removed from constructor, now implemented as abstract properties `ClientLifecycleManager` and `ConfigurationVerifier`; new abstract `ClientInformation` property; `dataPointValueConverter` parameter removed; override `ToExternalValues` for custom conversion (see §3)
-- **Breaking**: `OutgoingDataPortBase` — three new type parameters `TRootNode`, `TCommunication`, `TClientInformation` (6 total); `TClient` renamed to `TWriteClient`; constructor replaced: `connectionManager` and `configurationVerifier` removed from constructor, now implemented as abstract properties `ClientLifecycleManager` and `ConfigurationVerifier`; new abstract `ClientInformation` property; `valueConverter` removed; `loggerFactory` moved to second position (see §4)
+- **Breaking**: `IncomingDataPortBase` — new `TDataPoint` and `TClientInformation` type parameters (7 total), constructor replaced: `connectionManager` and `configurationVerifier` removed from constructor; `ClientLifecycleManager` and `ClientInformation` now abstract properties; configuration verification is an optional virtual factory method `CreateConfigurationVerifier(TReadClient client)`; `dataPointValueConverter` parameter removed; override `ToExternalValues` for custom conversion (see §3)
+- **Breaking**: `OutgoingDataPortBase` — three new type parameters `TRootNode`, `TCommunication`, `TClientInformation` (6 total); `TClient` renamed to `TWriteClient`; constructor replaced: `connectionManager` and `configurationVerifier` removed from constructor; `ClientLifecycleManager` and `ClientInformation` now abstract properties; configuration verification is an optional virtual factory method `CreateConfigurationVerifier(TWriteClient client)`; `valueConverter` removed; `loggerFactory` moved to second position (see §4)
 - **Breaking**: `ConnectAsync` on both base classes now throws `InvalidConfigurationException` (was `ConnectionFailureException`) when data points fail configuration verification
 - **Breaking**: Namespace reorganisation — all types moved to more specific sub-namespaces (see §2)
 
@@ -28,7 +74,7 @@
 - **Breaking**: `IDataPointValueConverter<TDataPoint, TDataPointValue>` (incoming) — replaced by `IncomingDataPortBase.ToExternalValues` virtual method
 - **Breaking**: `IExternalValueConverter<TDataPoint, TDataPointValue>` (outgoing) — replaced by `OutgoingDataPortBase.ConvertValue` abstract method
 - **Breaking**: `QueueConfiguration` in `...Model` — replaced by `QueueConfiguration(QueueStrategy, QueueSize)` in `...Outgoing.QueueProcessing`
-- **Breaking**: `OutgoingDataPortBase` abstract/virtual members removed: `WriteClient`, `AcquireConnectionAsync`, `ValidateConnectionAsync`, `ReleaseConnectionAsync`, `DisposeClient` — replaced by `ConnectionManager` and `ConfigurationVerifier` abstract properties and `ConvertValue` abstract method
+- **Breaking**: `OutgoingDataPortBase` abstract/virtual members removed: `WriteClient`, `AcquireConnectionAsync`, `ValidateConnectionAsync`, `ReleaseConnectionAsync`, `DisposeClient` — replaced by `ClientLifecycleManager` and `ClientInformation` abstract properties, the `CreateConfigurationVerifier` virtual factory, and the `ConvertValue` abstract method
 
 ---
 
@@ -81,7 +127,7 @@ Update your `using` directives:
 | `...Outgoing` (`BoundedRetryPolicy`, `IRetryPolicy`, `InfiniteRetryPolicy`) | `...Outgoing.QueueProcessing.Retry` |
 | `...Resilience` (`IDelayProvider`) | `...Outgoing.QueueProcessing` |
 | `...Resilience` (`RetryBackoffCalculator`) | `...Outgoing.QueueProcessing.Retry` |
-| `...ValueValidation` | `...Outgoing.Value.Validation` |
+| `...ValueValidation` | `...Outgoing.ValueValidation` |
 | `...Incoming` (`DataPointGroupPollingJob`) | `...Incoming.Polling` |
 | `...PeriodicJob` (`PeriodicJob`, `DefaultResiliencePipeline`, ...) | `...Incoming.Polling.Job` |
 | `...Model` (`QueueConfiguration`) | `...Outgoing.QueueProcessing` |
@@ -123,9 +169,13 @@ protected MyIncomingDataPort(
     TimeProvider? timeProvider = null)
     : base(communication, typedNodeMapper, dataPointGroupsMapper, loggerFactory, timeProvider)
 
-protected override IClientLifecycleManager<MyClient, MyClientInformation> ClientLifecycleManager { get; } = new MyClientLifecycleManager();
-protected override MyClientInformation ClientInformation { get; } = new MyClientInformation(...);
-protected override IDataPointConfigurationVerifier<MyDataPoint>? ConfigurationVerifier => null;
+protected override IClientLifecycleManager<MyReadClient, MyClientInformation> ClientLifecycleManager { get; } = new MyClientLifecycleManager();
+public override MyClientInformation ClientInformation { get; } = new MyClientInformation(...);
+
+// Optional — override only if you need pre-poll configuration verification.
+// The base provides a virtual factory that returns null by default; the client is supplied at call time.
+protected override IDataPointConfigurationVerifier<MyDataPoint>? CreateConfigurationVerifier(MyReadClient client)
+    => new MyVerifier(client);
 ```
 
 **Abstract methods removed** — move this logic to the injected abstractions:
@@ -216,9 +266,13 @@ protected MyOutgoingDataPort(
     IDelayProvider delayProvider)
     : base(communication, loggerFactory, typedNodeMapper, mapper, queueConfiguration, delayProvider)
 
-protected override IClientLifecycleManager<MyClient, MyClientInformation> ClientLifecycleManager { get; } = new MyClientLifecycleManager();
-protected override MyClientInformation ClientInformation { get; } = new MyClientInformation(...);
-protected override IDataPointConfigurationVerifier<MyDataPoint>? ConfigurationVerifier => null;
+protected override IClientLifecycleManager<MyWriteClient, MyClientInformation> ClientLifecycleManager { get; } = new MyClientLifecycleManager();
+public override MyClientInformation ClientInformation { get; } = new MyClientInformation(...);
+
+// Optional — override only if you need pre-connect configuration verification.
+// The base provides a virtual factory that returns null by default; the client is supplied at call time.
+protected override IDataPointConfigurationVerifier<MyDataPoint>? CreateConfigurationVerifier(MyWriteClient client)
+    => new MyVerifier(client);
 ```
 
 **Abstract members removed:**
@@ -227,7 +281,7 @@ protected override IDataPointConfigurationVerifier<MyDataPoint>? ConfigurationVe
 |---|---|
 | `abstract IWriteClient<TDataPointValue> WriteClient { get; }` | `TWriteClient` (returned by `IClientLifecycleManager`) now implements `IWriteClient<TDataPointValue>` directly |
 | `abstract Task<TClient> AcquireConnectionAsync(CancellationToken)` | Implement `abstract IClientLifecycleManager<TWriteClient, TClientInformation> ClientLifecycleManager { get; }` |
-| `abstract Task ValidateConnectionAsync(CancellationToken)` | Implement `abstract IDataPointConfigurationVerifier<TDataPoint>? ConfigurationVerifier { get; }` (return `null` if no verification needed) |
+| `abstract Task ValidateConnectionAsync(CancellationToken)` | Override `protected virtual IDataPointConfigurationVerifier<TDataPoint>? CreateConfigurationVerifier(TWriteClient client)` (default returns `null` — no verification) |
 | `abstract Task ReleaseConnectionAsync(CancellationToken)` | `IClientLifecycleManager.ReleaseAsync` is called internally by the base class |
 | `virtual void DisposeClient()` | Remove; dispose logic belongs in `IClientLifecycleManager` |
 | `abstract IDataPointValueFactory<TDataPoint, TDataPointValue> ValueFactory { get; }` | Implement `ConvertValue` abstract method |
@@ -235,14 +289,18 @@ protected override IDataPointConfigurationVerifier<MyDataPoint>? ConfigurationVe
 **Abstract properties added** — implement on your subclass:
 
 ```csharp
-// Connection manager — required
-protected override IClientLifecycleManager<MyClient, MyClientInformation> ClientLifecycleManager { get; } = new MyClientLifecycleManager();
+// Client lifecycle manager — required
+protected override IClientLifecycleManager<MyWriteClient, MyClientInformation> ClientLifecycleManager { get; } = new MyClientLifecycleManager();
 
 // Client information — uniquely identifies the connection
-protected override MyClientInformation ClientInformation { get; } = new MyClientInformation(...);
+public override MyClientInformation ClientInformation { get; } = new MyClientInformation(...);
+```
 
-// Configuration verifier — return null to skip verification
-protected override IDataPointConfigurationVerifier<MyDataPoint>? ConfigurationVerifier => null;
+**Optional virtual factory method** — override only if you need pre-connect configuration verification. The client is passed in so the verifier can query the live device:
+
+```csharp
+protected override IDataPointConfigurationVerifier<MyDataPoint>? CreateConfigurationVerifier(MyWriteClient client)
+    => new MyVerifier(client);
 ```
 
 **Abstract method added** — implement directly on your subclass:

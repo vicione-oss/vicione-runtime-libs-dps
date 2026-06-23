@@ -1,0 +1,20 @@
+- name: Building a DataPort
+  href: index.md
+- name: Shared building blocks
+  items:
+    - name: Define the configuration schema
+      href: shared/configuration-schema.md
+    - name: Model the configuration as typed nodes
+      href: shared/node-model.md
+    - name: Define the runtime data points
+      href: shared/data-points.md
+    - name: Manage the connection
+      href: shared/connection.md
+    - name: Verify configuration on connect
+      href: shared/configuration-verification.md
+    - name: Keep the schema and node model in sync
+      href: shared/yaml-consistency-test.md
+- name: Build an incoming data port
+  href: incoming-dataport/incoming-data-port.md
+- name: Build an outgoing data port
+  href: outgoing-dataport/outgoing-data-port.md
