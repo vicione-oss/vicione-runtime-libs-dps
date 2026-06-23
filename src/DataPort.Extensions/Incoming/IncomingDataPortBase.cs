@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Polly;
 using ViciOne.ManagedEngine.ExternalCommunication;
 using ViciOne.Suite.DataPort.Extensions.Client;
 using ViciOne.Suite.DataPort.Extensions.Exceptions;
 using ViciOne.Suite.DataPort.Extensions.Incoming.Client;
 using ViciOne.Suite.DataPort.Extensions.Incoming.Polling;
+using ViciOne.Suite.DataPort.Extensions.Incoming.Polling.Job;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 using ViciOne.Suite.DataPort.Extensions.Model.Mapping;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
@@ -180,6 +182,19 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
         null;
 
     /// <summary>
+    /// Creates the resilience pipeline that wraps the polling job for a single data point group. Invoked once per
+    /// group. The default implementation returns <see cref="DefaultResiliencePipeline"/> — a timeout plus circuit
+    /// breaker tuned to the group's poll frequency. Override to supply a custom pipeline; inspect
+    /// <paramref name="group"/> to tune per group, or ignore it and return a shared instance if a single pipeline
+    /// should govern all groups.
+    /// </summary>
+    /// <param name="group">The data point group the pipeline will serve.</param>
+    protected virtual ResiliencePipeline<IReadOnlyList<TDataPointValue>> CreatePollingResiliencePipeline(
+        TDataPointGroup group)
+        => DefaultResiliencePipeline.CreateDefaultResiliencePipeline<IReadOnlyList<TDataPointValue>>(
+            group.PollFrequency, _logger);
+
+    /// <summary>
     /// Converts a batch of strongly-typed data point values to external values. The default implementation emits one
     /// <see cref="ExternalValue"/> per transferred channel of each value's data point, using the untyped
     /// <see cref="IDataPointValue.Value"/>. Override to customise the projection.
@@ -220,7 +235,8 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
     private void StartPollingDataPoints(TReadClient client)
     {
         _pollingOrchestrator = new PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>(
-            _loggerFactory, _timeProvider, client, DataPointGroups, PublishDataPointValues);
+            _loggerFactory, _timeProvider, client, DataPointGroups, PublishDataPointValues,
+            CreatePollingResiliencePipeline);
         _pollingOrchestrator.Start();
     }
 

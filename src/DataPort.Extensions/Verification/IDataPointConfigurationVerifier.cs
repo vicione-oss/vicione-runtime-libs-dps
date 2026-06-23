@@ -9,6 +9,13 @@ namespace ViciOne.Suite.DataPort.Extensions.Verification;
 /// Verifies that a set of data points are correctly configured before the data port starts operating.
 /// </summary>
 /// <typeparam name="TDataPoint">The type of the data point to verify.</typeparam>
+/// <remarks>
+/// Report misconfiguration by returning failures rather than throwing: the base class logs each
+/// returned <see cref="MisconfiguredDataPoint{TDataPoint}"/> and aborts <c>ConnectAsync</c> with an
+/// <see cref="Exceptions.InvalidConfigurationException"/> when the returned list is non-empty.
+/// Supply an instance through the base class's <c>CreateConfigurationVerifier</c> factory; the default
+/// returns <see langword="null"/>, which skips verification.
+/// </remarks>
 public interface IDataPointConfigurationVerifier<TDataPoint> where TDataPoint : IDataPoint
 {
     /// <summary>

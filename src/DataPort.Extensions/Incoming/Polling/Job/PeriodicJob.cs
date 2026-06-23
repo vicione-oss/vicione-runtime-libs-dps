@@ -22,50 +22,37 @@ namespace ViciOne.Suite.DataPort.Extensions.Incoming.Polling.Job;
 /// </list>
 /// <para>The <see cref="PerformJob"/> callback may execute concurrently with itself if execution takes longer than the interval.</para>
 /// </remarks>
-public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
+/// <param name="executionInterval">The time interval between job executions.</param>
+/// <param name="input">The input data for the job.</param>
+/// <param name="onJobOutputAvailable">Callback invoked when job output is available.</param>
+/// <param name="resiliencePipeline">The resilience pipeline wrapping each job execution.</param>
+/// <param name="timeProvider">Optional time provider for testing purposes.</param>
+/// <param name="logger">Optional logger for job execution events.</param>
+/// <param name="externalCancellation">Optional external cancellation token to coordinate with other components.</param>
+public abstract class PeriodicJob<TJobInput, TJobOutput>(
+    TimeSpan executionInterval,
+    TJobInput input,
+    Action<TJobOutput> onJobOutputAvailable,
+    ResiliencePipeline<TJobOutput> resiliencePipeline,
+    TimeProvider? timeProvider = null,
+    ILogger<PeriodicJob<TJobInput, TJobOutput>>? logger = null,
+    CancellationToken? externalCancellation = null) : IAsyncDisposable
 {
-    private readonly CancellationTokenSource _forCancelling;
-    private readonly TJobInput _input;
-    private readonly ILogger<PeriodicJob<TJobInput, TJobOutput>> _logger;
-    private readonly ResiliencePipeline<TJobOutput> _resiliencePipeline;
-    private readonly Action<TJobOutput> _onJobOutputAvailable;
-    private readonly Lazy<PeriodicTimer> _timer;
-    private string? _jobName;
+    private readonly CancellationTokenSource _forCancelling =
+        CancellationTokenSource.CreateLinkedTokenSource(externalCancellation ?? CancellationToken.None);
+
+    private readonly ILogger<PeriodicJob<TJobInput, TJobOutput>> _logger =
+        logger ?? new NullLogger<PeriodicJob<TJobInput, TJobOutput>>();
+
+    private readonly Lazy<PeriodicTimer> _timer = new(() =>
+        new PeriodicTimer(executionInterval, timeProvider ?? TimeProvider.System));
+
     private Task? _periodExecutionLoop;
-
-    /// <param name="executionInterval">The time interval between job executions.</param>
-    /// <param name="input">The input data for the job.</param>
-    /// <param name="onJobOutputAvailable">Callback invoked when job output is available.</param>
-    /// <param name="resiliencePipeline">Optional resilience pipeline. If not provided, a default pipeline with circuit breaker and timeout is used.</param>
-    /// <param name="timeProvider">Optional time provider for testing purposes.</param>
-    /// <param name="logger">Optional logger for job execution events.</param>
-    /// <param name="externalCancellation">Optional external cancellation token to coordinate with other components.</param>
-    protected PeriodicJob(TimeSpan executionInterval,
-        TJobInput input,
-        Action<TJobOutput> onJobOutputAvailable,
-        ResiliencePipeline<TJobOutput>? resiliencePipeline = null,
-        TimeProvider? timeProvider = null,
-        ILogger<PeriodicJob<TJobInput, TJobOutput>>? logger = null,
-        CancellationToken? externalCancellation = null)
-    {
-        _input = input;
-        _onJobOutputAvailable = onJobOutputAvailable;
-        _forCancelling =
-            CancellationTokenSource.CreateLinkedTokenSource(externalCancellation ?? CancellationToken.None);
-        _logger = logger ?? new NullLogger<PeriodicJob<TJobInput, TJobOutput>>();
-        _resiliencePipeline = resiliencePipeline ??
-                              DefaultResiliencePipeline.CreateDefaultResiliencePipeline<TJobOutput>(executionInterval,
-                                  _logger);
-        _timer =
-            new Lazy<PeriodicTimer>(() => new PeriodicTimer(executionInterval, timeProvider ?? TimeProvider.System));
-
-        ExecutionInterval = executionInterval;
-    }
 
     /// <summary>
     /// Gets the time interval between job executions.
     /// </summary>
-    protected TimeSpan ExecutionInterval { get; }
+    protected TimeSpan ExecutionInterval { get; } = executionInterval;
 
     /// <summary>
     /// Performs the actual job logic. This method is called periodically based on the execution interval.
@@ -126,10 +113,10 @@ public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
         try
         {
             _logger.JobIterationStarting(JobName);
-            var jobOutput = await _resiliencePipeline.ExecuteAsync(
-                async pipeLineCancellation => await PerformJob(_input, pipeLineCancellation).ConfigureAwait(false),
+            var jobOutput = await resiliencePipeline.ExecuteAsync(
+                async pipeLineCancellation => await PerformJob(input, pipeLineCancellation).ConfigureAwait(false),
                 _forCancelling.Token).ConfigureAwait(false);
-            _onJobOutputAvailable.Invoke(jobOutput);
+            onJobOutputAvailable.Invoke(jobOutput);
             _logger.JobIterationFinished(JobName);
         }
         catch (OperationCanceledException)
@@ -194,5 +181,5 @@ public abstract class PeriodicJob<TJobInput, TJobOutput> : IAsyncDisposable
     /// <summary>
     /// Gets the job name, computing it on first access and caching it.
     /// </summary>
-    private string JobName => _jobName ??= GetJobName(_input);
+    private string JobName => field ??= GetJobName(input);
 }
