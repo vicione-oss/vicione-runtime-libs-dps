@@ -1,0 +1,14 @@
+<Project>
+
+  <!--
+    Intentionally empty: this stops MSBuild's upward search for Directory.Build.props
+    at the docs/ folder, so the docs container project (Docs.csproj) does NOT inherit
+    the repo-root conventions (net10.0 TFM, TreatWarningsAsErrors, RuntimeIdentifiers,
+    RestorePackagesWithLockFile / RestoreLockedMode, NuGet packaging).
+
+    Those conventions are meant for code projects under src/, tests/ and samples/.
+    Applying them here would, among other things, force a packages.lock.json onto a
+    project that has no packages. Keep this file empty (do not import the parent).
+  -->
+
+</Project>

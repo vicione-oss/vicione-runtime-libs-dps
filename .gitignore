@@ -429,3 +429,11 @@ launchSettings.json
 
 ### Rider ###
 .idea/
+
+# DocFX generated documentation output (built on demand, never committed)
+docs/**/_site/
+# GitLab Pages output assembled by the `pages` CI job from docs/_site.
+/public/
+# Generated API metadata; keep only the hand-written API landing page.
+docs/DataPort.Extensions/reference/api/*
+!docs/DataPort.Extensions/reference/api/index.md

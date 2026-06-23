@@ -1,0 +1,51 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**",
+          "README.md",
+          "**/obj/**",
+          "**/bin/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "**/*.{svg,png,jpg,jpeg,gif}"
+        ],
+        "exclude": [
+          "_site/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "DataPort",
+      "_appTitle": "DataPort",
+      "_enableSearch": true,
+      "_enableRightTOC": true,
+      "_disableContribution": true
+    },
+    "validate": {
+      "metadata": true,
+      "links": true
+    },
+    "markdownEngineName": "markdig",
+    "xref": [
+      "https://github.com/dotnet/docfx/raw/main/.xrefmap.json"
+    ],
+    "serve": {
+      "port": 8081
+    }
+  }
+}

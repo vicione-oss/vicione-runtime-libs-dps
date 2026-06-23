@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.56">
+
+  <!--
+    Documentation container project for the docs/ root and the areas that don't have
+    their own per-area docs project.
+
+    The per-area docs (docs/DataPort/, docs/DataPort.Extensions/,
+    docs/DataPort.Extensions.Testing/) now each have their own .Docs.csproj that
+    mirrors the matching src/ project. This container is what's left over: the
+    top-level docs hub (docfx.json + index.md — a single landing page linking to each
+    area site) and docs/diagram-creation/ (the shared diagram tooling and stencils).
+
+    Like the per-area docs projects, this compiles nothing and produces no output.
+    Microsoft.Build.NoTargets is used (instead of Microsoft.NET.Sdk) so the stray
+    docs/diagram-creation/fix-excalidraw-fonts.cs is never compiled.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <!--
+    Surface the docs hub files and diagram-creation/ as None items (never compiled or
+    copied — they just appear in Solution Explorer). The hub's generated, git-ignored
+    output (_site/) is deliberately not globbed. A new top-level docs folder won't show
+    up until it is added here, or — preferably — given its own per-area .Docs.csproj.
+  -->
+  <ItemGroup>
+    <None Include="docfx.json" />
+    <None Include="index.md" />
+    <None Include="toc.yml" />
+    <None Include="diagram-creation/**" />
+  </ItemGroup>
+
+</Project>

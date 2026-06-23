@@ -17,6 +17,19 @@ default:
 Build:
   extends: .dotnet-build
 
+# Documentation site (GitLab Pages)
+#
+# `DocFX` builds the whole docs/ tree into one combined DocFX site once (runs automatically, doubling
+# as a docs-build check) and emits the resolved version + rendered site as artifacts. The publish jobs
+# below `needs:` it and are the manual gate (play button) that deploys the prebuilt artifact without
+# rebuilding: the prerelease one to a short-lived per-pipeline preview, and the two release ones to a
+# permanent per-version subpath and to the Pages root (the default/current docs).
+# The `.dotnet-docfx-*` job templates these extend are defined locally at the bottom of this file (a
+# temporary copy pending upstreaming to CI-Templates/v2/dotnet.yml). Override DOCFX_CONFIG / DOCFX_SITE
+# in the extending job if this repo's docfx.json or output dir ever moves.
+DocFX:
+  extends: .dotnet-docfx-build
+
 Unit tests:
   extends: .dotnet-test-xunit
   artifacts:
@@ -64,7 +77,35 @@ Prerelease Dataport.Extensions.Testing NuGet:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
 
+# Documentation site (GitLab Pages), versioned to match the prerelease NuGet packages. Publishes the
+# site built by `DocFX` under a per-prerelease subfolder keyed by the SAME version the NuGet packages
+# use (`<VERSION>-ci<CI_PIPELINE_ID>`); each deployment is a disposable preview (expires).
+Prerelease DocFX Pages:
+  extends: .dotnet-docfx-pages-prerelease
+  needs:
+    - job: DocFX
+      artifacts: true
+
+# Publishes the current main docs to the Pages root (the default/current docs) on every default-branch
+# pipeline, so the root URL always tracks main. Auto (no gate). Released versions are NOT mirrored to
+# root — they live only under their permanent `/<version>/` subpath (see `Release DocFX Pages`).
+Main DocFX Pages:
+  extends: .dotnet-docfx-pages-main
+  needs:
+    - job: DocFX
+      artifacts: true
+
 # Release
+
+# Documentation site (GitLab Pages) for a tagged release. Publishes the site built by `DocFX` to a
+# permanent per-version subpath (`/<version>/`, never expires) so every released version stays browsable
+# at its own URL. The default/current docs at the Pages root are owned by `Main DocFX Pages` (main),
+# not by releases.
+Release DocFX Pages:
+  extends: .dotnet-docfx-pages-release
+  needs:
+    - job: DocFX
+      artifacts: true
 
 Release FunctionBlock NuGet:
   extends: .dotnet-release-nuget
@@ -108,13 +149,110 @@ Release DataPort.Extensions.Testing NuGet:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
 
-Publish Pages:
-  stage: release
-  pages: true
+# ---------------------------------------------------------------------------------------------------
+# Local DocFX → GitLab Pages job templates (TEMPORARY)
+#
+# In-repo copy of the `.dotnet-docfx-*` templates, kept here so this pipeline can be validated before
+# the jobs are upstreamed to vicione-oss/tooling/templates (CI-Templates/v2/dotnet.yml). Once that PR
+# lands, delete this block — the `extends:` lines keep working against the shared templates unchanged.
+#
+# The publish jobs reuse the existing `deploy` (prerelease) and `release` (release) stages for now,
+# rather than a dedicated `pages` stage, so this file needs no local `stages:` override. ("pages" in
+# the job names still refers to GitLab Pages, the publish target — not the stage.)
+#
+# Adapted from the upstream draft only where hosting them here requires it: cross-file YAML anchors
+# (`*nuget_credentials`, `*set_version`, `*rules_*`) become `!reference [...]` because anchors do not
+# cross `include` boundaries, whereas `!reference` resolves against the included template's keys.
+#
+# Configurable per consumer via job `variables` (override in the extending job):
+#   DOCFX_CONFIG    path to the docfx config (build only)     default 'docs/docfx.json'
+#   DOCFX_SITE      rendered output dir that gets published    default 'docs/_site'
+#                   (set on the build job AND every publish job — keep them in sync if changed)
+#   DOCS_EXPIRE_IN  prerelease preview retention               default '30 days'
+#
+# Build is split from publish on purpose: `pages.path_prefix` is expanded from CI/CD variables *before*
+# a job's `script` runs, so the version that keys the per-release subfolder cannot be computed in the
+# same job that consumes it. `.dotnet-docfx-build` renders the site once and emits the resolved version
+# as the `DOCS_VERSION` dotenv variable (plus the site as an artifact); the publish jobs `needs:` it,
+# read `DOCS_VERSION` into `path_prefix`, and deploy the prebuilt artifact without rebuilding. Multiple
+# versions coexist via GitLab Pages parallel deployments (one distinct `path_prefix` per deployment).
+# ---------------------------------------------------------------------------------------------------
+
+# Build the combined DocFX site once with `dotnet docfx`. Runs automatically — it doubles as a
+# docs-build check and produces the artifact + `DOCS_VERSION` dotenv the publish jobs consume. The
+# *publish* jobs below are the manual gate (their own play button); they must NOT be automatic jobs
+# that `needs:` a manual build, or GitLab skips them with no way to trigger (an auto job depending on
+# an optional `when: manual` + `allow_failure` job is skipped).
+.dotnet-docfx-build:
+  stage: build
+  variables:
+    DOCFX_CONFIG: 'docs/docfx.json'
+    DOCFX_SITE: 'docs/_site'
   script:
-    - mkdir public
-    - echo "<html><body><p>Index</p></body></html>" > public/index.html
-    - echo "Publish Pages on \"$CI_PAGES_URL\""
+    - !reference [.nuget_credentials]   # fill NuGet.Config placeholders so docfx can restore for the API metadata
+    - !reference [.set_version]
+    - dotnet tool restore               # docfx is pinned in .config/dotnet-tools.json
+    - dotnet docfx "${DOCFX_CONFIG}"
+    - test -s "${DOCFX_SITE}/index.html" # fail fast if the build produced no landing page
+    - echo "DOCS_VERSION=${VERSION}" > docfx.version.env
+    - 'echo "DocFX site version: ${VERSION}"'
+  artifacts:
+    paths:
+      - $DOCFX_SITE
+    reports:
+      dotenv: docfx.version.env
+  rules:
+    - !reference [.rules_tag]
+    - !reference [.rules_default_branch]
+    - !reference [.rules_merge_request]
+    - !reference [.rules_web]
+
+# Prerelease: publish the prebuilt site to GitLab Pages under a per-pipeline `<version>-ci<pipeline>`
+# subfolder. Each deployment is a disposable preview, so it expires after `DOCS_EXPIRE_IN`. Manual
+# (the gate) — the auto `DocFX` build it needs has already run, so this job's play button is active.
+.dotnet-docfx-pages-prerelease:
+  stage: deploy
+  variables:
+    DOCFX_SITE: 'docs/_site'
+    DOCS_EXPIRE_IN: '30 days'
+  script:
+    - 'echo "Publishing prerelease DocFX site ${DOCS_VERSION} to GitLab Pages (path_prefix: ${DOCS_VERSION}, expires in ${DOCS_EXPIRE_IN})"'
+  pages:
+    path_prefix: "$DOCS_VERSION"
+    expire_in: "$DOCS_EXPIRE_IN"
+    publish: "$DOCFX_SITE"
+  rules:
+    - !reference [.rules_default_branch_manual]
+    - !reference [.rules_merge_request_manual]
+    - !reference [.rules_web_manual]
+
+# Release: publish the prebuilt site to GitLab Pages under a permanent per-release `<version>` subfolder
+# (`expire_in: never`). Every released version stays browsable at `/<version>/`. Manual (the gate).
+.dotnet-docfx-pages-release:
+  stage: release
+  variables:
+    DOCFX_SITE: 'docs/_site'
+  script:
+    - 'echo "Publishing release DocFX site ${DOCS_VERSION} to GitLab Pages (path_prefix: ${DOCS_VERSION}, permanent)"'
+  pages:
+    path_prefix: "$DOCS_VERSION"
+    expire_in: never
+    publish: "$DOCFX_SITE"
   rules:
     - !reference [.rules_tag_manual]
+
+# Default branch (main): publish the prebuilt site to the GitLab Pages root (no `path_prefix`) so the
+# default/current documentation always tracks main. Auto — root updates on every default-branch
+# pipeline; each publish overwrites the root. Released versions are not mirrored here; they live only
+# under their permanent `/<version>/` subpath (see `.dotnet-docfx-pages-release`).
+.dotnet-docfx-pages-main:
+  stage: deploy
+  variables:
+    DOCFX_SITE: 'docs/_site'
+  script:
+    - 'echo "Publishing main DocFX site ${DOCS_VERSION} to GitLab Pages root (default/current docs)"'
+  pages:
+    expire_in: never
+    publish: "$DOCFX_SITE"
+  rules:
     - !reference [.rules_default_branch]

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.56">
+
+  <!--
+    Documentation project for the DataPort.Extensions.Testing docs
+    (docs/DataPort.Extensions.Testing/).
+
+    Mirrors src/DataPort.Extensions.Testing/ in the solution so the docs live next
+    to the code area they describe. Like every docs project it compiles nothing and
+    emits no assembly (Microsoft.Build.NoTargets), so dotnet build / dotnet test /
+    CI treat it as a fast no-op. Its only job is to surface this folder's tree in
+    the IDE without a hand-maintained file list — see the repo CLAUDE.md
+    ("Docs in the solution") for the full reasoning.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <!--
+    Surface the whole folder as None items (never compiled or copied — they just
+    appear in Solution Explorer). Excluded: bin/obj, this project file, and the
+    DocFX-generated, git-ignored site output (_site/) produced by docfx.json.
+  -->
+  <ItemGroup>
+    <None Include="**" Exclude="bin/**;obj/**;*.csproj;_site/**" />
+  </ItemGroup>
+
+</Project>
