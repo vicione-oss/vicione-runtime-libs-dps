@@ -92,7 +92,7 @@ public sealed class ConnectionFactory_CreateInputProcessors
 
         var act = dataPort.Invoking(x => x.InitializeI());
 
-        act.Should().Throw<InvalidOperationException>().WithMessage("*Sequence*no*element*");
+        act.Should().Throw<InvalidOperationException>().WithMessage($"*type*{nameof(Test)}*not*contain*public*getter*path*{nameof(Test.InternalProperty)}*");
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public sealed class ConnectionFactory_CreateInputProcessors
 
         var act = dataPort.Invoking(x => x.InitializeI());
 
-        act.Should().Throw<InvalidOperationException>().WithMessage("*Property*getter*null*");
+        act.Should().Throw<InvalidOperationException>().WithMessage($"*type*{nameof(Test)}*not*contain*public*getter*path*{nameof(Test.PropertyWithoutGetter)}*");
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public sealed class ConnectionFactory_CreateInputProcessors
 
         var act = dataPort.Invoking(x => x.InitializeI());
 
-        act.Should().Throw<InvalidOperationException>().WithMessage("*Sequence*no*element*");
+        act.Should().Throw<InvalidOperationException>().WithMessage($"*type*{nameof(Test)}*not*contain*public*setter*path*{nameof(Test.InternalProperty)}*");
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public sealed class ConnectionFactory_CreateInputProcessors
 
         var act = dataPort.Invoking(x => x.InitializeI());
 
-        act.Should().Throw<InvalidOperationException>().WithMessage("*Property*setter*null*");
+        act.Should().Throw<InvalidOperationException>().WithMessage($"*type*{nameof(Test)}*not*contain*public*setter*path*{nameof(Test.PropertyWithoutSetter)}*");
     }
 
     [Fact]
