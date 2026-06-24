@@ -6,11 +6,13 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet.Extensions" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="ViciOne.Core.Runtime.Execution" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DataPort\DataPort.csproj" />
+    <ProjectReference Include="..\..\src\FunctionBlock\FunctionBlock.csproj" />
   </ItemGroup>
 
 </Project>
