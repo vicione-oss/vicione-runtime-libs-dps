@@ -2,5 +2,5 @@
 
 internal sealed class Point
 {
-    internal double Value { get; set; }
+    public double Value { get; set; }
 }
