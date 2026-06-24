@@ -31,6 +31,7 @@
         <File Path="NuGet.Config" />
         <File Path="README.md" />
         <File Path="VERSION" />
+        <File Path="VERSION_CORE" />
     </Folder>
     <Folder Name="/src/">
         <Project Path="src/DataPort.Extensions/DataPort.Extensions.csproj" />
