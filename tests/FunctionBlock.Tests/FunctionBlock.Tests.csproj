@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\samples\Benchmarks\DataPortFunctionBlockBuilder.cs" Link="DataPortFunctionBlockBuilder.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="AwesomeAssertions.Analyzers">
       <PrivateAssets>all</PrivateAssets>
