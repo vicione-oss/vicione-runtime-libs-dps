@@ -11,8 +11,6 @@ namespace ViciOne.Suite.DataPort.Extension.Tests.Stubs.Client;
 
 /// <summary>
 /// Minimal test-only client type supporting both incoming and outgoing data ports.
-/// Works against the common <see cref="IDataPointValue{TDataPoint}"/> view so it can carry
-/// values of differing .NET types.
 /// </summary>
 internal class TestClient
     : IReadClient<TestDataPointGroup, IDataPointValue>, IWriteClient<IDataPointValue>
