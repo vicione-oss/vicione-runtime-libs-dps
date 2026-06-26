@@ -21,8 +21,8 @@ dotnet test tests/DataPort.Extensions.Tests/                  # single test proj
 The whole `docs/` tree builds into **one combined DocFX site** with a single command — this is what
 GitLab Pages publishes. CI builds it **once** in the `DocFX` job (runs automatically, doubling as a
 docs-build check) and then deploys that artifact via GitLab Pages parallel deployments (the
-`.dotnet-docfx-*` job templates, currently defined locally at the bottom of `.gitlab-ci.yml` pending
-upstreaming to the shared `CI-Templates/v2/dotnet.yml`): the **default branch (main)** auto-publishes
+`.dotnet-docfx-*` job templates, currently defined locally in `.gitlab/ci/docfx-to-gitlab-pages.yml` — included
+from `.gitlab-ci.yml` — pending upstreaming to the shared `CI-Templates/v2/dotnet.yml`): the **default branch (main)** auto-publishes
 the current docs to the Pages **root**, so the default/current docs always track main; **tagged
 releases** publish **permanently** to a per-version subpath (`/<version>/`, never expires) so every
 released version stays browsable at its own URL (releases are *not* mirrored to root); and MR /
