@@ -7,7 +7,7 @@
     they describe. Like every docs project it compiles nothing and emits no
     assembly (Microsoft.Build.NoTargets), so dotnet build / dotnet test / CI treat
     it as a fast no-op. Its only job is to surface this folder's tree in the IDE
-    without a hand-maintained file list — see the repo CLAUDE.md
+    without a hand-maintained file list — see the repo AGENTS.md
     ("Docs in the solution") for the full reasoning.
   -->
 

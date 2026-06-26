@@ -76,14 +76,14 @@ dotnet docfx docs/DataPort.Extensions/docfx.json --serve   # this area only, htt
 ```
 
 The generated API pages and the `_site/` output are git-ignored and rebuilt on demand. See the repo
-[`CLAUDE.md`](../../CLAUDE.md) (*Documentation*) for the full build/publish flow and the CI Pages jobs.
+[`AGENTS.md`](../../AGENTS.md) (*Documentation*) for the full build/publish flow and the CI Pages jobs.
 
 The `docs/` tree is shown in the solution (`dps.slnx`) through non-building MSBuild `NoTargets`
 projects, so there is no per-file list to maintain — `.slnx` solution folders can't glob. The docs
 projects mirror the `src/` layout: this area is surfaced by `DataPort.Extensions.Docs.csproj`
 alongside these files (with `docs/DataPort/` and `docs/DataPort.Extensions.Testing/` getting their own,
 and `docs/Docs.csproj` left holding the shared `diagram-creation/` tooling). They compile nothing, so
-`dotnet build` and CI treat them as no-ops; see the repo [`CLAUDE.md`](../../CLAUDE.md) for the full
+`dotnet build` and CI treat them as no-ops; see the repo [`AGENTS.md`](../../AGENTS.md) for the full
 reasoning.
 
 ### Known build warnings: cross-area links (standalone build only)

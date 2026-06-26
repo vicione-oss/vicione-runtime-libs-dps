@@ -58,7 +58,7 @@ Keep the package self-describing — the tiers only help a consumer's agent if t
 - **Public API + docs change in one MR.** Signatures and member text live in XML doc comments (the
   generated API renders them), never duplicated in markdown. Add/remove a type → update the matching
   `reference/*.md` index; add an exception → `reference/exceptions.md`. Conventions:
-  [documentation-principles.md](documentation-principles.md); code cheat-sheet: `src/DataPort.Extensions/CLAUDE.md`.
+  [documentation-principles.md](documentation-principles.md); code cheat-sheet: `src/DataPort.Extensions/AGENTS.md`.
 - **Breaking changes + migration** → [CHANGELOG.md](CHANGELOG.md).
 - **Keep these `DataPort.Extensions.csproj` settings on** — each silently degrades the package if removed:
   `<GenerateDocumentationFile>` (Tier 2 `.xml`), `<DebugType>embedded</DebugType>` + `<EmbedAllSources>`
