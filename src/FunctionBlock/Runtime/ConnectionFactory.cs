@@ -107,11 +107,14 @@ internal readonly ref struct ConnectionFactory
 
         foreach (var nodeLink in _linksWithExtraction)
         {
-            var typeInfo = typeAnalyzer.AnalyzeType(DataTypeCompatibilityValidator.DetermineValueType(_inputs[nodeLink.InputConnectorId].Connector.Design.ConnectorType)).First(e => e.Path == nodeLink.PropertyPath);
+            var type = DataTypeCompatibilityValidator.DetermineValueType(_inputs[nodeLink.InputConnectorId].Connector.Design.ConnectorType);
+            var typeInfo = typeAnalyzer.AnalyzeType(type).FirstOrDefault(e => e.Path == nodeLink.PropertyPath);
+            if (typeInfo.Path != nodeLink.PropertyPath || typeInfo.PropertyGetter is null)
+                throw new InvalidOperationException($"The type '{type}' does not contain a public property with getter that matches the path '{nodeLink.PropertyPath}'.");
             var output = _outputs[nodeLink.OutputConnectorId];
             var linkDefinition = internalIncomingLinkFactory.Create((Connector)output.Connector);
             var runtimeLink = runtimeLinkFactory.Create(linkDefinition, new Dictionary<Guid, IRuntimeConnector>());
-            var getProperty = typeInfo.PropertyGetter ?? throw new InvalidOperationException("Property getter cannot be null.");
+            var getProperty = typeInfo.PropertyGetter;
 
             _inputProcessors.Add(nodeLink.InputConnectorId, new ExtractProcessor(getProperty, runtimeLink));
             _runtimeLinks.AddOrUpdate(output, runtimeLink);
@@ -129,12 +132,14 @@ internal readonly ref struct ConnectionFactory
         foreach (var group in _linksWithComposition.GroupBy(l => l.OutputConnectorId))
         {
             var output = _outputs[group.Key];
-            var type = DataTypeCompatibilityValidator.DetermineValueType(output.Connector.Design.ConnectorType);
             var linkDefinition = internalIncomingLinkFactory.Create((Connector)output.Connector);
             var runtimeLink = runtimeLinkFactory.Create(linkDefinition, new Dictionary<Guid, IRuntimeConnector>());
+            var type = DataTypeCompatibilityValidator.DetermineValueType(output.Connector.Design.ConnectorType);
             var typeInfo = typeAnalyzer.AnalyzeType(type);
 
-            ComposeProcessor composer = new(type, group.ToDictionary(l => l.InputConnectorId, l => typeInfo.First(e => e.Path == l.PropertyPath).PropertySetter ?? throw new InvalidOperationException("Property setter cannot be null.")), runtimeLink);
+            ComposeProcessor composer = new(type,
+                group.ToDictionary(l => l.InputConnectorId, l => typeInfo.FirstOrDefault(e => e.Path == l.PropertyPath).PropertySetter
+                ?? throw new InvalidOperationException($"The type '{type}' does not contain a public property with setter that matches the path '{l.PropertyPath}'.")), runtimeLink);
             foreach (var link in group)
                 _inputProcessors.Add(link.InputConnectorId, composer);
             _runtimeLinks.AddOrUpdate(output, runtimeLink);
