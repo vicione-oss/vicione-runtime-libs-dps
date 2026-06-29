@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Polly;
 using ViciOne.Suite.DataPort.Extensions.Incoming.Client;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 
@@ -34,7 +35,7 @@ namespace ViciOne.Suite.DataPort.Extensions.Incoming.Polling;
 internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>
     : IAsyncDisposable
     where TDataPoint : IPollingDataPoint
-    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TDataPointValue : IDataPointValue
     where TDataPointGroup : IDataPointPollingGroup<TDataPoint>
     where TReadClient : IReadClient<TDataPointGroup, TDataPointValue>
 {
@@ -46,6 +47,7 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
     private readonly TReadClient _readClient;
     private readonly IReadOnlyList<TDataPointGroup> _groups;
     private readonly Action<IReadOnlyList<TDataPointValue>> _onDataReceived;
+    private readonly Func<TDataPointGroup, ResiliencePipeline<IReadOnlyList<TDataPointValue>>> _resiliencePipelineFactory;
 
     /// <summary>
     /// Initializes a new instance of the PollingJobOrchestrator class.
@@ -55,12 +57,16 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
     /// <param name="readClient">Client for reading data point values.</param>
     /// <param name="groups">Data point groups to poll.</param>
     /// <param name="onDataReceived">Callback invoked when data is received.</param>
+    /// <param name="resiliencePipelineFactory">
+    /// Factory creating the resilience pipeline for a polling job, given the data point group it serves.
+    /// </param>
     internal PollingJobOrchestrator(
         ILoggerFactory loggerFactory,
         TimeProvider timeProvider,
         TReadClient readClient,
         IReadOnlyList<TDataPointGroup> groups,
-        Action<IReadOnlyList<TDataPointValue>> onDataReceived)
+        Action<IReadOnlyList<TDataPointValue>> onDataReceived,
+        Func<TDataPointGroup, ResiliencePipeline<IReadOnlyList<TDataPointValue>>> resiliencePipelineFactory)
     {
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger(GetType());
@@ -68,6 +74,7 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
         _readClient = readClient;
         _groups = groups;
         _onDataReceived = onDataReceived;
+        _resiliencePipelineFactory = resiliencePipelineFactory;
     }
 
     /// <summary>
@@ -78,9 +85,7 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
     {
         _logger.CreatingPollingJobs(_groups.Count);
 
-        var jobs =
-            new List<DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>>(
-                _groups.Count);
+        var jobs = new List<DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>>(_groups.Count);
         foreach (var group in _groups)
         {
             jobs.Add(CreatePollingJob(group, _cancellationSource.Token));
@@ -117,11 +122,14 @@ internal sealed class PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataP
     {
         ArgumentNullException.ThrowIfNull(group);
 
+        var resiliencePipeline = _resiliencePipelineFactory(group);
+
         return new DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>(
             group.PollFrequency,
             group,
             _readClient,
             _onDataReceived,
+            resiliencePipeline,
             timeProvider: _timeProvider,
             logger: _loggerFactory
                 .CreateLogger<DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>>(),

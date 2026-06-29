@@ -23,8 +23,8 @@ public interface IDataPoint
     /// </summary>
     /// <param name="channel">The channel identifier to search for.</param>
     /// <returns><c>true</c> if the data point contains the specified transferred channel; otherwise, <c>false</c>.</returns>
-    bool ContainsTransferredChannel(string channel) =>
-        Channels.TransferredChannels.Any(transferredChannel => transferredChannel.Value == channel);
+    bool ContainsTransferredChannel(string channel)
+        => Channels.Transferred.Any(transferredChannel => transferredChannel.Value == channel);
 
     /// <summary>
     /// Gets a human-readable string representation of this data point's address.

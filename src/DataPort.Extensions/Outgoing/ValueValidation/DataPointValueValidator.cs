@@ -1,42 +1,39 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 
 namespace ViciOne.Suite.DataPort.Extensions.Outgoing.ValueValidation;
 
 /// <summary>
-/// Validates data point values for type correctness and value range compliance.
+/// Validates data point values for value range compliance.
 /// </summary>
 /// <typeparam name="TDataPoint">The type of data point being validated.</typeparam>
 /// <typeparam name="TDataPointValue">The type of data point value being validated.</typeparam>
+/// <remarks>
+/// Type correctness is no longer validated here: a <see cref="ITypedDataPointValue{TValue}"/> is
+/// strongly typed, so its value can only ever be of the data point's configured .NET type. Any failure to
+/// represent an external value as that type is handled at conversion time, not by this validator.
+/// </remarks>
 public class DataPointValueValidator<TDataPoint, TDataPointValue>(ILogger logger)
     where TDataPoint : IDataPoint
-    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TDataPointValue : IDataPointValue
 {
     /// <summary>
-    /// Validates all DataPointValue instances for type and range correctness.
+    /// Validates all DataPointValue instances for range correctness.
     /// </summary>
     /// <param name="dataPointValues">Collection of data point values to validate.</param>
     /// <returns>Validation result containing valid values and all failures encountered.</returns>
-    public DataPointValuesValidationResult<TDataPoint, TDataPointValue> ValidateAll(
+    public DataPointValuesValidationResult<TDataPointValue> ValidateAll(
         IReadOnlyList<TDataPointValue> dataPointValues)
     {
         ArgumentNullException.ThrowIfNull(dataPointValues);
 
         var validValues = new List<TDataPointValue>(dataPointValues.Count);
-        var failures = new List<DataPointValueValidationFailure<TDataPoint>>();
+        var failures = new List<DataPointValueValidationFailure>();
 
         foreach (var dataPointValue in dataPointValues)
         {
-            var typeValidation = dataPointValue.ValidateType();
-            if (!typeValidation.IsValid)
-            {
-                failures.Add(CreateTypeMismatchFailure(dataPointValue, typeValidation));
-                continue;
-            }
-
             if (!dataPointValue.IsInValueRange())
             {
                 failures.Add(CreateValueOutOfRangeFailure(dataPointValue));
@@ -46,16 +43,15 @@ public class DataPointValueValidator<TDataPoint, TDataPointValue>(ILogger logger
             validValues.Add(dataPointValue);
         }
 
-        var isValid = failures.Count == 0;
-        return new DataPointValuesValidationResult<TDataPoint, TDataPointValue>(isValid, validValues.AsReadOnly(),
+        return new DataPointValuesValidationResult<TDataPointValue>(validValues.AsReadOnly(),
             failures.AsReadOnly());
     }
 
-    private DataPointValueValidationFailure<TDataPoint> CreateValueOutOfRangeFailure(
-        IDataPointValue<TDataPoint> dataPointValue)
+    private DataPointValueValidationFailure CreateValueOutOfRangeFailure(
+        IDataPointValue dataPointValue)
     {
         var dataPoint = dataPointValue.DataPoint;
-        var transferredChannels = dataPoint.Channels.TransferredChannels;
+        var transferredChannels = dataPoint.Channels.Transferred;
         var channel = transferredChannels.Count > 0 ? transferredChannels[0].Value : "unknown";
 
         var dataType = dataPoint.DataTypeName.Value;
@@ -65,34 +61,9 @@ public class DataPointValueValidator<TDataPoint, TDataPointValue>(ILogger logger
             dataPointValue.Value,
             dataType);
 
-        return new DataPointValueValidationFailure<TDataPoint>(
+        return new DataPointValueValidationFailure(
             DataPoint: dataPoint,
-            ActualValue: dataPointValue.Value,
             Reason: ValidationFailureReason.ValueOutOfRange,
-            Details:
-            $"Value out of range at {dataPoint.Identifier}: '{dataPointValue.Value}' is invalid for {dataType}");
-    }
-
-    private DataPointValueValidationFailure<TDataPoint> CreateTypeMismatchFailure(
-        IDataPointValue<TDataPoint> dataPointValue,
-        TypeValidationResult typeValidation)
-    {
-        var dataPoint = dataPointValue.DataPoint;
-        var transferredChannels = dataPoint.Channels.TransferredChannels;
-        var channel = transferredChannels.Count > 0 ? transferredChannels[0].Value : "unknown";
-        var allowedTypes = string.Join(", ", typeValidation.AllowedTypes.Select(type => type.Name));
-
-        logger.ValueHasWrongType(
-            channel,
-            dataPoint.Identifier.Value,
-            allowedTypes,
-            typeValidation.ActualType?.Name ?? "null");
-
-        return new DataPointValueValidationFailure<TDataPoint>(
-            DataPoint: dataPoint,
-            ActualValue: dataPointValue.Value,
-            Reason: ValidationFailureReason.TypeMismatch,
-            Details:
-            $"Type mismatch at {dataPoint.Identifier}: expected {allowedTypes}, got {typeValidation.ActualType?.Name ?? "null"}");
+            Details: $"Value out of range at {dataPoint.Identifier}: '{dataPointValue.Value}' is invalid for {dataType}");
     }
 }

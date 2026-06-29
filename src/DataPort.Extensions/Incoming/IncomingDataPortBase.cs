@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Polly;
 using ViciOne.ManagedEngine.ExternalCommunication;
 using ViciOne.Suite.DataPort.Extensions.Client;
 using ViciOne.Suite.DataPort.Extensions.Exceptions;
 using ViciOne.Suite.DataPort.Extensions.Incoming.Client;
 using ViciOne.Suite.DataPort.Extensions.Incoming.Polling;
+using ViciOne.Suite.DataPort.Extensions.Incoming.Polling.Job;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 using ViciOne.Suite.DataPort.Extensions.Model.Mapping;
 using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
@@ -54,7 +55,7 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
     where TDeviceNode : IRootConfigurationNode<TCommunication>
     where TDataPoint : IPollingDataPoint
     where TDataPointGroup : IDataPointPollingGroup<TDataPoint>
-    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TDataPointValue : IDataPointValue
     where TReadClient : IReadClient<TDataPointGroup, TDataPointValue>
     where TClientInformation : IClientInformation
 {
@@ -181,30 +182,39 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
         null;
 
     /// <summary>
-    /// Converts a batch of data point values to external values.
-    /// Override to provide custom conversion logic.
+    /// Creates the resilience pipeline that wraps the polling job for a single data point group. Invoked once per
+    /// group. The default implementation returns <see cref="DefaultResiliencePipeline"/> — a timeout plus circuit
+    /// breaker tuned to the group's poll frequency. Override to supply a custom pipeline; inspect
+    /// <paramref name="group"/> to tune per group, or ignore it and return a shared instance if a single pipeline
+    /// should govern all groups.
     /// </summary>
-    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
-    [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
+    /// <param name="group">The data point group the pipeline will serve.</param>
+    protected virtual ResiliencePipeline<IReadOnlyList<TDataPointValue>> CreatePollingResiliencePipeline(
+        TDataPointGroup group)
+        => DefaultResiliencePipeline.CreateDefaultResiliencePipeline<IReadOnlyList<TDataPointValue>>(
+            group.PollFrequency, _logger);
+
+    /// <summary>
+    /// Converts a batch of strongly-typed data point values to external values. The default implementation emits one
+    /// <see cref="ExternalValue"/> per transferred channel of each value's data point, using the untyped
+    /// <see cref="IDataPointValue.Value"/>. Override to customise the projection.
+    /// </summary>
     protected virtual IReadOnlyList<ExternalValue> ToExternalValues(
         IReadOnlyList<TDataPointValue> values,
         DateTime timestamp)
     {
-        var result = new List<ExternalValue>(values.Sum(dpv => dpv.DataPoint.Channels.TransferredChannels.Count));
+        var result = new List<ExternalValue>(values.Sum(dpv => dpv.DataPoint.Channels.Transferred.Count));
         foreach (var dataPointValue in values)
         {
-            foreach (var channel in dataPointValue.DataPoint.Channels.TransferredChannels)
-            {
+            foreach (var channel in dataPointValue.DataPoint.Channels.Transferred)
                 result.Add(ToExternalValue(timestamp, channel, dataPointValue));
-            }
         }
 
         return result;
     }
 
     /// <summary>
-    /// Converts a data point value to an external value.
-    /// Override to provide custom conversion logic.
+    /// Converts a single data point value to an external value for one of its transferred channels.
     /// </summary>
     protected virtual ExternalValue ToExternalValue(DateTime timestamp, TransferredChannel channel,
         TDataPointValue dataPointValue) =>
@@ -225,7 +235,8 @@ public abstract class IncomingDataPortBase<TCommunication, TDeviceNode, TDataPoi
     private void StartPollingDataPoints(TReadClient client)
     {
         _pollingOrchestrator = new PollingJobOrchestrator<TDataPointGroup, TDataPoint, TDataPointValue, TReadClient>(
-            _loggerFactory, _timeProvider, client, DataPointGroups, PublishDataPointValues);
+            _loggerFactory, _timeProvider, client, DataPointGroups, PublishDataPointValues,
+            CreatePollingResiliencePipeline);
         _pollingOrchestrator.Start();
     }
 

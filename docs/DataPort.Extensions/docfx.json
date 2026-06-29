@@ -1,0 +1,72 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../../src/DataPort.Extensions",
+          "files": [
+            "**/*.csproj"
+          ]
+        }
+      ],
+      "dest": "reference/api",
+      "filter": "filterConfig.yml",
+      "namespaceLayout": "nested",
+      "properties": {
+        "TargetFramework": "net10.0"
+      },
+      "disableGitFeatures": false
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**",
+          "AGENTS.md",
+          "README.md",
+          "filterConfig.yml",
+          "**/obj/**",
+          "**/bin/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "**/*.{svg,png,jpg,jpeg,gif}"
+        ],
+        "exclude": [
+          "_site/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "DataPort.Extensions",
+      "_appTitle": "DataPort.Extensions",
+      "_enableSearch": true,
+      "_enableRightTOC": true,
+      "_disableContribution": true
+    },
+    "validate": {
+      "metadata": true,
+      "links": true
+    },
+    "markdownEngineName": "markdig",
+    "xref": [
+      "https://github.com/dotnet/docfx/raw/main/.xrefmap.json"
+    ],
+    "serve": {
+      "port": 8080
+    }
+  }
+}

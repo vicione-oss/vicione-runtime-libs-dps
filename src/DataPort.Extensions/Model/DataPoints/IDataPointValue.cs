@@ -1,41 +1,31 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using ViciOne.Suite.DataPort.Extensions.Outgoing.ValueValidation;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
 
 /// <summary>
-/// Represents a value associated with a data point, including validation capabilities.
+/// Represents a value associated with a data point, exposing the data point metadata and range validation.
 /// </summary>
-/// <typeparam name="TDataPointType">The type of data point this value is associated with, must implement <see cref="IDataPoint"/>.</typeparam>
 /// <remarks>
-/// Data point values encapsulate both the raw value and its associated data point metadata,
-/// enabling validation of type compatibility and value range constraints.
+/// This is the non-typed view carried by the data port pipeline, so that a single port can carry values of
+/// differing .NET types (e.g. an <c>int</c> value and a <c>string</c> value) through one common type.
+/// The strongly-typed payload is exposed by <see cref="ITypedDataPointValue{TValue}"/>.
 /// </remarks>
 [SuppressMessage("ReSharper", "UnusedMemberInSuper.Global")]
-public interface IDataPointValue<TDataPointType> where TDataPointType : IDataPoint
+public interface IDataPointValue
 {
     /// <summary>
-    /// Gets or initializes the raw value of this data point.
+    /// Gets the data point metadata associated with this value.
     /// </summary>
-    /// <remarks>
-    /// The value may be <c>null</c> to represent missing or uninitialized data.
-    /// </remarks>
-    object? Value { get; init; }
+    IDataPoint DataPoint { get; }
 
     /// <summary>
-    /// Gets or initializes the data point metadata associated with this value.
+    /// Gets the value as an untyped object — the common view carried through the data port pipeline.
     /// </summary>
-    TDataPointType DataPoint { get; init; }
+    object? Value { get; }
 
     /// <summary>
     /// Determines whether the value falls within the acceptable range for this data point.
     /// </summary>
     /// <returns><c>true</c> if the value is within the valid range; otherwise, <c>false</c>.</returns>
     bool IsInValueRange();
-
-    /// <summary>
-    /// Validates that the value's type is compatible with the data point's expected type.
-    /// </summary>
-    /// <returns>A <see cref="TypeValidationResult"/> indicating whether the type is valid and providing details about any type mismatch.</returns>
-    TypeValidationResult ValidateType();
 }

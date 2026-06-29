@@ -142,18 +142,17 @@ public class TypedNodeMapper<TCommunication, TRootConfigurationNode>(
         }
     }
 
-    private IDataPointNodeMapper<IDataPointNode>? FindDataPointNodeMapper(LinkedNode linkedNode) =>
-        dataPointNodeMappers.FirstOrDefault(mapper => mapper.IsTargetMapperFor(linkedNode));
+    private IDataPointNodeMapper<IDataPointNode>? FindDataPointNodeMapper(LinkedNode linkedNode)
+        => dataPointNodeMappers.FirstOrDefault(mapper => mapper.IsTargetMapperFor(linkedNode));
 
-    private IBranchConfigurationNodeMapper<IBranchConfigurationNode>?
-        FindConfigurationNodeMapper(LinkedNode linkedNode) =>
-        configurationNodeMappers.FirstOrDefault(mapper => mapper.IsTargetMapperFor(linkedNode));
+    private IBranchConfigurationNodeMapper<IBranchConfigurationNode>? FindConfigurationNodeMapper(LinkedNode linkedNode)
+        => configurationNodeMappers.FirstOrDefault(mapper => mapper.IsTargetMapperFor(linkedNode));
 
     /// <summary>
     /// Gets the collection of branch configuration node mappers used for mapping configuration (branch) nodes.
     /// </summary>
-    public IReadOnlyList<IBranchConfigurationNodeMapper<IBranchConfigurationNode>> ConfigurationNodeMappers =>
-        configurationNodeMappers;
+    public IReadOnlyList<IBranchConfigurationNodeMapper<IBranchConfigurationNode>> ConfigurationNodeMappers
+        => configurationNodeMappers;
 
     /// <summary>
     /// Gets the collection of data point node mappers used for mapping data point (leaf) nodes.

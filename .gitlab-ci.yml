@@ -10,12 +10,30 @@ include:
     file: '/CI-Templates/v2/dotnet.yml'
   - project: 'vicione-oss/tooling/ci-templates'
     file: '/project/v1/dotnet.yml'
+  # Local `.dotnet-docfx-*` GitLab Pages templates — should probably be moved upstream to
+  # CI-Templates/v2/dotnet.yml. Extracted from this file for readability; delete the include (and the
+  # file) once the templates move upstream.
+  - local: '.gitlab/ci/docfx-to-gitlab-pages.yml'
 
 default:
   image: mcr.microsoft.com/dotnet/sdk:10.0
 
 Build:
   extends: .dotnet-build
+
+# Documentation site (GitLab Pages)
+#
+# `DocFX` builds the whole docs/ tree into one combined DocFX site once (runs automatically, doubling
+# as a docs-build check) and emits the resolved version + rendered site as artifacts. The publish jobs
+# below `needs:` it and are the manual gate (play button) that deploys the prebuilt artifact without
+# rebuilding: the prerelease one to a short-lived per-pipeline preview, and the two release ones to a
+# permanent per-version subpath and to the Pages root (the default/current docs).
+# The `.dotnet-docfx-*` job templates these extend live in `.gitlab/ci/docfx-to-gitlab-pages.yml` (pulled in via
+# the `local:` include above; a temporary copy pending upstreaming to CI-Templates/v2/dotnet.yml).
+# Override DOCFX_CONFIG / DOCFX_SITE in the extending job if this repo's docfx.json or output dir ever
+# moves.
+DocFX:
+  extends: .dotnet-docfx-build
 
 Unit tests:
   extends: .dotnet-test-xunit
@@ -64,7 +82,35 @@ Prerelease Dataport.Extensions.Testing NuGet:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
 
+# Documentation site (GitLab Pages), versioned to match the prerelease NuGet packages. Publishes the
+# site built by `DocFX` under a per-prerelease subfolder keyed by the SAME version the NuGet packages
+# use (`<VERSION>-ci<CI_PIPELINE_ID>`); each deployment is a disposable preview (expires).
+Prerelease DocFX Pages:
+  extends: .dotnet-docfx-pages-prerelease
+  needs:
+    - job: DocFX
+      artifacts: true
+
+# Publishes the current main docs to the Pages root (the default/current docs) on every default-branch
+# pipeline, so the root URL always tracks main. Auto (no gate). Released versions are NOT mirrored to
+# root — they live only under their permanent `/<version>/` subpath (see `Release DocFX Pages`).
+Main DocFX Pages:
+  extends: .dotnet-docfx-pages-main
+  needs:
+    - job: DocFX
+      artifacts: true
+
 # Release
+
+# Documentation site (GitLab Pages) for a tagged release. Publishes the site built by `DocFX` to a
+# permanent per-version subpath (`/<version>/`, never expires) so every released version stays browsable
+# at its own URL. The default/current docs at the Pages root are owned by `Main DocFX Pages` (main),
+# not by releases.
+Release DocFX Pages:
+  extends: .dotnet-docfx-pages-release
+  needs:
+    - job: DocFX
+      artifacts: true
 
 Release FunctionBlock NuGet:
   extends: .dotnet-release-nuget
@@ -107,14 +153,3 @@ Release DataPort.Extensions.Testing NuGet:
   variables:
     PROJECT: 'src/DataPort.Extensions.Testing/DataPort.Extensions.Testing.csproj'
     REPO: 'JFrogViciOne'
-
-Publish Pages:
-  stage: release
-  pages: true
-  script:
-    - mkdir public
-    - echo "<html><body><p>Index</p></body></html>" > public/index.html
-    - echo "Publish Pages on \"$CI_PAGES_URL\""
-  rules:
-    - !reference [.rules_tag_manual]
-    - !reference [.rules_default_branch]

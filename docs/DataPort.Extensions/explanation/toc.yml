@@ -1,0 +1,23 @@
+- name: Overview
+  href: Overview.md
+- name: Incoming data port
+  href: incoming/incoming-data-port.md
+  items:
+    - name: Polling jobs
+      href: incoming/polling.md
+- name: Outgoing data port
+  href: outgoing/outgoing-data-port.md
+- name: Configuration
+  items:
+    - name: Typed node model
+      href: configuration/typed-node-model.md
+    - name: Internal data model
+      href: configuration/internal-data-model.md
+- name: Connection
+  items:
+    - name: Connection lifecycle
+      href: connection/connection-lifecycle.md
+    - name: Client lifecycle manager
+      href: connection/client-lifecycle-manager.md
+    - name: Configuration verification
+      href: connection/configuration-verification.md

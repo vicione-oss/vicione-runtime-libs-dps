@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using ViciOne.ManagedEngine.ExternalCommunication;
 using ViciOne.Suite.DataPort.Extensions.Model.DataPoints;
@@ -12,16 +13,18 @@ namespace ViciOne.Suite.DataPort.Extensions.Outgoing.ChannelResolution;
 /// <typeparam name="TDataPoint">The data point type.</typeparam>
 internal sealed class ChannelResolver<TDataPoint> where TDataPoint : IDataPoint
 {
-    private readonly Dictionary<string, TDataPoint> _channelIndex;
+    private readonly FrozenDictionary<string, TDataPoint> _channelIndex;
 
     public ChannelResolver(IEnumerable<TDataPoint> dataPoints)
     {
-        _channelIndex = [];
+        var channelIndex = new Dictionary<string, TDataPoint>();
         foreach (var dataPoint in dataPoints)
         {
-            foreach (var channel in dataPoint.Channels.TransferredChannels)
-                _channelIndex[channel.Value] = dataPoint;
+            foreach (var channel in dataPoint.Channels.Transferred)
+                channelIndex[channel.Value] = dataPoint;
         }
+
+        _channelIndex = channelIndex.ToFrozenDictionary();
     }
 
     private TDataPoint? Resolve(ExternalValue externalValue) => _channelIndex.GetValueOrDefault(externalValue.Channel);

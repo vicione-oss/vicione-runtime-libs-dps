@@ -29,19 +29,19 @@ internal sealed class DataPointGroupPollingJob<TDataPointGroup, TDataPoint, TDat
     TDataPointGroup input,
     TReadClient readClient,
     Action<IReadOnlyList<TDataPointValue>> onJobOutputAvailable,
-    ResiliencePipeline<IReadOnlyList<TDataPointValue>>? resiliencePipeline = null,
+    ResiliencePipeline<IReadOnlyList<TDataPointValue>> resiliencePipeline,
     TimeProvider? timeProvider = null,
     ILogger<PeriodicJob<TDataPointGroup, IReadOnlyList<TDataPointValue>>>? logger = null,
     CancellationToken? externalCancellation = null)
-    : PeriodicJob<TDataPointGroup, IReadOnlyList<TDataPointValue>>(
-        executionInterval, input, onJobOutputAvailable,
+    : PeriodicJob<TDataPointGroup, IReadOnlyList<TDataPointValue>>(executionInterval, input, onJobOutputAvailable,
         resiliencePipeline, timeProvider, logger, externalCancellation)
     where TDataPoint : IPollingDataPoint
-    where TDataPointValue : IDataPointValue<TDataPoint>
+    where TDataPointValue : IDataPointValue
     where TDataPointGroup : IDataPointPollingGroup<TDataPoint>
     where TReadClient : IReadClient<TDataPointGroup, TDataPointValue>
 {
-    protected override ValueTask<IReadOnlyList<TDataPointValue>> PerformJob(TDataPointGroup input, CancellationToken token) =>
+    protected override ValueTask<IReadOnlyList<TDataPointValue>> PerformJob(TDataPointGroup input,
+        CancellationToken token) =>
         readClient.ReadAsync(input, token);
 
     protected override string GetJobName(TDataPointGroup input) =>

@@ -10,6 +10,9 @@ internal static partial class OutgoingDataPortBaseLogs
     [LoggerMessage(204, LogLevel.Error, "Validation failed for channel '{Channel}': {ErrorMessage}")]
     internal static partial void ValidationFailed(this ILogger logger, string channel, string? errorMessage);
 
+    [LoggerMessage(205, LogLevel.Warning, "Conversion failed for channel '{Channel}': {Details}")]
+    internal static partial void ConversionFailed(this ILogger logger, string channel, string details);
+
     [LoggerMessage(210, LogLevel.Error,
         "Invalid data point configuration for '{dataPointIdentifier}': {Misconfigurations}")]
     internal static partial void MisConfiguredDataPoint(

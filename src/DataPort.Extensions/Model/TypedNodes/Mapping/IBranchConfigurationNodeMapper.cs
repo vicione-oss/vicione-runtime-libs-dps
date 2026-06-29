@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using FluentValidation.Results;
 
 namespace ViciOne.Suite.DataPort.Extensions.Model.TypedNodes.Mapping;
@@ -42,25 +39,4 @@ public interface IBranchConfigurationNodeMapper<out T> where T : IBranchConfigur
     /// <param name="linkedNode">The node to check.</param>
     /// <returns>True if this mapper targets the node's design ID; otherwise, false.</returns>
     bool IsTargetMapperFor(LinkedNode linkedNode) => linkedNode.DesignId == TargetLinkedNodeTypeId;
-
-    /// <summary>
-    /// Gets the properties defined on the branch configuration node type, excluding base IConfigurationNode and IBranchConfigurationNode properties.
-    /// </summary>
-    IReadOnlyList<PropertyInfo> GetPropertiesDefinedInTargetNode() =>
-    [
-        .. NodeType.GetProperties()
-            .ExceptBy(BasePropertyNames(), static p => p.Name)
-    ];
-
-    /// <summary>
-    /// Gets the names of properties defined on the branch configuration node type, excluding base IConfigurationNode and IBranchConfigurationNode properties.
-    /// </summary>
-    IReadOnlyList<string> PropertyNamesDefinedInTargetNode() => [.. GetPropertiesDefinedInTargetNode().Select(static p => p.Name)];
-
-    private static IReadOnlyList<string> BasePropertyNames() =>
-    [
-        .. typeof(IConfigurationNode).GetProperties()
-            .Concat(typeof(IBranchConfigurationNode).GetProperties())
-            .Select(static p => p.Name)
-    ];
 }

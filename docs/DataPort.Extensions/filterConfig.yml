@@ -1,0 +1,11 @@
+# Restricts the generated API reference to the DataPort.Extensions public surface.
+# The metadata `src` already scopes generation to the Extensions assembly; this filter
+# makes that explicit so the config can be aggregated into the central vo-tecdoc site
+# later (where many assemblies are compiled together and scoping by uid prefix matters).
+apiRules:
+  # Keep everything whose uid is under the extensions root namespace...
+  - include:
+      uidRegex: ^ViciOne\.Suite\.DataPort\.Extensions
+  # ...and drop anything else (transitively-referenced DataPort core / framework types).
+  - exclude:
+      uidRegex: .*

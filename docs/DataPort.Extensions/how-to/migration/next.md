@@ -1,0 +1,71 @@
+---
+title: Migrating to the next release
+---
+
+# Migrating to the next release
+
+This release makes the **CLR type the source of truth** for a data point's value type. `IDataPoint` and
+`IDataPointValue` are no longer generic, the outgoing write path reports conversion failures as data
+instead of throwing, and a few types were renamed or moved. Work through the steps below.
+
+> Until this release is tagged it appears as **Next** in the changelog; the steps here apply to that
+> upcoming version.
+
+## Return a conversion result from the outgoing port
+
+`OutgoingDataPortBase.ConvertValue(ExternalValue, TDataPoint)` is replaced by `ConvertToDataPointValue`,
+which returns a `DataPointValueConversion<TDataPointValue>` instead of the value directly. Report a
+failure by returning a `NotConvertedDataPointValue<…>` — do not throw and do not return `null`.
+
+```csharp
+// Before — single conversion method, type checked at runtime
+protected override MyValue ConvertValue(ExternalValue externalValue, MyPoint dataPoint)
+    => new MyValue(dataPoint, externalValue.Value);
+
+// After — return a conversion result; report (don't throw) failures
+protected override DataPointValueConversion<MyValue> ConvertToDataPointValue(
+    ExternalValue externalValue, MyPoint dataPoint)
+    => externalValue.Value is int raw
+        ? new ConvertedDataPointValue<MyValue>(dataPoint.CreateTypedValue(raw))
+        : new NotConvertedDataPointValue<MyValue>(new DataPointValueValidationFailure(
+            dataPoint, ValidationFailureReason.ConversionFailure, "Expected int"));
+```
+
+The outgoing write path is now two all-or-nothing stages — conversion, then range validation — with no
+runtime *type* check (it is guaranteed at compile time by `ITypedDataPointValue<TValue>`). A failure at
+either stage drops the whole batch.
+
+## Implement the typed value interface
+
+Make your value type implement `ITypedDataPointValue<TValue>` and drop any `ValidateType()`
+implementation — `IDataPointValue.ValidateType()` and `TypeValidationResult` are gone. Keep
+`IsInValueRange()` for range checks.
+
+## Rename `Channels` and `ValidationFailureReason` members
+
+- `Channels.AffectedChannels` / `.TransferredChannels` property access → `.Affected` / `.Transferred`.
+  (The old names now exist as the `Channels.AffectedChannels(...)` / `Channels.TransferredChannels(...)`
+  static factory helpers.)
+- `ValidationFailureReason.TypeMismatch` → `ValidationFailureReason.ConversionFailure`.
+
+## Pass a resilience pipeline to `PeriodicJob`
+
+`PeriodicJob<TJobInput, TJobOutput>` now takes its `ResiliencePipeline<TJobOutput>` as a **required**
+constructor parameter (it no longer builds a default internally). To keep the previous behaviour, build
+it with:
+
+```csharp
+DefaultResiliencePipeline.CreateDefaultResiliencePipeline<TJobOutput>(executionInterval, logger)
+```
+
+Subclasses of `IncomingDataPortBase` are unaffected unless they want to customise the pipeline —
+override the new `CreatePollingResiliencePipeline(TDataPointGroup)` hook for that (return the per-group
+timeout + circuit-breaker default, tune it per group, or return one shared instance to govern all
+groups).
+
+## Move node-mapper property exclusions to the testing config
+
+The default interface members `GetPropertiesDefinedInTargetNode()` and `PropertyNamesDefinedInTargetNode()`
+on `IBranchConfigurationNodeMapper<T>` and `IDataPointNodeMapper<T>` are removed. Declare per-node
+property exclusions via `IYamlTestingConfig.ExcludedConfigurationNodeProperties` /
+`ExcludedDataPointNodeProperties` (keyed by node type) in your test config instead.

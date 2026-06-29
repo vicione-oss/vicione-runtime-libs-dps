@@ -46,4 +46,10 @@
     <ProjectReference Include="..\..\src\DataPort.Extensions\DataPort.Extensions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="YamlConsistency\TestDataPort.yaml" Link="TestDataPort.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

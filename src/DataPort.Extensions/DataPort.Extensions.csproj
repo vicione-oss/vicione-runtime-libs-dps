@@ -8,11 +8,10 @@
     <PropertyGroup>
         <!-- XML Documentation (generates .xml file included in package for IntelliSense) -->
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-      
+
         <!-- Include symbols and sources in main package -->
-        <DebugType>portable</DebugType>
+        <DebugType>embedded</DebugType>
         <EmbedAllSources>true</EmbedAllSources>
-        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
         <!-- Package Metadata -->
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -22,8 +21,9 @@
     <!-- Include documentation files in the package, preserving folder structure -->
     <ItemGroup>
         <None Include="..\..\docs\DataPort.Extensions\*.md" Pack="true" PackagePath="\" Visible="false"/>
-        <None Include="..\..\docs\DataPort.Extensions\Incoming\*.md" Pack="true" PackagePath="Incoming\" Visible="false"/>
-        <None Include="..\..\docs\DataPort.Extensions\Outgoing\*.md" Pack="true" PackagePath="Outgoing\" Visible="false"/>
+        <None Include="..\..\docs\DataPort.Extensions\explanation\**\*.md" Pack="true" PackagePath="explanation\" Visible="false"/>
+        <None Include="..\..\docs\DataPort.Extensions\how-to\**\*.md" Pack="true" PackagePath="how-to\" Visible="false"/>
+        <None Include="..\..\docs\DataPort.Extensions\reference\**\*.md" Pack="true" PackagePath="reference\" Visible="false"/>
     </ItemGroup>
 
   <ItemGroup>

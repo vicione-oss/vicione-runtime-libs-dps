@@ -66,8 +66,8 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
     /// <summary>
     /// Dynamically generates test cases for each device node in YAML.
     /// </summary>
-    public static TheoryData<DataPortNodeType> GetDataPortNodeTestCases() =>
-        [.. s_lazyRuleset.Value.GetRootNodes()];
+    public static TheoryData<DataPortNodeType> GetDataPortNodeTestCases()
+        => [.. s_lazyRuleset.Value.GetRootNodes()];
 
     [Theory]
     [MemberData(nameof(GetDataPortNodeTestCases))]
@@ -112,12 +112,11 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
     }
 
 
-    public static TheoryData<IBranchConfigurationNodeMapper<IBranchConfigurationNode>>
-        GetConfigurationMapperTestCases() =>
-    [
-        .. TYamlConfig.Mapper.ConfigurationNodeMappers
-            .Select(static m => new TheoryDataRow<IBranchConfigurationNodeMapper<IBranchConfigurationNode>>(m))
-    ];
+    public static TheoryData<IBranchConfigurationNodeMapper<IBranchConfigurationNode>> GetConfigurationMapperTestCases()
+        => [
+            .. TYamlConfig.Mapper.ConfigurationNodeMappers
+                .Select(static m => new TheoryDataRow<IBranchConfigurationNodeMapper<IBranchConfigurationNode>>(m))
+        ];
 
     public static TheoryData<string> GetConfigurationNodeMapperTestCases() =>
     [
@@ -166,8 +165,10 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
 
     public static TheoryData<ConfigurationMapperPropertyTestCase> GetConfigurationMapperPropertyTestCases()
     {
+        var excluded = TYamlConfig.ExcludedConfigurationNodeProperties;
         var testCases = TYamlConfig.Mapper.ConfigurationNodeMappers
-            .SelectMany(mapper => mapper.PropertyNamesDefinedInTargetNode(),
+            .SelectMany(mapper => mapper.PropertyNamesDefinedInTargetNode()
+                    .Where(p => !excluded.TryGetValue(mapper.NodeType, out var props) || !props.Contains(p)),
                 (mapper, propertyName) => new ConfigurationMapperPropertyTestCase(mapper, propertyName));
         return [.. testCases];
     }
@@ -280,8 +281,10 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
 
     public static TheoryData<DataPointMapperPropertyTestCase> GetDataPointMapperPropertyTestCases()
     {
+        var excluded = TYamlConfig.ExcludedDataPointNodeProperties;
         var testCases = TYamlConfig.Mapper.DataPointNodeMappers
-            .SelectMany(mapper => mapper.PropertyNamesDefinedInTargetNode(),
+            .SelectMany(mapper => mapper.PropertyNamesDefinedInTargetNode()
+                    .Where(p => !excluded.TryGetValue(mapper.NodeType, out var props) || !props.Contains(p)),
                 (mapper, propertyName) => new DataPointMapperPropertyTestCase(mapper, propertyName));
         return [.. testCases];
     }
