@@ -37,6 +37,7 @@ polling, write queuing, retry, and value validation — you implement the protoc
 | [Shared building blocks](how-to/index.md#shared-building-blocks)     | Configuration schema, node model, data points, connection — linked from both directions |
 | [Incoming data port](how-to/incoming-dataport/incoming-data-port.md) | Base class for incoming (read/poll) data ports                                          |
 | [Outgoing data port](how-to/outgoing-dataport/outgoing-data-port.md) | Base class for outgoing (write) data ports                                              |
+| [Migrate between versions](how-to/migration/index.md)                | Per-release upgrade steps for breaking API changes                                      |
 
 ### Reference
 
@@ -107,10 +108,6 @@ genuinely broken links).
 > Note: a separate, transient class of warning appears when a diagram's `.svg` hasn't been exported
 > yet (only the `.excalidraw` source exists) — see [diagrams-howto.md](../diagram-creation/diagrams-howto.md). Those
 > clear once the SVG is exported.
-
----
-
-See [CHANGELOG.md](CHANGELOG.md) for breaking changes and migration steps.
 
 ---
 

@@ -25,7 +25,7 @@ lifecycle, polling, write queuing, retry, and value validation — you implement
 | [Reference](reference/interfaces.md)   | A role-organized index into the generated API, with the cross-cutting facts the per-type docs can't carry |
 | [API](reference/api/index.md)          | Full generated API reference (every public type and member, from the XML summaries)                       |
 
-See [CHANGELOG.md](CHANGELOG.md) for breaking changes and migration steps.
+Upgrading across a breaking release? See the [migration guides](how-to/migration/index.md).
 
 ---
 

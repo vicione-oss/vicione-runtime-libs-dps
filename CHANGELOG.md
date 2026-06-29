@@ -8,6 +8,21 @@
 - Move all DataPort providers to separate repositories to keep DataPort core in one place
 - Integrate DataPort FunctionBlock into this repo
 
+### DataPort.Extensions
+
+#### Added
+
+- Type-safe data points — `ITypedDataPoint<TValue>` / `ITypedDataPointValue<TValue>` make the CLR type the source of truth for a data point's value type
+- `DataPointValueConversion<T>` result type for outgoing conversion, `Channels` / `PollFrequency` static factory helpers, and a per-group `CreatePollingResiliencePipeline` hook on `IncomingDataPortBase`
+
+#### Changed
+
+- **Breaking**: Type-safe data-point model — `IDataPoint` / `IDataPointValue` are no longer generic, outgoing conversion returns a `DataPointValueConversion<T>` instead of throwing or returning `null`, value validation is range-only, and `Channels` / `ValidationFailureReason` members were renamed; see the [migration guide](docs/DataPort.Extensions/how-to/migration/next.md)
+
+#### Removed
+
+- **Breaking**: `IDataPointValue.ValidateType()` / `TypeValidationResult` (type safety is now enforced at compile time) and the node mappers' property-discovery default members
+
 ## 0.32.0 - 2026-05-11
 
 ### Added
@@ -43,23 +58,6 @@
 
 - Add `Name` property to `DataPortCommunication`
 - Implement `Http Server` data port
-- Introduce `ViciOne.Suite.DataPort.Extensions` package with reusable base classes and utilities for implementing custom data ports:
-  - Base templates: `IncomingDataPortBase` for read-oriented data ports with periodic polling, `OutgoingDataPortBase` for write-oriented data ports with queue processing and retry logic
-  - Infrastructure components: `PeriodicJob` for periodic task execution with Polly resilience, `TypedNodeMapper` for configuration mapping with FluentValidation integration
-  - Queue system: `ChannelQueue` and `PrependableChannelQueue` with configurable overflow strategies (drop oldest/newest, throw exception)
-  - Resilience utilities: `RetryBackoffCalculator` for exponential/linear backoff with jitter, retry policies (`BoundedRetryPolicy`, `InfiniteRetryPolicy`)
-  - Value validation: `DataPointValueValidator` with all-or-nothing semantics
-  - Data port abstractions: `IClientLifecycleManager`, `IReadClient`, `IWriteClient`, `IDataPoint`, `IPollingDataPoint`, `IDataPointPollingGroup`, `IDataPointValue`, `IRetryPolicy`
-  - Structured exception types: `ConnectionFailureException`, `DataRetrievalException`, `DataConversionException`, `InvalidConfigurationException`, `MaxRetriesExceededException`, `QueueBackpressureException`
-  - Mapper abstractions: `IDataPointsMapper` (outgoing) and `IDataPointGroupsMapper` (incoming) for decoupled configuration-to-data-point mapping
-  - Value conversion abstractions: `IExternalValueConverter` (outgoing: `ExternalValue` → `TDataPointValue`) and `IDataPointValueConverter` (incoming: `TDataPointValue` → `ExternalValue`)
-  - Configuration verification: `IDataPointConfigurationVerifier` for async pre-poll data point validation, replacing the synchronous `IDataPointValidator`
-  - Strongly-typed value objects: `DataPointIdentifier`, `DataTypeName`, `QueueSize`
-- Introduce `ViciOne.Suite.DataPort.Extensions.Testing` package with specialized test utilities for data port development:
-  - Eventual assertions: `EventualAssertions`, `EventualValue<T>`, `EventualValueAssertions<T>`
-  - YAML consistency testing: `YamlConsistencyBaseTest` base class for validating consistency between YAML configuration files and C# DataPort implementations
-  - Test helpers: `DataPortCommunicationExtensions` for reflection-based Communication analysis, `RulesetExtensions` for querying YAML rulesets
-  - Centralized test logging configuration
 - Use timing-safe comparison for OPC UA server credential verification
 - Add brute-force protection to OPC UA server authentication (lockout after failed attempts with exponential delay)
 - Add audit logging for OPC UA server security events (failed/successful authentication, anonymous access, account lockout)
@@ -73,7 +71,6 @@
 
 - Change MetaData names to full names
 - Make OPC UA certificate optional
-- **Breaking** (`DataPort.Extensions`): Refactored public API — `IDataPoint`, `IncomingDataPortBase`, `OutgoingDataPortBase`, `IDataPointValidator`, `IDataPointValueFactory`, `QueueConfiguration`, and all sub-namespaces changed; see [DataPort.Extensions breaking changes](docs/DataPort.Extensions/README.md#breaking-changes-in-this-release)
 - Update `.NET` to `10.0`
 - Implement new icons
 - Update `.yaml` files format to `1.0.0` (`ViciOne.TreeBuilder`)
@@ -98,6 +95,32 @@
 - Fix OPC UA server crash on receiving a number while max and min properties are set
 - Fix OPC UA server exception on connect when incoming and outgoing have the same nodes
 - Fix default port of SQL Server in yaml file
+
+### DataPort.Extensions
+
+#### Added
+
+- Introduce `ViciOne.Suite.DataPort.Extensions` package with reusable base classes and utilities for implementing custom data ports:
+  - Base templates: `IncomingDataPortBase` for read-oriented data ports with periodic polling, `OutgoingDataPortBase` for write-oriented data ports with queue processing and retry logic
+  - Infrastructure components: `PeriodicJob` for periodic task execution with Polly resilience, `TypedNodeMapper` for configuration mapping with FluentValidation integration
+  - Queue system: `ChannelQueue` and `PrependableChannelQueue` with configurable overflow strategies (drop oldest/newest, throw exception)
+  - Resilience utilities: `RetryBackoffCalculator` for exponential/linear backoff with jitter, retry policies (`BoundedRetryPolicy`, `InfiniteRetryPolicy`)
+  - Value validation: `DataPointValueValidator` with all-or-nothing semantics
+  - Data port abstractions: `IClientLifecycleManager`, `IReadClient`, `IWriteClient`, `IDataPoint`, `IPollingDataPoint`, `IDataPointPollingGroup`, `IDataPointValue`, `IRetryPolicy`
+  - Structured exception types: `ConnectionFailureException`, `DataRetrievalException`, `DataConversionException`, `InvalidConfigurationException`, `MaxRetriesExceededException`, `QueueBackpressureException`
+  - Mapper abstractions: `IDataPointsMapper` (outgoing) and `IDataPointGroupsMapper` (incoming) for decoupled configuration-to-data-point mapping
+  - Value conversion abstractions: `IExternalValueConverter` (outgoing: `ExternalValue` → `TDataPointValue`) and `IDataPointValueConverter` (incoming: `TDataPointValue` → `ExternalValue`)
+  - Configuration verification: `IDataPointConfigurationVerifier` for async pre-poll data point validation, replacing the synchronous `IDataPointValidator`
+  - Strongly-typed value objects: `DataPointIdentifier`, `DataTypeName`, `QueueSize`
+- Introduce `ViciOne.Suite.DataPort.Extensions.Testing` package with specialized test utilities for data port development:
+  - Eventual assertions: `EventualAssertions`, `EventualValue<T>`, `EventualValueAssertions<T>`
+  - YAML consistency testing: `YamlConsistencyBaseTest` base class for validating consistency between YAML configuration files and C# DataPort implementations
+  - Test helpers: `DataPortCommunicationExtensions` for reflection-based Communication analysis, `RulesetExtensions` for querying YAML rulesets
+  - Centralized test logging configuration
+
+#### Changed
+
+- **Breaking**: Refactored public API — `IDataPoint`, `IncomingDataPortBase`, `OutgoingDataPortBase`, `IDataPointValidator`, `IDataPointValueFactory`, `QueueConfiguration`, and all sub-namespaces changed; see the [migration guide](docs/DataPort.Extensions/how-to/migration/0.30.0.md)
 
 ## 0.29.0 - 2025-10-21
 

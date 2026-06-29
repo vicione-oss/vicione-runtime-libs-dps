@@ -65,3 +65,4 @@ hand them the same shared blocks.
 - [Overview](../explanation/Overview.md) — the concepts these recipes apply
 - [Interfaces](../reference/interfaces.md) · [Model](../reference/model.md) — the contracts, grouped by role
 - [Generated API](../reference/api/index.md) — every public type and member
+- [Migrate between versions](migration/index.md) — upgrade an existing implementation across a breaking release

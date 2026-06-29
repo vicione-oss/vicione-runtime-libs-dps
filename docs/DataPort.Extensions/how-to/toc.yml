@@ -18,3 +18,11 @@
   href: incoming-dataport/incoming-data-port.md
 - name: Build an outgoing data port
   href: outgoing-dataport/outgoing-data-port.md
+- name: Migrate between versions
+  items:
+    - name: Overview
+      href: migration/index.md
+    - name: Migrating to the next release
+      href: migration/next.md
+    - name: Migrating to 0.30.0
+      href: migration/0.30.0.md

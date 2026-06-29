@@ -59,7 +59,9 @@ Keep the package self-describing — the tiers only help a consumer's agent if t
   generated API renders them), never duplicated in markdown. Add/remove a type → update the matching
   `reference/*.md` index; add an exception → `reference/exceptions.md`. Conventions:
   [documentation-principles.md](documentation-principles.md); code cheat-sheet: `src/DataPort.Extensions/AGENTS.md`.
-- **Breaking changes + migration** → [CHANGELOG.md](CHANGELOG.md).
+- **Breaking changes** → the repo-root `CHANGELOG.md` (this package shares the repository's version),
+  in short form and scope-tagged `` (`DataPort.Extensions`) ``. **Migration steps** → a per-release page
+  under [how-to/migration/](how-to/migration/index.md), linked from the changelog's `Changed` section.
 - **Keep these `DataPort.Extensions.csproj` settings on** — each silently degrades the package if removed:
   `<GenerateDocumentationFile>` (Tier 2 `.xml`), `<DebugType>embedded</DebugType>` + `<EmbedAllSources>`
   (embedded symbols/source), `<PackageReadmeFile>` (README).
