@@ -17,7 +17,7 @@ internal sealed class DataPortFunctionBlockBuilder
 {
     private readonly PoolingFactory _poolingFactory;
     private readonly FunctionBlockDesign _design;
-    private readonly List<(string Input, string Output, string? PropertyPath, NodeLinkModification? Modification)> _nodeLinks = [];
+    private readonly List<(string Input, string Output)> _nodeLinks = [];
     private readonly Dictionary<string, (ITransferMode TransferMode, Pooling Pooling, bool MarkAsChangedIfNotEqual)> _outputConfigurations = [];
 
     public DataPortFunctionBlockBuilder()
@@ -56,9 +56,9 @@ internal sealed class DataPortFunctionBlockBuilder
         return this;
     }
 
-    public DataPortFunctionBlockBuilder AddNodeLink(string input, string output, string? propertyPath = null, NodeLinkModification? modification = null)
+    public DataPortFunctionBlockBuilder AddNodeLink(string input, string output)
     {
-        _nodeLinks.Add((input, output, propertyPath, modification));
+        _nodeLinks.Add((input, output));
         return this;
     }
 
@@ -70,8 +70,8 @@ internal sealed class DataPortFunctionBlockBuilder
 
         List<NodeLink> nodeLinks = [];
 
-        foreach (var (input, output, propertyPath, modification) in _nodeLinks)
-            nodeLinks.Add(new() { InputConnectorId = inputs[input], OutputConnectorId = outputs[output], PropertyPath = propertyPath, Modification = modification, });
+        foreach (var (input, output) in _nodeLinks)
+            nodeLinks.Add(new() { InputConnectorId = inputs[input], OutputConnectorId = outputs[output], });
 
         Dictionary<Guid, OutputConfiguration> outputConfigurations = [];
         Dictionary<Guid, ITransferMode> connectorTransferModes = [];

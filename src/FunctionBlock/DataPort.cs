@@ -17,7 +17,6 @@ public partial class DataPort
     private readonly List<ITransferHandler> _transferHandlers = [];
     private readonly DefaultConnectorValueTransferInterceptor _defaultConnectorValueTransferInterceptor = new();
     private Dictionary<Guid, IInputProcessor> _inputProcessors = [];
-    private List<ComposeProcessor> _composers = [];
     private bool _disposed;
 
     internal IList<IRuntimeConnector> ProcessDataInputConnectors => ProcessDataInputs;
@@ -25,7 +24,6 @@ public partial class DataPort
     internal void Process()
     {
         ProcessInputs();
-        ProcessComposers();
         ProcessHandlers();
     }
 
@@ -42,8 +40,8 @@ public partial class DataPort
         if (Settings.TransferModes?.Value is null)
             throw new InvalidOperationException("Transfer modes must be set.");
 
-        ConnectionFactory connectionFactory = new(this, Logger);
-        _inputProcessors = connectionFactory.CreateInputProcessors(_defaultConnectorValueTransferInterceptor, out _composers);
+        ConnectionFactory connectionFactory = new(this);
+        _inputProcessors = connectionFactory.CreateInputProcessors(_defaultConnectorValueTransferInterceptor);
         var linkGroups = connectionFactory.CreateInputLinkGroups();
 
         foreach (var (connectorId, transferMode) in Settings.TransferModes.Value)
@@ -87,12 +85,6 @@ public partial class DataPort
             handler.ProcessCycle();
     }
 
-    private void ProcessComposers()
-    {
-        foreach (var composer in _composers)
-            composer.Process();
-    }
-
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
@@ -103,7 +95,6 @@ public partial class DataPort
             {
                 DisposeTransferHandlers();
                 _transferHandlers.Clear();
-                _composers.Clear();
                 _inputProcessors.Clear();
                 _defaultConnectorValueTransferInterceptor.Dispose();
             }

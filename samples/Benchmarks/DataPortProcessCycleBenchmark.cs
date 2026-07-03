@@ -21,11 +21,7 @@ public class DataPortProcessCycleBenchmark : IDisposable
     private readonly DefaultUniqueNameProvider _uniqueNameProvider = new(new Dictionary<Guid, string>());
     private readonly FakeLogger<DataPort> _logger = new FakeLogger<DataPort>().ConfigureLogLevel(LogLevel.Warning);
     private DataPort? _runtimeFunctionBlockWithDirectLinks;
-    private DataPort? _runtimeFunctionBlockWithCompositionLinks;
-    private DataPort? _runtimeFunctionBlockWithExtractionLinks;
     private List<IRuntimeConnector<double>> _inputConnectorsWithDirectLink = [];
-    private List<IRuntimeConnector<double>> _inputConnectorsWithCompositionLink = [];
-    private List<IRuntimeConnector<Point>> _inputConnectorsWithExtractionLink = [];
     private bool _disposed;
 
     [Params(25_000)]
@@ -46,28 +42,6 @@ public class DataPortProcessCycleBenchmark : IDisposable
             },
             out _runtimeFunctionBlockWithDirectLinks,
             out _inputConnectorsWithDirectLink);
-        SetupFunctionBlock(
-            (b, i) =>
-            {
-                var input = $"ValueIn{i}";
-                var output = $"ValueOut{i}";
-                b.AddInput<double>(input, PoolingStrategy.Queue);
-                b.AddOutput<Point>(output, new OnChangedTransferMode(), PoolingStrategy.Queue);
-                b.AddNodeLink(input, output, nameof(Point.Value), NodeLinkModification.Compose);
-            },
-            out _runtimeFunctionBlockWithCompositionLinks,
-            out _inputConnectorsWithCompositionLink);
-        SetupFunctionBlock(
-            (b, i) =>
-            {
-                var input = $"ValueIn{i}";
-                var output = $"ValueOut{i}";
-                b.AddInput<Point>(input, PoolingStrategy.Queue);
-                b.AddOutput<double>(output, new OnChangedTransferMode(), PoolingStrategy.Queue);
-                b.AddNodeLink(input, output, nameof(Point.Value), NodeLinkModification.Extract);
-            },
-            out _runtimeFunctionBlockWithExtractionLinks,
-            out _inputConnectorsWithExtractionLink);
     }
 
     private void SetupFunctionBlock<T>(Action<DataPortFunctionBlockBuilder, int> createLink, out DataPort runtimeFunctionBlock, out List<IRuntimeConnector<T>> inputs)
@@ -93,12 +67,6 @@ public class DataPortProcessCycleBenchmark : IDisposable
 
         foreach (var input in _inputConnectorsWithDirectLink)
             input.SetValueIfNotEqual(value);
-
-        foreach (var input in _inputConnectorsWithCompositionLink)
-            input.SetValueIfNotEqual(value);
-
-        foreach (var input in _inputConnectorsWithExtractionLink)
-            input.SetValueIfNotEqual(new() { Value = value, });
     }
 
     [IterationCleanup]
@@ -113,16 +81,6 @@ public class DataPortProcessCycleBenchmark : IDisposable
     public void ProcessCycle_with_direct_links()
         => _runtimeFunctionBlockWithDirectLinks!.Process();
 
-    [Benchmark]
-    [SuppressMessage("Naming", "CA1707:Bezeichner dürfen keine Unterstriche enthalten")]
-    public void ProcessCycle_with_composition_links()
-        => _runtimeFunctionBlockWithCompositionLinks!.Process();
-
-    [Benchmark]
-    [SuppressMessage("Naming", "CA1707:Bezeichner dürfen keine Unterstriche enthalten")]
-    public void ProcessCycle_with_extraction_links()
-        => _runtimeFunctionBlockWithExtractionLinks!.Process();
-
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed)
@@ -131,11 +89,7 @@ public class DataPortProcessCycleBenchmark : IDisposable
         if (disposing)
         {
             _inputConnectorsWithDirectLink.Clear();
-            _inputConnectorsWithCompositionLink.Clear();
-            _inputConnectorsWithExtractionLink.Clear();
             _runtimeFunctionBlockWithDirectLinks?.Dispose();
-            _runtimeFunctionBlockWithCompositionLinks?.Dispose();
-            _runtimeFunctionBlockWithExtractionLinks?.Dispose();
         }
 
         _disposed = true;

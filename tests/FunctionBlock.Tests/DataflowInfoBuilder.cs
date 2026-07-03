@@ -15,7 +15,7 @@ internal sealed class DataflowInfoBuilder
 {
     private readonly PoolingFactory _poolingFactory;
     private readonly FunctionBlockDesign _design;
-    private readonly List<(string Input, string Output, string? PropertyPath, NodeLinkModification? Modification)> _nodeLinks = [];
+    private readonly List<(string Input, string Output)> _nodeLinks = [];
     private readonly Dictionary<string, (ITransferMode TransferMode, Pooling Pooling, bool MarkAsChangedIfNotEqual)> _outputConfigurations = [];
 
     internal DataflowInfoBuilder(RelevantAssemblies assemblies)
@@ -67,9 +67,9 @@ internal sealed class DataflowInfoBuilder
         return this;
     }
 
-    internal DataflowInfoBuilder AddNodeLink(string input, string output, string? propertyPath = null, NodeLinkModification? modification = null)
+    internal DataflowInfoBuilder AddNodeLink(string input, string output)
     {
-        _nodeLinks.Add((input, output, propertyPath, modification));
+        _nodeLinks.Add((input, output));
         return this;
     }
 
@@ -79,12 +79,12 @@ internal sealed class DataflowInfoBuilder
 
         List<NodeLink> nodeLinks = [];
 
-        foreach (var (input, output, propertyPath, modification) in _nodeLinks)
+        foreach (var (input, output) in _nodeLinks)
         {
             var inputId = dataflowInfo.Inputs.First(i => i.Connector.Design.Name == input).Connector.Id;
             var outputId = dataflowInfo.Outputs.First(o => o.Connector.Design.Name == output).Connector.Id;
 
-            nodeLinks.Add(new() { InputConnectorId = inputId, OutputConnectorId = outputId, PropertyPath = propertyPath, Modification = modification, });
+            nodeLinks.Add(new() { InputConnectorId = inputId, OutputConnectorId = outputId, });
         }
 
         Dictionary<Guid, OutputConfiguration> outputConfigurations = [];
