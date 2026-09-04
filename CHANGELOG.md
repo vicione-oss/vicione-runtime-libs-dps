@@ -8,6 +8,10 @@
 - Move all DataPort providers to separate repositories to keep DataPort core in one place
 - Integrate DataPort FunctionBlock into this repo
 
+### Removed
+
+- **Breaking**: Remove `Modification` and `PropertyPath` from `NodeLink` and remove feature entirely
+
 ### DataPort.Extensions
 
 #### Added

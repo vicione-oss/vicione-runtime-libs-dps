@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using AwesomeAssertions.Extensions;
@@ -135,67 +134,6 @@ public sealed class DataPort_LinkGroups : IDisposable
         _context.ChangeInputValue("ValueIn3", 8d);
         _context.ProcessCycle();
         _context.GetOutputValue<double>("ValueOut3").Should().Be(5);
-    }
-}
-
-public sealed class DataPort_ExtractValues : IDisposable
-{
-    private readonly FunctionBlockExecutionContext<DataPort> _context = new(a => new DataflowInfoBuilder(a)
-        .SetRunMode(RunMode.Cyclic)
-        .AddInput<Test?>("ValueIn1", new Test(), PoolingStrategy.Queue)
-        .AddOutput<int?>("ValueOut1", new OnChangedTransferMode(), PoolingStrategy.Queue)
-        .AddNodeLink("ValueIn1", "ValueOut1", "MyProperty", NodeLinkModification.Extract)
-        .CreateDataflowInfo());
-    public void Dispose() => _context.Dispose();
-
-    [Fact]
-    public void Acceptance()
-    {
-        _context.ChangeInputValue("ValueIn1", new Test { MyProperty = 1 });
-        _context.ProcessCycle();
-        _context.GetOutputValue<int>("ValueOut1").Should().Be(1);
-    }
-
-    [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated via reflection")]
-    internal sealed class Test
-    {
-        public int MyProperty { get; set; }
-    }
-}
-
-public sealed class DataPort_ComposeValues : IDisposable
-{
-    private readonly FunctionBlockExecutionContext<DataPort> _context = new(a => new DataflowInfoBuilder(a)
-        .SetRunMode(RunMode.Cyclic)
-        .AddInput<int>("ValueIn1", 0, PoolingStrategy.Queue)
-        .AddOutput<Test>("ValueOut1", new OnChangedTransferMode(), PoolingStrategy.Queue)
-        .AddInput<int>("ValueIn2", 0, PoolingStrategy.Queue)
-        .AddOutput<Test>("ValueOut2", new OnChangedTransferMode(), PoolingStrategy.Queue)
-        .AddNodeLink("ValueIn1", "ValueOut1", "MyProperty", NodeLinkModification.Compose)
-        .AddNodeLink("ValueIn2", "ValueOut2", "MyProperty", NodeLinkModification.Compose)
-        .CreateDataflowInfo());
-    public void Dispose() => _context.Dispose();
-
-    [Fact]
-    public void Acceptance()
-    {
-        _context.ChangeInputValue("ValueIn1", 1);
-        _context.ChangeInputValue("ValueIn2", 2);
-
-        _context.ProcessCycle();
-
-        var value1 = _context.GetOutputValue<Test>("ValueOut1");
-        value1.Should().NotBeNull();
-        value1.MyProperty.Should().Be(1);
-        var value2 = _context.GetOutputValue<Test>("ValueOut2");
-        value2.Should().NotBeNull();
-        value2.MyProperty.Should().Be(2);
-    }
-
-    [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated via reflection")]
-    internal sealed class Test
-    {
-        public int MyProperty { get; set; }
     }
 }
 

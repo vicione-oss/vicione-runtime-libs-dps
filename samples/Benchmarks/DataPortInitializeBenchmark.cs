@@ -15,11 +15,7 @@ namespace Benchmarks;
 public class DataPortInitializeBenchmark : IDisposable
 {
     private DataPort? _runtimeFunctionBlockWithDirectLinks;
-    private DataPort? _runtimeFunctionBlockWithCompositionLinks;
-    private DataPort? _runtimeFunctionBlockWithExtractionLinks;
     private IFunctionBlock? _functionBlockWithDirectLinks;
-    private IFunctionBlock? _functionBlockWithCompositionLinks;
-    private IFunctionBlock? _functionBlockWithExtractionLinks;
     private readonly DefaultUniqueNameProvider _uniqueNameProvider = new(new Dictionary<Guid, string>());
     private readonly FakeLogger<DataPort> _logger = new FakeLogger<DataPort>().ConfigureLogLevel(LogLevel.Warning);
     private bool _disposed;
@@ -42,32 +38,6 @@ public class DataPortInitializeBenchmark : IDisposable
         }
 
         _functionBlockWithDirectLinks = builder.Build();
-
-        builder = new();
-
-        for (var i = 0; i < Links; i++)
-        {
-            var input = $"ValueIn{i}";
-            var output = $"ValueOut{i}";
-            builder.AddInput<double>(input, PoolingStrategy.Queue);
-            builder.AddOutput<Point>(output, new OnChangedTransferMode(), PoolingStrategy.Queue);
-            builder.AddNodeLink(input, output, nameof(Point.Value), NodeLinkModification.Compose);
-        }
-
-        _functionBlockWithCompositionLinks = builder.Build();
-
-        builder = new();
-
-        for (var i = 0; i < Links; i++)
-        {
-            var input = $"ValueIn{i}";
-            var output = $"ValueOut{i}";
-            builder.AddInput<Point>(input, PoolingStrategy.Queue);
-            builder.AddOutput<double>(output, new OnChangedTransferMode(), PoolingStrategy.Queue);
-            builder.AddNodeLink(input, output, nameof(Point.Value), NodeLinkModification.Extract);
-        }
-
-        _functionBlockWithExtractionLinks = builder.Build();
     }
 
     [IterationSetup]
@@ -75,12 +45,6 @@ public class DataPortInitializeBenchmark : IDisposable
     {
         _runtimeFunctionBlockWithDirectLinks = new DataPort();
         _runtimeFunctionBlockWithDirectLinks.Setup(_functionBlockWithDirectLinks!, null, [], _uniqueNameProvider, _logger);
-
-        _runtimeFunctionBlockWithCompositionLinks = new DataPort();
-        _runtimeFunctionBlockWithCompositionLinks.Setup(_functionBlockWithCompositionLinks!, null, [], _uniqueNameProvider, _logger);
-
-        _runtimeFunctionBlockWithExtractionLinks = new DataPort();
-        _runtimeFunctionBlockWithExtractionLinks.Setup(_functionBlockWithExtractionLinks!, null, [], _uniqueNameProvider, _logger);
     }
 
     [IterationCleanup]
@@ -88,12 +52,6 @@ public class DataPortInitializeBenchmark : IDisposable
     {
         _runtimeFunctionBlockWithDirectLinks!.Dispose();
         _runtimeFunctionBlockWithDirectLinks = null;
-
-        _runtimeFunctionBlockWithCompositionLinks!.Dispose();
-        _runtimeFunctionBlockWithCompositionLinks = null;
-
-        _runtimeFunctionBlockWithExtractionLinks!.Dispose();
-        _runtimeFunctionBlockWithExtractionLinks = null;
 
         if (_logger.Collector.Count > 0)
             throw new InvalidOperationException("Unexpected warnings or errors.");
@@ -104,27 +62,13 @@ public class DataPortInitializeBenchmark : IDisposable
     public void InitializeI_with_direct_links()
         => _runtimeFunctionBlockWithDirectLinks!.InitializeI();
 
-    [Benchmark]
-    [SuppressMessage("Naming", "CA1707:Bezeichner dürfen keine Unterstriche enthalten")]
-    public void InitializeI_with_composition_links()
-        => _runtimeFunctionBlockWithCompositionLinks!.InitializeI();
-
-    [Benchmark]
-    [SuppressMessage("Naming", "CA1707:Bezeichner dürfen keine Unterstriche enthalten")]
-    public void InitializeI_with_extraction_links()
-        => _runtimeFunctionBlockWithExtractionLinks!.InitializeI();
-
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed)
             return;
 
         if (disposing)
-        {
             _runtimeFunctionBlockWithDirectLinks?.Dispose();
-            _runtimeFunctionBlockWithCompositionLinks?.Dispose();
-            _runtimeFunctionBlockWithExtractionLinks?.Dispose();
-        }
 
         _disposed = true;
     }
