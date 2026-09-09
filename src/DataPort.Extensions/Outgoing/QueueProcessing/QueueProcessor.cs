@@ -22,6 +22,12 @@ namespace ViciOne.Suite.DataPort.Extensions.Outgoing.QueueProcessing;
 /// <item>Call <see cref="Enqueue"/> to add batches of values to the queue</item>
 /// <item>Call <see cref="DisposeAsync"/> to stop background processing and release resources</item>
 /// </list>
+/// <para>
+/// <b>Why the retry loop is hand-written rather than a Polly pipeline:</b> the retry decision depends on
+/// queue state that changes during the backoff (see the head check in <c>PublishAsync</c>), which Polly's
+/// outcome-based <c>ShouldHandle</c> cannot express without abusing <c>OnRetry</c>. See the
+/// "Why the write path does not use Polly" section of the outgoing data port explanation docs.
+/// </para>
 /// </remarks>
 internal sealed class QueueProcessor<TValue> : IAsyncDisposable
 {

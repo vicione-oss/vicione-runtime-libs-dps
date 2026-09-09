@@ -31,6 +31,9 @@ property. Implemented by
 → Why infinite retry is the default and when to bound it:
 [Outgoing data port](../explanation/outgoing/outgoing-data-port.md#infiniteretrypolicy-is-the-default)
 
+→ Why the write path uses this instead of a Polly pipeline:
+[Outgoing data port](../explanation/outgoing/outgoing-data-port.md#why-the-write-path-does-not-use-polly)
+
 ### [DefaultResiliencePipeline](xref:ViciOne.Suite.DataPort.Extensions.Incoming.Polling.Job.DefaultResiliencePipeline)
 
 The Polly timeout + circuit-breaker pipeline returned by
