@@ -31,13 +31,17 @@ public interface IYamlTestingConfig<TCommunication, TRootConfigurationNode>
     static virtual HashSet<string> ExcludedCommunicationProperties => [];
 
     /// <summary>
-    /// C# properties on configuration nodes that don't map to YAML, keyed by the node type.
+    /// C# properties on configuration nodes that don't map to YAML, keyed by node type.
+    /// The key may be the concrete node type or any base type or interface that declares the property;
+    /// an entry applies to every node type assignable to the key.
     /// Default: empty dictionary.
     /// </summary>
     static virtual Dictionary<Type, HashSet<string>> ExcludedConfigurationNodeProperties => [];
 
     /// <summary>
-    /// C# properties on data point nodes that don't map to YAML, keyed by the node type.
+    /// C# properties on data point nodes that don't map to YAML, keyed by node type.
+    /// The key may be the concrete node type or any base type or interface that declares the property;
+    /// an entry applies to every node type assignable to the key.
     /// Default: empty dictionary.
     /// </summary>
     static virtual Dictionary<Type, HashSet<string>> ExcludedDataPointNodeProperties => [];

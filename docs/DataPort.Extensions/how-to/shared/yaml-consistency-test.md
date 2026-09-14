@@ -41,7 +41,9 @@ public class YamlConsistencyTest :
 
 The `Excluded…` sets are the escape hatch for the handful of members that legitimately exist on only
 one side — a computed property like `ConnectionString`, or a derived `FullPath` — so the test stays
-green for genuine, deliberate differences while still catching accidental drift.
+green for genuine, deliberate differences while still catching accidental drift. The dictionary key
+may be the concrete node type or any base type or interface that declares the property — an entry
+keyed by a base class applies to all node types deriving from it.
 
 Make sure the YAML file is copied to the test output so the test can load it. In the example's
 `.csproj`:
