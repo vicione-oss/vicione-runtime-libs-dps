@@ -7,7 +7,7 @@
 - Add new icons to DataPorts
 - Move all DataPort providers to separate repositories to keep DataPort core in one place
 - Integrate DataPort FunctionBlock into this repo
-- Update `ViciOne.TreeBuilder` to `2.1.0`
+- **Breaking**: Replace `ViciOne.TreeBuilder` with its renamed successor `ViciOne.Tree.Builder` `3.0.0`; the YAML testing helpers now expose types from the `ViciOne.Tree.Builder.*` namespaces instead of `ViciOne.TreeBuilder.*`
 
 ### Removed
 
