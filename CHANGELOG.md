@@ -7,6 +7,7 @@
 - Add new icons to DataPorts
 - Move all DataPort providers to separate repositories to keep DataPort core in one place
 - Integrate DataPort FunctionBlock into this repo
+- Update `ViciOne.TreeBuilder` to `2.1.0`
 
 ### Removed
 

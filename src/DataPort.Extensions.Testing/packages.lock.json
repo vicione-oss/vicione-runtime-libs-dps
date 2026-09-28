@@ -23,11 +23,11 @@
       },
       "ViciOne.TreeBuilder": {
         "type": "Direct",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "znDqOsG+1n4639f7cc+4VXuLJb+ufolfyEctjqNUHIkeaYZ1v9Mz8g8/sLad42fC0dASkg/ttg76zXeavT3d9g==",
+        "requested": "[2.1.0, )",
+        "resolved": "2.1.0",
+        "contentHash": "Hhg4Ud4mgLo/ssUZXg8aUg4Tjoqk9brlTzBMxNszD8HcT/HJKnW+8p18i2U+nnS0pDDOr/UzBdgRd45ZQg5qpA==",
         "dependencies": {
-          "HtmlSanitizer": "9.0.892",
+          "AngleSharp": "1.6.0",
           "YamlDotNet": "16.3.0"
         }
       },
@@ -42,25 +42,8 @@
       },
       "AngleSharp": {
         "type": "Transitive",
-        "resolved": "0.17.1",
-        "contentHash": "5MPI4bbixlwxb0W/smOMeIR+QlxMy5/5jD+WnIAw4pBC+7AhLPe5bS3cLgQMJyvd6q0A48sG+uYOt/ep406GLA=="
-      },
-      "AngleSharp.Css": {
-        "type": "Transitive",
-        "resolved": "0.17.0",
-        "contentHash": "bg0AcugmX6BFEi/DHG61QrwRU8iuiX4H8LZehdIzYdqOM/dgb3BsCTzNIcc1XADn4+xfQEdVwJYTSwUxroL4vg==",
-        "dependencies": {
-          "AngleSharp": "[0.17.0, 0.18.0)"
-        }
-      },
-      "HtmlSanitizer": {
-        "type": "Transitive",
-        "resolved": "9.0.892",
-        "contentHash": "zdkMmpNCjTkxna8Y+jmPIFm2st+HjHrf32yNElFYwe7L4GmDm+mdKR6TzDyf6ewJ0RUUz84D4IkHNgrwGi4VbQ==",
-        "dependencies": {
-          "AngleSharp": "[0.17.1]",
-          "AngleSharp.Css": "[0.17.0]"
-        }
+        "resolved": "1.6.0",
+        "contentHash": "kVnhnZlM4Yww2KWqW3uSL8isvhYsrTTBMSPAgoF8ZhMrLSoay6783AP6dQxAj1J9gvWKi3OIM4ZezdE2Y4ufCQ=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
