@@ -69,13 +69,13 @@
           "System.Interactive.Async": "7.0.0"
         }
       },
-      "ViciOne.TreeBuilder": {
+      "ViciOne.Tree.Builder": {
         "type": "Direct",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "znDqOsG+1n4639f7cc+4VXuLJb+ufolfyEctjqNUHIkeaYZ1v9Mz8g8/sLad42fC0dASkg/ttg76zXeavT3d9g==",
+        "requested": "[3.0.0, )",
+        "resolved": "3.0.0",
+        "contentHash": "iDO1AEB0vVw9VsUjkMEtx1HyQg74jznOPf9fjEeLRvMAWU7n7/BU6OlRvUATRhbTCKLx32N9BrnokgoM8NfHpQ==",
         "dependencies": {
-          "HtmlSanitizer": "9.0.892",
+          "AngleSharp": "1.6.0",
           "YamlDotNet": "16.3.0"
         }
       },
@@ -96,16 +96,8 @@
       },
       "AngleSharp": {
         "type": "Transitive",
-        "resolved": "0.17.1",
-        "contentHash": "5MPI4bbixlwxb0W/smOMeIR+QlxMy5/5jD+WnIAw4pBC+7AhLPe5bS3cLgQMJyvd6q0A48sG+uYOt/ep406GLA=="
-      },
-      "AngleSharp.Css": {
-        "type": "Transitive",
-        "resolved": "0.17.0",
-        "contentHash": "bg0AcugmX6BFEi/DHG61QrwRU8iuiX4H8LZehdIzYdqOM/dgb3BsCTzNIcc1XADn4+xfQEdVwJYTSwUxroL4vg==",
-        "dependencies": {
-          "AngleSharp": "[0.17.0, 0.18.0)"
-        }
+        "resolved": "1.6.0",
+        "contentHash": "kVnhnZlM4Yww2KWqW3uSL8isvhYsrTTBMSPAgoF8ZhMrLSoay6783AP6dQxAj1J9gvWKi3OIM4ZezdE2Y4ufCQ=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -113,15 +105,6 @@
         "contentHash": "rpYtIczkzGpf+EkZgDr9CClTdemhsrwA/W5hMoPjLkRFnXzH44zDLoovXeKtmxb1ykXK9aJVODSpiJml8CTw2g==",
         "dependencies": {
           "System.Diagnostics.EventLog": "6.0.0"
-        }
-      },
-      "HtmlSanitizer": {
-        "type": "Transitive",
-        "resolved": "9.0.892",
-        "contentHash": "zdkMmpNCjTkxna8Y+jmPIFm2st+HjHrf32yNElFYwe7L4GmDm+mdKR6TzDyf6ewJ0RUUz84D4IkHNgrwGi4VbQ==",
-        "dependencies": {
-          "AngleSharp": "[0.17.1]",
-          "AngleSharp.Css": "[0.17.0]"
         }
       },
       "Microsoft.ApplicationInsights": {
@@ -384,7 +367,7 @@
           "Microsoft.Extensions.Logging.Console": "[10.0.5, )",
           "ViciOne.Suite.DataPort": "[1.0.0, )",
           "ViciOne.Suite.DataPort.Extensions": "[1.0.0, )",
-          "ViciOne.TreeBuilder": "[1.0.0, )",
+          "ViciOne.Tree.Builder": "[3.0.0, )",
           "xunit.v3.extensibility.core": "[3.2.2, )"
         }
       },
