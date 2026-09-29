@@ -22,7 +22,7 @@
 
 #### Changed
 
-- **Breaking**: Type-safe data-point model — `IDataPoint` / `IDataPointValue` are no longer generic, outgoing conversion returns a `DataPointValueConversion<T>` instead of throwing or returning `null`, value validation is range-only, and `Channels` / `ValidationFailureReason` members were renamed; see the [migration guide](docs/DataPort.Extensions/how-to/migration/next.md)
+- **Breaking**: Type-safe data-point model — `IDataPoint` / `IDataPointValue` are no longer generic, outgoing conversion returns a `DataPointValueConversion<T>` instead of throwing or returning `null`, value validation is range-only, and `Channels` / `ValidationFailureReason` members were renamed; see the [migration guide](docs/DataPort.Extensions/how-to/migration/1.0.0.md)
 
 #### Removed
 
