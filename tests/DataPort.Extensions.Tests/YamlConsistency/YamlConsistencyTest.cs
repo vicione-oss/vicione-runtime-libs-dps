@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.DataPoints;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Device;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Folders;
 using ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Mapper;
@@ -23,8 +24,11 @@ public class YamlConsistencyTest :
 
     public static Dictionary<Type, HashSet<string>> ExcludedConfigurationNodeProperties => new()
     {
-        [typeof(TestBranchNodeWithProperties)] = [nameof(TestBranchNodeWithProperties.FullPath)],
+        [typeof(IHasFullPath)] = [nameof(IHasFullPath.FullPath)],
     };
 
-    public static Dictionary<Type, HashSet<string>> ExcludedDataPointNodeProperties => new();
+    public static Dictionary<Type, HashSet<string>> ExcludedDataPointNodeProperties => new()
+    {
+        [typeof(DataPointNodeBase)] = [nameof(DataPointNodeBase.Description)],
+    };
 }

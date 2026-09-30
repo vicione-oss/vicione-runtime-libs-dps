@@ -13,6 +13,8 @@ internal abstract record DataPointNodeBase(LinkedNode OriginalNode, PollFrequenc
 
     public IConfigurationNode? Parent { get; set; }
 
+    public string Description => $"{GetType().Name} polled every {PollFrequency}";
+
     public Channels Channels { get; } = new(
         Channels.AffectedChannels([.. OriginalNode.AffectedChannels]),
         Channels.TransferredChannels([.. OriginalNode.TransferredChannels]));

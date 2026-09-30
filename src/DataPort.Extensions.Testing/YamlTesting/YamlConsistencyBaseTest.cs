@@ -1,6 +1,7 @@
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using AwesomeAssertions;
@@ -31,6 +32,10 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
     // ReSharper disable once StaticMemberInGenericType
     private static readonly Lazy<Ruleset> s_lazyRuleset =
         new(() => RulesDeserializer.Deserialize(TYamlConfig.YamlFileName));
+
+    private static bool IsExcluded(
+        Dictionary<Type, HashSet<string>> excluded, Type nodeType, string propertyName) =>
+        excluded.Any(entry => entry.Key.IsAssignableFrom(nodeType) && entry.Value.Contains(propertyName));
 
     [Fact]
     public void IsYamlFileValid()
@@ -168,7 +173,7 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
         var excluded = TYamlConfig.ExcludedConfigurationNodeProperties;
         var testCases = TYamlConfig.Mapper.ConfigurationNodeMappers
             .SelectMany(mapper => mapper.PropertyNamesDefinedInTargetNode()
-                    .Where(p => !excluded.TryGetValue(mapper.NodeType, out var props) || !props.Contains(p)),
+                    .Where(p => !IsExcluded(excluded, mapper.NodeType, p)),
                 (mapper, propertyName) => new ConfigurationMapperPropertyTestCase(mapper, propertyName));
         return [.. testCases];
     }
@@ -284,7 +289,7 @@ public abstract class YamlConsistencyBaseTest<TCommunicationType, TYamlConfig, T
         var excluded = TYamlConfig.ExcludedDataPointNodeProperties;
         var testCases = TYamlConfig.Mapper.DataPointNodeMappers
             .SelectMany(mapper => mapper.PropertyNamesDefinedInTargetNode()
-                    .Where(p => !excluded.TryGetValue(mapper.NodeType, out var props) || !props.Contains(p)),
+                    .Where(p => !IsExcluded(excluded, mapper.NodeType, p)),
                 (mapper, propertyName) => new DataPointMapperPropertyTestCase(mapper, propertyName));
         return [.. testCases];
     }

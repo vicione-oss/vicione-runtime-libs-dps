@@ -3,7 +3,7 @@ using ViciOne.Suite.DataPort.Extensions.Model.TypedNodes;
 
 namespace ViciOne.Suite.DataPort.Extension.Tests.Stubs.Model.Nodes.Folders;
 
-internal sealed record TestBranchNodeWithProperties : IBranchConfigurationNode
+internal sealed record TestBranchNodeWithProperties : IBranchConfigurationNode, IHasFullPath
 {
     public required LinkedNode OriginalNode { get; init; }
     public IConfigurationNode? ParentConfigurationNode { get; set; }
