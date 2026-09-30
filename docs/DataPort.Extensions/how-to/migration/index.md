@@ -13,5 +13,5 @@ Upgrading across several releases? Work through the guides in order, oldest firs
 
 | Target version               | What it covers                                                                                                                                          |
 |------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Next (unreleased)](next.md) | Type-safe data points — non-generic `IDataPoint` / `IDataPointValue`, `DataPointValueConversion<T>`, range-only validation, renamed `Channels` members   |
+| [1.0.0](1.0.0.md)            | Type-safe data points — non-generic `IDataPoint` / `IDataPointValue`, `DataPointValueConversion<T>`, range-only validation, renamed `Channels` members   |
 | [0.30.0](0.30.0.md)          | The public-API refactor — renamed `IDataPoint` properties, namespace reorganisation, new base-class constructors, `IClientLifecycleManager`             |
