@@ -90,6 +90,20 @@ This is a system-level decision that depends on the protocol and the deployment 
 
 ---
 
+## Why the write path does not use Polly
+
+The incoming path runs every poll through a Polly `ResiliencePipeline`. The write path does not. It uses a hand-written retry loop in `QueueProcessor` built on `IRetryPolicy` and `RetryBackoffCalculator`, and that difference is deliberate.
+
+Polly is perfectly capable of most of what the loop does. Unbounded retries are `MaxRetryAttempts = int.MaxValue`, exponential backoff with jitter is `DelayBackoffType.Exponential` plus `UseJitter`, the progressive log throttling fits an `OnRetry` callback, and `TimeProvider` covers the same test seam as `IDelayProvider`. On capability alone there is no gap.
+
+What does not fit is the backpressure check. After each backoff the loop asks whether the item it is retrying is still at the head of the queue, and if a `DropOldest` overflow has displaced it, abandons the retry entirely rather than writing stale data. Polly decides whether to retry from the *outcome* of the attempt, the exception or result that `ShouldHandle` inspects. It has no notion of external state that changed while the strategy was waiting. Expressing the check in Polly means either throwing out of `OnRetry`, a hook documented for side effects, or smuggling a state read into a `DelayGenerator`. Both work. Both leave a reader needing to know that an exception thrown from `OnRetry` propagates out of the pipeline before they can follow the control flow at all.
+
+There is a second, smaller friction. `WriteAsync` is called with `CancellationToken.None` on purpose, so that a disconnect never severs a write in flight, while the backoff delay observes the real token and lets shutdown interrupt the wait. Polly threads one `ResilienceContext` token through both the callback and its own delays, so the write callback would have to ignore the token it is handed.
+
+Against that, the payoff would have been thirty-odd lines of backoff arithmetic and a retry counter. The incoming path went the other way because it fits cleanly: a timeout and a circuit breaker wrapped around a self-contained read, with no queue state consulted between attempts, which is the shape Polly is built for.
+
+---
+
 ## Lifecycle
 
 ### Connect
