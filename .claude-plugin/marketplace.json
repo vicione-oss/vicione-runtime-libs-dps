@@ -8,7 +8,7 @@
     {
       "name": "vicione-dataports",
       "source": "./plugins/vicione-dataports",
-      "description": "Conventions and contracts shared by every ViciOne DataPort provider",
+      "description": "Conventions, contracts and the build guide for every ViciOne DataPort provider",
       "version": "1.0.0"
     }
   ]
