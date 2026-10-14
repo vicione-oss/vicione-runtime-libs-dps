@@ -1,6 +1,6 @@
 {
   "name": "vicione-dataports",
-  "description": "Conventions and contracts shared by every ViciOne DataPort provider",
+  "description": "Conventions, contracts and the build guide for every ViciOne DataPort provider",
   "version": "1.0.0",
   "author": {
     "name": "ViciOne open automation gmbh"

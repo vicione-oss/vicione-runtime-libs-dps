@@ -1,13 +1,14 @@
 ---
 name: dataport-conventions
-description: Contracts and design rules shared by every ViciOne DataPort provider (MQTT, OPC-UA, SQL, Modbus, …) — what the built tree guarantees, how a value that cannot be read is handled, what may and may not travel on the wire, where validation belongs, and what a provider may depend on. Read this before changing what a DataPort puts on the wire, how it reads a received message, or what it validates.
+description: How every ViciOne DataPort provider (Modbus, S7, Allen-Bradley, OPC UA, MQTT, SQL, …) is built and what it must guarantee — what the built tree promises, how a value that cannot be read is handled, what may travel on the wire, where validation belongs, what a provider may depend on — and how to build or extend one on ViciOne.Suite.DataPort.Extensions: the ruleset YAML, the typed node model (TypedNodeMapper), IncomingDataPortBase / OutgoingDataPortBase or a hand-written push port, clients and client pools, configuration verifier and connection tester, tests and CI packaging. Read this before creating a dp-* repository or provider, adding a node type, data type or property, changing what a port puts on the wire, how it reads a received message or what it validates, or reviewing such a change.
 ---
 
 # DataPort conventions
 
 Rules that hold for every provider built on `ViciOne.Suite.DataPort`, whatever the protocol.
 Protocol specifics belong in the provider repository's own `AGENTS.md` and its architecture
-decision records; general .NET and review conventions are in the `vicione-conventions` skill.
+decision records. How a provider is built follows the rules below, with its detail in
+`references/`.
 
 ## The built tree is the contract
 
@@ -29,11 +30,15 @@ never written has nothing to put on the wire.
 Every provider carries a ruleset YAML (`src/<Provider>/<Provider>.yaml`) that defines the node
 tree the editor offers and the port serves. It is the source of truth, not a description of the
 code: every property in it needs its counterpart on the communication or node class, and the
-consistency tests in `DataPort.Extensions.Testing` verify exactly that.
+consistency tests in `DataPort.Extensions.Testing` verify exactly that. A member that deliberately
+has no counterpart goes in the test's `Excluded…` sets, with a comment saying why.
 
-A change to the tree therefore starts in the YAML, and its `Common.Version` moves with the ruleset
-format of `ViciOne.TreeBuilder`. For the YAML itself, use the `writing-ruleset-yaml` skill in the
-`tree-builder` repository.
+A change to the tree therefore starts in the YAML. Its `Common.Version` is set by the release
+commit alone, to the provider version without a pre-release suffix; nothing reads the field, and
+`ViciOne.Tree.Builder` only checks its `x.y[.z]` format. For the YAML itself, use the
+`writing-ruleset-yaml` skill in the `tree-builder` repository — it is repo-local, so from a provider
+repository read it on GitLab. [references/yaml-schema.md](references/yaml-schema.md) covers what a
+DataPort adds.
 
 ## Validate the tree when the port starts
 
@@ -74,6 +79,9 @@ sender that marks a message invalid marks everything read from it invalid.
 Without this, an engine that reads only the fanned-out value acts on data whose sender declared it
 unusable, and nothing in the value says so. The value is still forwarded, flagged rather than
 dropped, so the engine sees the reading together with the state its sender gave it.
+
+The base classes' `ToExternalValue` default of `Validity = 1` fits a polled read only; an override
+that fans out a received message passes the message's validity on.
 
 ## DataPorts carry data, not diagnostics
 
@@ -122,3 +130,119 @@ the provider change ships without it.
 
 These rules were extracted from provider reviews, most of them from more than one. When a rule
 turns out to be wrong for a protocol, change it here rather than working around it there.
+
+## Building a provider
+
+### Step 0 — pull or push, decided by the protocol
+
+`ViciOne.Suite.DataPort.Extensions` (repo `dps`) ships the shared building blocks and two base
+classes. The incoming base **polls**: `IncomingDataPortBase` requires `TDataPoint : IPollingDataPoint`
+and reads on a schedule. dps says itself that a protocol which pushes "does not sit naturally on the
+current design" (`docs/DataPort.Extensions/explanation/Overview.md`).
+
+| | Pull — the provider asks | Push — the remote side sends |
+|---|---|---|
+| Protocols | Modbus, S7, Allen-Bradley, … | MQTT, AMQP, OPC UA subscriptions |
+| Configuration | typed node tree via `TypedNodeMapper` | same |
+| Incoming | `IncomingDataPortBase` | hand-written `IExternalIncomingCommunication<T>` on the shared blocks |
+| Outgoing | `OutgoingDataPortBase` | `OutgoingDataPortBase` — it queues and writes, nothing in it polls |
+| Built that way | dp-modbus, s7, dp-s7-absolute, cip | — |
+
+- **New providers use the typed node tree in both directions** and inherit a base class wherever the
+  protocol fits it. A push protocol writes its incoming port by hand on top of the same node model,
+  mappers, data points and pool; it does not wait for a push base class in dps.
+- dp-mqtt, dp-opcua, dp-sql, dp-azure and dp-aws predate the typed tree and implement
+  `IExternal*Communication` directly. Maintain them in place, don't copy their raw `INode` handling
+  into a new provider, and don't half-migrate one as a side effect of another task.
+
+**Canonical references, in order** (GitLab projects under `vicione-oss/vicione/runtime-libs/`,
+paths relative to the repository root):
+
+1. dps `docs/DataPort.Extensions/how-to/` — the authoritative recipes (`index.md` is the map). Read
+   the relevant guide before writing code. They also ship inside the
+   `ViciOne.Suite.DataPort.Extensions` package (`how-to/`, `explanation/`, `reference/` and an
+   `AGENTS.md` at the package root), so a provider repo reads them from the NuGet cache without a
+   dps clone.
+2. dps `tests/DataPort.Extensions.Tests/Stubs/` — a complete, compiling minimal provider.
+3. cip `src/AllenBradley.Logix/` + `src/AllenBradley.Client.Shared/` — newest provider: a generic
+   shared client pool, raw-node property validators, a configuration verifier in both directions.
+   Not a template for packaging or repo layout (no connection tester, README or CHANGELOG).
+4. dp-modbus `src/Modbus.Client/`, `src/Modbus.Server/`, `src/Modbus.Core/` — client **and**
+   server, both directions, a shared core project; the template for packaging and repo layout.
+5. dp-s7-absolute `src/Siemens.S7.Absolute/` — the richest data-type set (scalars + arrays) and
+   `docs/Siemens.S7.Absolute.Documentation/how-to/add-a-data-type.md`.
+
+dps `src/DataPort.Extensions/AGENTS.md` is the agent-facing cheat sheet for the base classes.
+
+### Build order
+
+Shared blocks first, direction-specific last. Each step compiles and is testable on its own.
+
+| # | Build | Contract | Lives in |
+|---|-------|----------|----------|
+| 1 | YAML ruleset | — | `src/<Provider>/<Provider>.yaml` |
+| 2 | Communication record | `[Communication("<Root.Id>")] … : DataPortCommunication` | `Model/Nodes/Device/` |
+| 3 | Root node + mapper + validator | `IRootConfigurationNode<TCommunication>` | `Model/Nodes/Device/{,Mapping/}` |
+| 4 | Branch nodes + mappers (optional) | `IBranchConfigurationNode` | `Model/Nodes/Containers/<X>/` |
+| 5 | Leaf nodes + mappers + validators | `IDataPointNode` | `Model/Nodes/DataPoints/<X>/` |
+| 6 | Mapper composition root | `TypedNodeMapper<TComm, TRoot>` | `Model/Nodes/Mapper/` |
+| 7 | Runtime data points + values | `IPollingDataPoint`, `ITypedDataPoint<T>` | `Model/DataPort/DataPoints/` |
+| 8 | Client information, client, pool | `IClientInformation`, `IReadClient`/`IWriteClient`, `IClientLifecycleManager` | `Model/DataPort/Device/`, `Client/`, `Client/Pool/` |
+| 9 | Data-point mappers | `IDataPointsMapper` / `IDataPointGroupsMapper` | `Model/Mapping/` |
+| 10 | The ports | `IncomingDataPortBase` (pull) / hand-written (push), `OutgoingDataPortBase` | `Incoming/`, `Outgoing/` |
+| 11 | Connection tester | `IDataPortConnectionTester<TCommunication>` | `src/<Provider>/` |
+| 12 | Packaging: `metadata.json`, CI component jobs, `VERSION*`, `CHANGELOG.md` | — | `src/<Provider>/`, `.gitlab-ci.yml` |
+
+Full detail with the code shape of every step: [references/build-order.md](references/build-order.md).
+
+### The rules that break builds
+
+1. **`TreatWarningsAsErrors` + `EnforceCodeStyleInBuild`** — a single warning fails the build. Run
+   the formatters as part of "done", not at review time.
+2. **No exceptions on engine/hot paths.** Log through a `[LoggerMessage]` source-generated
+   companion class (`XLogs`/`XLogMessages`) instead of throwing; add new messages there, never an
+   inline `_logger.LogX(...)` with interpolation. Connection failures are the exception: those
+   surface as `ConnectionFailureException`, never a protocol-specific type — the lifecycle manager
+   and both base classes depend on that uniform surface.
+3. **No LINQ** in code that runs per poll, per message or per write — `SendAsync`, queue
+   processing, `ToExternalValues` overrides, read/write loops. Indexed `for`, pre-sized `List`; s7
+   measured ~3.5× on `ToExternalValues` alone.
+4. **One type per file**, UTF-8 without BOM (`.editorconfig` is authoritative), package versions
+   only in `Directory.Packages.props`.
+
+### Verification
+
+The "done" gate — build and both format checks must pass:
+
+```bash
+dotnet build <repo>.slnx && dotnet format analyzers <repo>.slnx --severity info --verify-no-changes && dotnet format whitespace <repo>.slnx --verify-no-changes
+```
+
+Take the test command from the repo's `AGENTS.md`; see [references/testing.md](references/testing.md).
+
+## Reference files
+
+- [references/build-order.md](references/build-order.md) — each step's code shape, the seams, and
+  the base-class hooks worth overriding
+- [references/yaml-schema.md](references/yaml-schema.md) — the DataPort side of the ruleset: what
+  the C# model pairs with, and the gotchas (UInt8 boxing, Id-keyed `DependentProperties`, grouped
+  `DataTypes` leaves, declarations nothing enforces)
+- [references/conventions.md](references/conventions.md) — the remaining build settings, the
+  exception vocabulary, connection lifecycle decisions, outgoing semantics, packaging and release
+- [references/testing.md](references/testing.md) — the expected test set per provider and the
+  fixtures that make it deterministic
+- [references/repo-layout.md](references/repo-layout.md) — folder map, new-repo scaffolding and the
+  CI publish jobs
+
+## Before reporting done
+
+- [ ] The contract above holds — declared keys always sent, no invented values, validity carried
+      over, tree checked at startup
+- [ ] Typed node tree; base class wherever the protocol fits it, with the shared blocks actually
+      shared between the two directions
+- [ ] YAML ↔ C# consistency test green, with justified exclusions only
+- [ ] Both directions covered, or an explicit statement of why only one exists
+- [ ] Build + both `dotnet format` checks clean; unit tests green (integration tests may be skipped —
+      say so)
+- [ ] A `CHANGELOG.md` entry under the unreleased version for anything a suite user notices
+- [ ] `metadata.json`, `VERSION`/`VERSION_CORE`, and the CI component jobs exist for a new provider
