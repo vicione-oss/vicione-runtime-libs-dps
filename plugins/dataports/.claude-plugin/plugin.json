@@ -1,0 +1,11 @@
+{
+  "name": "dataports",
+  "description": "Conventions, contracts and the build guide for every ViciOne DataPort provider",
+  "version": "1.0.0",
+  "author": {
+    "name": "ViciOne open automation gmbh"
+  },
+  "homepage": "https://gitlab.com/vicione-oss/vicione/runtime-libs/dps",
+  "repository": "https://gitlab.com/vicione-oss/vicione/runtime-libs/dps.git",
+  "license": "MIT"
+}
