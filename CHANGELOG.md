@@ -1,5 +1,11 @@
 # Changelog
 
+## Next
+
+### Changed
+
+- Update `ViciOne.Tree.Builder` to `3.1.0`
+
 ## 1.0.0 - 2026-09-30
 
 ### Changed
