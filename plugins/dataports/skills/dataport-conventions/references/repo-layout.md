@@ -104,8 +104,8 @@ Copy dp-modbus's root as the template:
 - [ ] `<repo>.slnx` with `/Solution Items/`, `/src/`, `/tests/` folders
 - [ ] `AGENTS.md` + a `CLAUDE.md` that just points at it — record the provider's *decisions*
       (fatal vs non-fatal connect, direction semantics, pool identity), not restatements of this skill
-- [ ] `.claude/settings.json` subscribing to the `vicione` marketplace (snippet in the
-      `vicione-dataports` plugin README)
+- [ ] `.claude/settings.json` subscribing to the `vicione-dps` marketplace (snippet in the
+      `dataports` plugin README)
 - [ ] `README.md`, `LICENSE.txt`, `CHANGELOG.md`
 - [ ] `.gitlab-ci.yml` — the shared component jobs plus one publish block per provider
 

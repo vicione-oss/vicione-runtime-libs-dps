@@ -111,15 +111,15 @@ not in the `.csproj`.
 ## Claude Code plugin marketplace
 
 This repository is also the marketplace (`.claude-plugin/marketplace.json`, marketplace name
-`vicione`) for the plugins the DataPort repositories share. It currently holds one:
-`plugins/vicione-dataports/`, whose `dataport-conventions` skill carries the rules that hold for
+`vicione-dps`) for the plugins the DataPort repositories share. It currently holds one:
+`plugins/dataports/`, whose `dataport-conventions` skill carries the rules that hold for
 every provider — what the built tree guarantees, how an unreadable value is handled, what may
 travel on the wire, and where validation belongs — and walks through building a provider on the
 `DataPort.Extensions` base classes. The skill cites this repository's how-to guides and stubs, so a
 change to the base classes or the guides may need a matching change there.
 
 The provider repositories subscribe to it from their own `.claude/settings.json`; see
-[the plugin's README](plugins/vicione-dataports/README.md) for that snippet and for the version
+[the plugin's README](plugins/dataports/README.md) for that snippet and for the version
 bump a change needs. Nothing here builds or ships the plugin — it is plain files served from the
 default branch.
 

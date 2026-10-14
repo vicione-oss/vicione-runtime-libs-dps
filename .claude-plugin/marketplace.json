@@ -1,13 +1,13 @@
 {
-  "name": "vicione",
+  "name": "vicione-dps",
   "owner": {
     "name": "ViciOne open automation gmbh",
     "url": "https://gitlab.com/vicione-oss/vicione"
   },
   "plugins": [
     {
-      "name": "vicione-dataports",
-      "source": "./plugins/vicione-dataports",
+      "name": "dataports",
+      "source": "./plugins/dataports",
       "description": "Conventions, contracts and the build guide for every ViciOne DataPort provider",
       "version": "1.0.0"
     }

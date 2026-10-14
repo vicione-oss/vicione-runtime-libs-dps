@@ -1,4 +1,4 @@
-# vicione-dataports
+# dataports
 
 Claude Code plugin carrying the conventions every ViciOne DataPort provider shares — what the
 built tree guarantees, how an unreadable value is handled, what may travel on the wire, where
@@ -20,7 +20,7 @@ gets the plugin once they trust the folder:
 ```json
 {
   "extraKnownMarketplaces": {
-    "vicione": {
+    "vicione-dps": {
       "source": {
         "source": "url",
         "url": "https://gitlab.com/vicione-oss/vicione/runtime-libs/dps.git",
@@ -28,7 +28,7 @@ gets the plugin once they trust the folder:
       }
     }
   },
-  "enabledPlugins": { "vicione-dataports@vicione": true }
+  "enabledPlugins": { "dataports@vicione-dps": true }
 }
 ```
 
@@ -45,6 +45,6 @@ The skill is `skills/dataport-conventions/SKILL.md`, with the build guide's deta
 Before pushing:
 
 ```sh
-claude plugin validate ./plugins/vicione-dataports
-claude --plugin-dir ./plugins/vicione-dataports
+claude plugin validate ./plugins/dataports
+claude --plugin-dir ./plugins/dataports
 ```

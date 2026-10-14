@@ -1,5 +1,5 @@
 {
-  "name": "vicione-dataports",
+  "name": "dataports",
   "description": "Conventions, contracts and the build guide for every ViciOne DataPort provider",
   "version": "1.0.0",
   "author": {
