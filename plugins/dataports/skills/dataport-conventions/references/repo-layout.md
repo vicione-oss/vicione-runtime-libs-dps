@@ -161,6 +161,14 @@ Copy the block from the repo itself rather than from here — it carries the `st
 `needs`, `artifacts` and `before_script` inputs left out above, and the component versions move.
 Which pipeline uploads where is in [conventions.md](conventions.md), "Packaging and versioning".
 
+**The publish jobs restore a second time, on purpose.** `dotnet-restore` runs without an
+`execution_matrix`, so it caches the packages under a key without OS and ARCH, which the matrix jobs
+of `dotnet Publish` never find; each of them runs `dotnet restore` in its `before_script` instead.
+Giving `dotnet-restore` the matrix, as the dotnet-component README recommends, would also need an
+entry without OS and ARCH for `dotnet-artifacts` — four restore jobs in every pipeline, to save time
+in a job that runs on tags and by hand only. Keep the restore in the publish block. (Decided for the
+dotnet-component 2.7.2 rollout, 2026-10-14.)
+
 ## Neighbouring repos worth knowing
 
 | Repo | What it is |
